@@ -34,7 +34,7 @@
     <!-- Warning: unit conversion does not work in this section of airframe,
     so use the native units, or you'll have big trouble... -->
     <!-- The Autopilot self -->
-    <target name="ap" board="lisa_mx_2.1">
+    <target name="ap" board="lisa_m_2.0">
 
       <!-- enable those 2 lines ONLY if flashing via JTAG cable -->
       <configure name="FLASH_MODE"   value="SWD"/>
