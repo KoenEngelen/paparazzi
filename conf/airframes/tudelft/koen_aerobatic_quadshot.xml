@@ -126,6 +126,9 @@
       -->
 
       <module name="sys_mon"/>
+      
+
+      
 
     </target>
 
@@ -171,7 +174,7 @@
 
     <module name="actuators"     type="pwm">
       <define name="SERVO_HZ" value="400"/>
-      <define name="USE_SERVOS_7AND8"/>
+      <!--<define name="USE_SERVOS_7AND8"/>-->
     </module>
 
     <!-- Enable this module to use multiple gain sets, which have to be specified in the gain sets section.
@@ -238,6 +241,13 @@
     <module name="tcas">
     </module>
     -->
+
+   <!-- Pressure Difference Sensor MS4525D I2C -->
+   <module name="airspeed" type="ms45xx_i2c">
+    <define name="MS45XX_I2C_DEV" value="I2C1" />
+    <define name="USE_AIRSPEED_MS45XX" value="TRUE" /> 
+   </module>
+
 
   </firmware>
 
