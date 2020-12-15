@@ -143,6 +143,7 @@ PRINT_CONFIG_VAR(MS45XX_PRESSURE_TYPE)
 PRINT_CONFIG_VAR(MS45XX_PRESSURE_RANGE)
 PRINT_CONFIG_VAR(MS45XX_PRESSURE_SCALE)
 PRINT_CONFIG_VAR(MS45XX_PRESSURE_OFFSET)
+PRINT_CONFIG_VAR(MS45XX_I2C_DEV)
 
 /** Send a AIRSPEED_MS45XX message with every new measurement.
  * Mainly for debugging, use with caution, sends message at ~100Hz.
@@ -272,6 +273,7 @@ void ms45xx_i2c_event(void)
       AbiSendMsgTEMPERATURE(MS45XX_SENDER_ID, temp);
       // Compute airspeed
       ms45xx.airspeed = sqrtf(Max(ms45xx.pressure * ms45xx.airspeed_scale, 0));
+
 
 #if USE_AIRSPEED_MS45XX
       stateSetAirspeed_f(ms45xx.airspeed);

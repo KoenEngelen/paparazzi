@@ -38,15 +38,15 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t acc_x;      // 5
   int32_t acc_y;
   int32_t acc_z;
-  int32_t mag_x;      // 8
-  int32_t mag_y;
-  int32_t mag_z;
-  int32_t phi;        // 11
-  int32_t theta;
-  int32_t psi;
-  int32_t extra1;     // 14
-  int32_t extra2;     // 15
-  int32_t extra3;     // 16
+  int32_t qi;      // 8
+  int32_t qx;
+  int32_t qy;
+  int32_t qz;        // 11
+  float pressure;     // 14
+  int32_t temperature;     // 15
+  float airspeed;     // 16
+  float angle;
+  uint32_t angle_raw;
 };
 
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */

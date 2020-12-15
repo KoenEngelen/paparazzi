@@ -23,7 +23,10 @@
 #include "high_speed_logger_spi_link.h"
 
 #include "subsystems/imu.h"
+#include "modules/sensors/airspeed_ms45xx_i2c.h"
+#include "modules/sensors/aoa_adc.h"
 #include "mcu_periph/spi.h"
+#include "state.h"
 
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
@@ -66,15 +69,30 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.id = counter;
 
     high_speed_logger_spi_link_ready = false;
-    high_speed_logger_spi_link_data.gyro_p     = imu.gyro_unscaled.p;
-    high_speed_logger_spi_link_data.gyro_q     = imu.gyro_unscaled.q;
-    high_speed_logger_spi_link_data.gyro_r     = imu.gyro_unscaled.r;
-    high_speed_logger_spi_link_data.acc_x      = imu.accel_unscaled.x;
-    high_speed_logger_spi_link_data.acc_y      = imu.accel_unscaled.y;
-    high_speed_logger_spi_link_data.acc_z      = imu.accel_unscaled.z;
-    high_speed_logger_spi_link_data.mag_x      = imu.mag_unscaled.x;
-    high_speed_logger_spi_link_data.mag_y      = imu.mag_unscaled.y;
-    high_speed_logger_spi_link_data.mag_z      = imu.mag_unscaled.z;
+    
+    high_speed_logger_spi_link_data.gyro_p      = imu.gyro_unscaled.p;
+    high_speed_logger_spi_link_data.gyro_q      = imu.gyro_unscaled.q;
+    high_speed_logger_spi_link_data.gyro_r      = imu.gyro_unscaled.r;
+    
+    high_speed_logger_spi_link_data.acc_x       = imu.accel_unscaled.x;
+    high_speed_logger_spi_link_data.acc_y       = imu.accel_unscaled.y;
+    high_speed_logger_spi_link_data.acc_z       = imu.accel_unscaled.z;
+    
+    // high_speed_logger_spi_link_data.mag_x       = imu.mag_unscaled.x;
+    // high_speed_logger_spi_link_data.mag_y       = imu.mag_unscaled.y;
+    // high_speed_logger_spi_link_data.mag_z       = imu.mag_unscaled.z;
+
+    high_speed_logger_spi_link_data.qi          = stateGetNedToBodyQuat_i()->qi;
+    high_speed_logger_spi_link_data.qx          = stateGetNedToBodyQuat_i()->qx;
+    high_speed_logger_spi_link_data.qy          = stateGetNedToBodyQuat_i()->qy;
+    high_speed_logger_spi_link_data.qz          = stateGetNedToBodyQuat_i()->qz;
+    
+    high_speed_logger_spi_link_data.pressure    = ms45xx.pressure;
+    high_speed_logger_spi_link_data.temperature = ms45xx.temperature;
+    high_speed_logger_spi_link_data.airspeed    = ms45xx.airspeed;
+
+    high_speed_logger_spi_link_data.angle       = aoa_adc.angle;
+    high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
 
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }

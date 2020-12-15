@@ -36,6 +36,8 @@
     <!-- The Autopilot self -->
     <target name="ap" board="lisa_m_2.0">
 
+      <define name="USE_I2C1"/>
+
       <!-- enable those 2 lines ONLY if flashing via JTAG cable -->
       <configure name="FLASH_MODE"   value="SWD"/>
       <configure name="BMP_PORT" value="/dev/ttyACM0" />
@@ -243,11 +245,39 @@
     -->
 
    <!-- Pressure Difference Sensor MS4525D I2C -->
-   <module name="airspeed" type="ms45xx_i2c">
+<!--   <module name="airspeed" type="ms45xx_i2c">
     <define name="MS45XX_I2C_DEV" value="I2C1" />
     <define name="USE_AIRSPEED_MS45XX" value="TRUE" /> 
    </module>
+-->
+	
+   <!--  Pressure Difference Sensor MS4525D I2C
+  	This specific module compiles, check if parameters are correct--> 
+    <module name="airspeed_ms45xx_i2c">
+      <define name="MS45XX_I2C_DEV" value="i2c1" />
+      <define name="MS45XX_I2C_ADDR" value="0x50" />
+      <!-- <define name="MS45XX_PRESSURE_TYPE" value="0" />
+      <define name="MS45XX_PRESSURE_RANGE" value="1" /> -->
+     <!--<define name="MS45XX_OUTPUT_TYPE" value="0" />-->
+      <define name="MS45XX_SYNC_SEND" value="TRUE" />
+      <!-- <define name="MS45XX_PRESSURE_SCALE" value="1.05" />
+      <define name="MS45XX_PRESSURE_OFFSET" value="8618.4" />
+      <define name="MS45XX_AIRSPEED_SCALE" value="1.6327" /> -->
+      <define name="MS45XX_LOWPASS_TAU" value="0.15" />
+      <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
+    </module>
 
+
+    <module name="AOA_adc">  
+      <configure name="ADC_AOA" value="ADC_2"/>
+      <define name="AOA_OFFSET" value="-0.135000005364"/>   
+      <define name="AOA_FILTER" value="0.875999987125"/>   
+      <define name="USE_AOA"/>  
+    </module>
+
+    <module name="logger_spi_link">
+	    <configure name="HS_LOG_SPI_SLAVE_IDX" value="SPI_SLAVE1"/>
+    </module>
 
   </firmware>
 
@@ -431,7 +461,7 @@ The most crucial part for the magnetometer calibration:
   </section>
 
   <section name="AIR_DATA" prefix="AIR_DATA_">
-    <define name="CALC_AIRSPEED" value="FALSE"/>
+    <define name="CALC_AIRSPEED" value="TRUE"/>
     <define name="CALC_TAS_FACTOR" value="FALSE"/>
     <define name="CALC_AMSL_BARO" value="TRUE"/>
   </section>
