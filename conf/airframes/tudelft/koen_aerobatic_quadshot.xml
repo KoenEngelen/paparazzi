@@ -458,8 +458,8 @@ The most crucial part for the magnetometer calibration:
     <define name="H_Y" value="0.018355"/>
     <define name="H_Z" value="0.915111"/>
 
-    <define name="USE_GPS_HEADING" value="TRUE"/>
-    <define name="MAG_UPDATE_ALL_AXES" value="TRUE"/>
+    <define name="USE_GPS_HEADING" value="FALSE"/>
+    <define name="MAG_UPDATE_ALL_AXES" value="FALSE"/>
     <!-- <define name="AHRS_GPS_SPEED_IN_NEGATIVE_Z_DIRECTION" value="FALSE"/>-->
     <!-- <define name="HEADING_UPDATE_GPS_MIN_SPEED" value="0"/>--> <!-- only for Optitrack -->
     <define name="HEADING_UPDATE_GPS_MIN_SPEED" value="3.0" unit="m/s"/>
