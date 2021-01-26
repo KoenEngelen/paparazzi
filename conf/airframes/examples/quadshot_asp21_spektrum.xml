@@ -381,5 +381,6 @@
     </module>
 
     <module name="ins"/>
+    
   </firmware>
 </airframe>
