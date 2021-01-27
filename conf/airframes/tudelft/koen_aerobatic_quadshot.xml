@@ -504,8 +504,8 @@ The most crucial part for the magnetometer calibration:
     <define name="SONAR_COMPENSATE_ROTATION" value="TRUE"/><!-- compensate AGL for body rotation -->
     <define name="SONAR_UPDATE_ON_AGL" value="TRUE"/>
 
-    <define name="USE_GPS_ALT" value="1"/>
-    <define name="USE_GPS_ALT_SPEED" value="1"/>
+    <define name="USE_GPS_ALT" value="0"/>
+    <define name="USE_GPS_ALT_SPEED" value="0"/>
     <define name="VFF_R_GPS" value="0.01"/>
 
     <!-- trust more the BARO Altitude over the GPS Altitude -->
