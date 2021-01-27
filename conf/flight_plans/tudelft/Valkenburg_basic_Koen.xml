@@ -1,0 +1,134 @@
+<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
+
+<flight_plan alt="40" ground_alt="0" lat0="52 10 05.3" lon0="4 24 45.6" max_dist_from_home="1000" name="Valkenburg Basic" security_height="2">
+  <header>
+    #include "autopilot.h"
+    #include "subsystems/datalink/datalink.h"
+    #include "subsystems/electrical.h"
+    #include "subsystems/radio_control.h"
+</header>
+  <waypoints>
+    <waypoint name="HOME" x="3.2" y="-32.7"/>
+    <waypoint name="CLIMB" x="0.0" y="5.0"/>
+    <waypoint name="STDBY" x="0.6" y="-30.3"/>
+    <waypoint name="p1" x="45.7" y="27.5"/>
+    <waypoint name="p2" x="383.8" y="231.4"/>
+    <waypoint name="p3" x="518.5" y="113.5"/>
+    <waypoint name="p4" x="88.2" y="-48.9"/>
+    <waypoint name="KILL1" x="-75.7" y="49.7"/>
+    <waypoint name="KILL2" x="477.8" y="350.6"/>
+    <waypoint name="KILL3" x="637.1" y="100.4"/>
+    <waypoint name="KILL4" x="-14.5" y="-213.0"/>
+    <waypoint name="CAM" x="14.2" y="-29.4"/>
+    <waypoint name="TD" x="5.6" y="-10.9"/>
+  </waypoints>
+  <sectors>
+    <sector color="red" name="Kill">
+      <corner name="KILL1"/>
+      <corner name="KILL2"/>
+      <corner name="KILL3"/>
+      <corner name="KILL4"/>
+    </sector>
+  </sectors>
+  <exceptions>
+    <exception cond="(!InsideKill(GetPosX(), GetPosY()) &&
+      !(IndexOfBlock('Holding point') > nav_block) )" deroute="DatalinkLoss"/>
+    <exception cond="((radio_control.status == RC_REALLY_LOST) &&
+      !(IndexOfBlock('Takeoff') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
+    <exception cond="(datalink_time > 60 &&
+      !(datalink_time > 120) &&
+      !(IndexOfBlock('Takeoff') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="DatalinkLoss"/>
+    <exception cond="(electrical.bat_low &&
+      !(IndexOfBlock('Holding point') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
+    <exception cond="(electrical.bat_critical &&
+      !(IndexOfBlock('Holding point') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="land here"/>
+  </exceptions>
+  <blocks>
+    <block name="Wait GPS">
+      <call_once fun="NavKillThrottle()"/>
+      <while cond="!GpsFixValid()"/>
+    </block>
+    <block name="Geo init">
+      <while cond="LessThan(NavBlockTime(), 10)"/>
+      <call_once fun="NavSetGroundReferenceHere()"/>
+    </block>
+    <block name="Holding point">
+      <call_once fun="NavKillThrottle()"/>
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block name="Start Engine">
+      <call_once fun="NavResurrect()"/>
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
+      <exception cond="stateGetPositionEnu_f()->z > 2.0" deroute="Standby"/>
+      <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
+      <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
+    </block>
+    <block name="Standby" strip_button="Standby" strip_icon="home.png">
+      <stay wp="STDBY"/>
+    </block>
+    <block name="line_p1_p2">
+      <go from="p1" hmode="route" wp="p2"/>
+      <stay until="stage_time>10" wp="p2"/>
+      <go from="p2" hmode="route" wp="p1"/>
+      <deroute block="stay_p1"/>
+    </block>
+    <block name="stay_p1">
+      <stay wp="p1"/>
+    </block>
+    <block name="go_p2">
+      <go wp="p2"/>
+      <deroute block="stay_p1"/>
+    </block>
+    <block name="route">
+      <go from="p1" hmode="route" wp="p2"/>
+      <go from="p2" hmode="route" wp="p3"/>
+      <go from="p3" hmode="route" wp="p4"/>
+      <go from="p4" hmode="route" wp="p1"/>
+      <deroute block="stay_p1"/>
+    </block>
+    <block name="test yaw">
+      <go wp="p1"/>
+      <for from="1" to="16" var="i">
+        <heading alt="WaypointAlt(WP_p1)" course="90 * $i" until="stage_time > 3"/>
+      </for>
+      <deroute block="Standby"/>
+    </block>
+    <block name="circle CAM" pre_call="nav_set_heading_towards_waypoint(WP_CAM)">
+      <circle radius="nav_radius" wp="CAM"/>
+    </block>
+    <block name="land here" strip_button="Land Here" strip_icon="land-right.png">
+      <call_once fun="NavSetWaypointHere(WP_TD)"/>
+    </block>
+    <block name="land">
+      <go wp="TD"/>
+    </block>
+    <block name="flare">
+      <exception cond="NavDetectGround()" deroute="Holding point"/>
+      <exception cond="!nav_is_in_flight()" deroute="landed"/>
+      <call_once fun="NavStartDetectGround()"/>
+      <stay climb="nav_descend_vspeed" vmode="climb" wp="TD"/>
+    </block>
+    <block name="landed">
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block name="ComeBackAndLand">
+      <go wp="HOME"/>
+      <deroute block="land here"/>
+    </block>
+    <block name="DatalinkLoss">
+      <call_once fun="NavSetWaypointHere(WP_TD)"/>
+      <stay until="stage_time>60" wp="TD"/>
+      <deroute block="ComeBackAndLand"/>
+    </block>
+  </blocks>
+</flight_plan>
