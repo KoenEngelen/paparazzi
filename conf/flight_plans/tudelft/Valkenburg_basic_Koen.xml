@@ -1,6 +1,6 @@
 <!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
 
-<flight_plan alt="40" ground_alt="0" lat0="52 10 05.3" lon0="4 24 45.6" max_dist_from_home="1000" name="Valkenburg Basic" security_height="2">
+<flight_plan alt="40" ground_alt="0" lat0="52.169348" lon0="4.411563" max_dist_from_home="1000" name="Valkenburg Basic" security_height="2">
   <header>
     #include "autopilot.h"
     #include "subsystems/datalink/datalink.h"
@@ -12,13 +12,13 @@
     <waypoint name="CLIMB" x="0.0" y="5.0"/>
     <waypoint name="STDBY" x="0.6" y="-30.3"/>
     <waypoint name="p1" x="45.7" y="27.5"/>
-    <waypoint name="p2" x="383.8" y="231.4"/>
-    <waypoint name="p3" x="518.5" y="113.5"/>
+    <waypoint name="p2" x="361.4" y="85.1"/>
+    <waypoint name="p3" x="264.2" y="-71.8"/>
     <waypoint name="p4" x="88.2" y="-48.9"/>
-    <waypoint name="KILL1" x="-75.7" y="49.7"/>
-    <waypoint name="KILL2" x="477.8" y="350.6"/>
-    <waypoint name="KILL3" x="637.1" y="100.4"/>
-    <waypoint name="KILL4" x="-14.5" y="-213.0"/>
+    <waypoint lat="52.169886" lon="4.410516" name="KILL1"/>
+    <waypoint lat="52.171421" lon="4.417687" name="KILL2"/>
+    <waypoint lat="52.168563" lon="4.419754" name="KILL3"/>
+    <waypoint lat="52.167462" lon="4.411759" name="KILL4"/>
     <waypoint name="CAM" x="14.2" y="-29.4"/>
     <waypoint name="TD" x="5.6" y="-10.9"/>
   </waypoints>
