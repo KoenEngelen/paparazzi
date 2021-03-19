@@ -26,11 +26,14 @@
   </commands>
 
   <command_laws>
+
     <call fun="motor_mixing_run(autopilot_get_motors_on(),FALSE,values)"/>
     <set servo="A1" value="motor_mixing.commands[0]"/>
     <set servo="A2"  value="motor_mixing.commands[1]"/>
     <set servo="B1" value="motor_mixing.commands[2]"/>
     <set servo="B2"  value="motor_mixing.commands[3]"/>
+
+    <!-- <call fun="int16_vect_zero(actuators_pprz,12)"/> -->
 
  <!-- Mode dependent actuator laws for the elevons. The elevons act different in rc attitude flight mode-->
  <!-- First the correct feedback is stored in variables -->
@@ -57,6 +60,14 @@
     <set servo="ELEVON_RIGHT"   value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? $hover_right  : $forward_right" />
 <!--     <set servo="ELEVON_RIGHT"   value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? 9000 : -9000" /> -->
   </command_laws>
+
+  <section name="SIMULATOR" prefix="NPS_">
+    <define name="ACTUATOR_NAMES" value="ele_left, ele_right, mot_A1, mot_A2, mot_B1, mot_B2" type="string[]"/>
+    <define name="JSBSIM_MODEL" value="quadshot" type="string"/>
+    <define name="SENSORS_PARAMS" value="nps_sensors_params_default.h" type="string"/>
+    <define name="NO_MOTOR_MIXING" value="TRUE"/>
+  </section>
+
 
   <section name="MIXING" prefix="MOTOR_MIXING_">
     <define name="TRIM_ROLL" value="0"/>
@@ -339,6 +350,8 @@
     <!-- <module name="gain_scheduling"/> -->
   </modules>
 
+
+
   <firmware name="rotorcraft">
     <target name="ap" board="lisa_m_2.0">
     <module name="radio_control" type="spektrum">
@@ -359,6 +372,22 @@
       <!-- If using aspirin 2.2, make sure to uncomment the following barometer configuration: -->
       <!--       <configure name="LISA_M_BARO" value="BARO_MS5611_SPI"/> -->
       <configure name="LISA_M_BARO" value="BARO_BOARD_BMP085"/>
+    </target>
+
+    <target name="nps"          board="pc">
+      <module name="fdm" type="jsbsim"/>
+      <module name="udp"/>
+      <module name="radio_control" type="datalink"/>
+      <module name="logger_file">
+        <define name="FILE_LOGGER_PATH" value="/home/Documents"/>
+      </module>
+
+
+      <define name="MODE_STARTUP"  value="AP_MODE_NAV"/>
+
+      <!--Switch advanced INDI scheduling functions on or off-->
+      <!--Take the mode channel for simulation-->
+      <define name="INDI_FUNCTIONS_RC_CHANNEL" value="4"/>
     </target>
 
     <module name="motor_mixing"/>
@@ -400,6 +429,8 @@
     <module name="logger_spi_link">
 	    <configure name="HS_LOG_SPI_SLAVE_IDX" value="SPI_SLAVE1"/>
     </module>
+
+    <module name="sys_id_chirp"/>
 
   </firmware>
 </airframe>

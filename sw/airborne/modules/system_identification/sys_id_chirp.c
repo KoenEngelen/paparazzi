@@ -34,6 +34,8 @@
 #include "filters/low_pass_filter.h"
 #include "math/pprz_random.h"
 
+#include "firmwares/rotorcraft/stabilization/stabilization_attitude_rc_setpoint.h"
+
 
 #ifndef CHIRP_AXES
 #define CHIRP_AXES {COMMAND_ROLL,COMMAND_PITCH,COMMAND_YAW}
@@ -87,15 +89,25 @@ static void set_current_chirp_values(void)
       amplitude = chirp_axis == i ? chirp_noise_stdv_onaxis_ratio * chirp_amplitude : chirp_noise_stdv_offaxis;
       current_chirp_values[i] = (int32_t)(noise * amplitude);
     }
+#else 
+
+  for (uint8_t i = 0; i < CHIRP_NB_AXES; i++) {
+      current_chirp_values[i] = 0;
+    }
 
 #endif
 
     current_chirp_values[chirp_axis] += (int32_t)(chirp_amplitude * chirp.current_value);
+    chirp_in_psi = current_chirp_values[0];
   } else {
     for (uint8_t i = 0; i < CHIRP_NB_AXES; i++) {
       current_chirp_values[i] = 0;
+      chirp_in_psi = current_chirp_values[0];
     }
   }
+
+  
+
 }
 
 static void send_chirp(struct transport_tx *trans, struct link_device *dev)

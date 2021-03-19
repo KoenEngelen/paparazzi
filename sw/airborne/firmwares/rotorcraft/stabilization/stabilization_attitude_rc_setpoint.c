@@ -40,6 +40,10 @@
 #define STABILIZATION_ATTITUDE_DEADBAND_E 0
 #endif
 
+float chirp_in_psi = 0; //Chirp used to measure side slip
+float offset_in_psi = 0; //Offset used to measure side slip
+
+
 /**
  * Airspeed that will be used in the turning speed calculation (m/s).
  *
@@ -445,7 +449,8 @@ void stabilization_attitude_read_rc_setpoint_quat_earth_bound_f(struct FloatQuat
     struct FloatQuat q_yaw_sp;
 
 #if defined STABILIZATION_ATTITUDE_TYPE_INT
-    float_quat_of_axis_angle(&q_yaw_sp, &zaxis, ANGLE_FLOAT_OF_BFP(stab_att_sp_euler.psi));
+    float psi_with_offset = ANGLE_FLOAT_OF_BFP(stab_att_sp_euler.psi) + RadOfDeg(offset_in_psi) + ANGLE_FLOAT_OF_BFP(RadOfDeg(chirp_in_psi*4096));
+    float_quat_of_axis_angle(&q_yaw_sp, &zaxis, psi_with_offset);
 #else
     float_quat_of_axis_angle(&q_yaw_sp, &zaxis, stab_att_sp_euler.psi);
 #endif

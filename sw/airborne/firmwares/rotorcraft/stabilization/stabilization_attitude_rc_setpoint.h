@@ -30,6 +30,9 @@
 #include "math/pprz_algebra_int.h"
 #include "math/pprz_algebra_float.h"
 
+
+extern float offset_in_psi; // Yaw offset added for hybrid vehicle when in forward mode (to identify sideslip effects)
+extern float chirp_in_psi; // Yaw chirp added for hybrid vehicle when in forward mode (to identify sideslip effects)
 extern int32_t transition_theta_offset; // Pitch offset added for hybrid vehicle when in forward mode
 
 extern void stabilization_attitude_reset_care_free_heading(void);

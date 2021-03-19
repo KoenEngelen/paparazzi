@@ -49,4 +49,5 @@ struct PACKED high_speed_logger_spi_link_data {
   uint32_t angle_raw; //16
 };
 
+
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */

@@ -59,16 +59,17 @@ void high_speed_logger_spi_link_periodic(void)
 {
   // Static counter to identify missing samples
   static int32_t counter = 0;
-
+  static volatile bool write_extension = false;
   // count all periodic steps
   counter ++;
 
   // only send a new message if the previous was completely sent
-  if (high_speed_logger_spi_link_ready) {
+  if (high_speed_logger_spi_link_ready && !write_extension) {
     // copy the counter into the SPI datablock
     high_speed_logger_spi_link_data.id = counter;
 
     high_speed_logger_spi_link_ready = false;
+    write_extension = true;
     
     high_speed_logger_spi_link_data.gyro_p      = imu.gyro_unscaled.p;
     high_speed_logger_spi_link_data.gyro_q      = imu.gyro_unscaled.q;
@@ -81,6 +82,35 @@ void high_speed_logger_spi_link_periodic(void)
     // high_speed_logger_spi_link_data.mag_x       = imu.mag_unscaled.x;
     // high_speed_logger_spi_link_data.mag_y       = imu.mag_unscaled.y;
     // high_speed_logger_spi_link_data.mag_z       = imu.mag_unscaled.z;
+
+    high_speed_logger_spi_link_data.qi          = stateGetNedToBodyQuat_i()->qi;
+    high_speed_logger_spi_link_data.qx          = stateGetNedToBodyQuat_i()->qx;
+    high_speed_logger_spi_link_data.qy          = stateGetNedToBodyQuat_i()->qy;
+    high_speed_logger_spi_link_data.qz          = stateGetNedToBodyQuat_i()->qz;
+    
+    high_speed_logger_spi_link_data.pressure    = ms45xx.pressure;
+    high_speed_logger_spi_link_data.temperature = ms45xx.temperature;
+    high_speed_logger_spi_link_data.airspeed    = ms45xx.airspeed;
+
+    high_speed_logger_spi_link_data.angle       = aoa_adc.angle;
+    high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
+
+    spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
+  }
+  else if(high_speed_logger_spi_link_ready && write_extension){
+    // copy the counter into the SPI datablock
+    high_speed_logger_spi_link_data.id = counter+1000;
+
+    high_speed_logger_spi_link_ready = false;
+    write_extension = false;
+    
+    high_speed_logger_spi_link_data.gyro_p      = imu.mag_unscaled.x;
+    high_speed_logger_spi_link_data.gyro_q      = imu.mag_unscaled.y;
+    high_speed_logger_spi_link_data.gyro_r      = imu.mag_unscaled.z;
+    
+    high_speed_logger_spi_link_data.acc_x       = imu.accel_unscaled.x;
+    high_speed_logger_spi_link_data.acc_y       = imu.accel_unscaled.y;
+    high_speed_logger_spi_link_data.acc_z       = imu.accel_unscaled.z;
 
     high_speed_logger_spi_link_data.qi          = stateGetNedToBodyQuat_i()->qi;
     high_speed_logger_spi_link_data.qx          = stateGetNedToBodyQuat_i()->qx;
