@@ -354,11 +354,11 @@
 
   <firmware name="rotorcraft">
     <target name="ap" board="lisa_m_2.0">
-    <module name="radio_control" type="spektrum">
-      <define name="RADIO_KILL_SWITCH" value="5"/>
-      <!-- Put the mode on channel AUX1-->
-      <define name="RADIO_MODE" value="4"/>
-<!--       <configure name="USE_SECONDARY_SPEKTRUM_RECEIVER" value="1"/> -->
+
+    <module name="radio_control" type="sbus">
+      <configure name="SBUS_PORT" value="UART5"/>
+      <define name="RADIO_KILL_SWITCH" value="RADIO_AUX1"/>
+      <define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="FALSE"/>
     </module>
 
     <!-- ONLY if flashing via JTAG cable -->
