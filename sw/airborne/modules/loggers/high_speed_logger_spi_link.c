@@ -27,6 +27,7 @@
 #include "modules/sensors/aoa_adc.h"
 #include "mcu_periph/spi.h"
 #include "state.h"
+#include "stabilization.h"
 
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
@@ -112,10 +113,10 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.acc_y       = imu.accel_unscaled.y;
     high_speed_logger_spi_link_data.acc_z       = imu.accel_unscaled.z;
 
-    high_speed_logger_spi_link_data.qi          = stateGetNedToBodyQuat_i()->qi;
-    high_speed_logger_spi_link_data.qx          = stateGetNedToBodyQuat_i()->qx;
-    high_speed_logger_spi_link_data.qy          = stateGetNedToBodyQuat_i()->qy;
-    high_speed_logger_spi_link_data.qz          = stateGetNedToBodyQuat_i()->qz;
+    high_speed_logger_spi_link_data.qi          = stabilization_cmd[COMMAND_ROLL];
+    high_speed_logger_spi_link_data.qx          = stabilization_cmd[COMMAND_PITCH];
+    high_speed_logger_spi_link_data.qy          = stabilization_cmd[COMMAND_YAW];
+    high_speed_logger_spi_link_data.qz          = stabilization_cmd[COMMAND_THRUST];
     
     high_speed_logger_spi_link_data.pressure    = ms45xx.pressure;
     high_speed_logger_spi_link_data.temperature = ms45xx.temperature;
