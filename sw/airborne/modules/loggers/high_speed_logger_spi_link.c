@@ -89,7 +89,7 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.qy          = stateGetNedToBodyQuat_i()->qy;
     high_speed_logger_spi_link_data.qz          = stateGetNedToBodyQuat_i()->qz;
     
-    high_speed_logger_spi_link_data.pressure    = ms45xx.pressure;
+    high_speed_logger_spi_link_data.pressure    = (int32_t)1000 * ms45xx.pressure;
     high_speed_logger_spi_link_data.temperature = ms45xx.temperature;
     high_speed_logger_spi_link_data.airspeed    = ms45xx.airspeed;
 

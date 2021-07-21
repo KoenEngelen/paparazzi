@@ -42,10 +42,10 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t qx;         // 9
   int32_t qy;         //10 
   int32_t qz;         //11
-  float pressure;     //12
+  int32_t pressure;     //12
   int32_t temperature;//13
-  float airspeed;     //14
-  float angle;        //15
+  int32_t airspeed;     //14
+  int32_t angle;        //15
   uint32_t angle_raw; //16
 };
 
