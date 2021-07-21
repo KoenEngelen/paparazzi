@@ -302,9 +302,9 @@
     <define name="RC_LOST_MODE" value="MODE_AUTO2"/>
 
     <define name="SWITCH_STICKS_FOR_RATE_CONTROL" value="TRUE"/>
-
+    
     <define name="AIRSPEED_ETS_I2C_DEV" value="i2c2"/>
-
+    
     <define name="AHRS_MAG_UPDATE_ALL_AXES" value="FALSE"/>
 
     <define name="THRESHOLD_GROUND_DETECT" value="25.0"/>
@@ -366,7 +366,8 @@
     <configure name="BMP_PORT" value="/dev/ttyACM0" />
 
  <!-- To use an airspeed sensor on I2C, enable I2C2-->
-<!--      <define name="USE_I2C2"/> -->
+      <define name="USE_I2C1"/> 
+      <define name="USE_SERVOS_7AND8" value ="FALSE"/> 
 
 
       <!-- If using aspirin 2.2, make sure to uncomment the following barometer configuration: -->
@@ -393,7 +394,6 @@
     <module name="motor_mixing"/>
     <module name="actuators"     type="pwm">
       <define name="SERVO_HZ" value="400"/>
-      <define name="USE_SERVOS_7AND8"/>
     </module>
 
     <module name="telemetry"     type="xbee_api"/>
@@ -412,11 +412,14 @@
     <module name="ins"/>
  
     <module name="airspeed_ms45xx_i2c">
+      <define name="MS45XX_I2C_DEV" value="i2c1" />
       <define name="MS45XX_I2C_ADDR" value="0x50" />
       <define name="MS45XX_SYNC_SEND" value="TRUE" />
       <define name="MS45XX_LOWPASS_TAU" value="0.15" />
       <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
     </module>
+
+
 
 
     <module name="AOA_adc">  
