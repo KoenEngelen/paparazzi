@@ -21,7 +21,7 @@
  */
 
 #include "high_speed_logger_spi_link.h"
-
+#include "stabilization.h"
 #include "subsystems/imu.h"
 #include "modules/sensors/airspeed_ms45xx_i2c.h"
 #include "modules/sensors/aoa_adc.h"
