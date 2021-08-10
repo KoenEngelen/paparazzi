@@ -50,4 +50,6 @@ struct PACKED high_speed_logger_spi_link_data {
 };
 
 
+
+
 #endif /* HIGH_SPEED_LOGGER_SPI_LINK_H_ */

@@ -27,7 +27,6 @@
 #include "modules/sensors/aoa_adc.h"
 #include "mcu_periph/spi.h"
 #include "state.h"
-#include "stabilization.h"
 
 
 struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
@@ -90,10 +89,10 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.qz          = stateGetNedToBodyQuat_i()->qz;
     
     high_speed_logger_spi_link_data.pressure    = (int32_t)1000 * ms45xx.pressure;
-    high_speed_logger_spi_link_data.temperature = ms45xx.temperature;
-    high_speed_logger_spi_link_data.airspeed    = ms45xx.airspeed;
-
-    high_speed_logger_spi_link_data.angle       = aoa_adc.angle;
+    high_speed_logger_spi_link_data.temperature = (int32_t)1000 * ms45xx.temperature;
+    high_speed_logger_spi_link_data.airspeed    = (int32_t)1000 * ms45xx.airspeed;
+    
+    high_speed_logger_spi_link_data.angle       = (int32_t)1000 * aoa_adc.angle;
     high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
 
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
@@ -105,9 +104,9 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_ready = false;
     write_extension = false;
     
-    high_speed_logger_spi_link_data.gyro_p      = imu.mag_unscaled.x;
-    high_speed_logger_spi_link_data.gyro_q      = imu.mag_unscaled.y;
-    high_speed_logger_spi_link_data.gyro_r      = imu.mag_unscaled.z;
+    high_speed_logger_spi_link_data.gyro_p      = imu.gyro_unscaled.p;
+    high_speed_logger_spi_link_data.gyro_q      = imu.gyro_unscaled.q;
+    high_speed_logger_spi_link_data.gyro_r      = imu.gyro_unscaled.r;
     
     high_speed_logger_spi_link_data.acc_x       = imu.accel_unscaled.x;
     high_speed_logger_spi_link_data.acc_y       = imu.accel_unscaled.y;
@@ -118,11 +117,11 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.qy          = stabilization_cmd[COMMAND_YAW];
     high_speed_logger_spi_link_data.qz          = stabilization_cmd[COMMAND_THRUST];
     
-    high_speed_logger_spi_link_data.pressure    = ms45xx.pressure;
-    high_speed_logger_spi_link_data.temperature = ms45xx.temperature;
-    high_speed_logger_spi_link_data.airspeed    = ms45xx.airspeed;
+    high_speed_logger_spi_link_data.pressure    = (int32_t)1000 * ms45xx.pressure;
+    high_speed_logger_spi_link_data.temperature = (int32_t)1000 * ms45xx.temperature;
+    high_speed_logger_spi_link_data.airspeed    = (int32_t)1000 * ms45xx.airspeed;
 
-    high_speed_logger_spi_link_data.angle       = aoa_adc.angle;
+    high_speed_logger_spi_link_data.angle       = (int32_t)1000 * aoa_adc.angle;
     high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
 
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
