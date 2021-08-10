@@ -343,7 +343,7 @@
    gui_color="blue"
    release="f739a81cfa2c633e33f31ab5f095d8f617276974"
   />
-  <aircraft
+  <!-- <aircraft
    name="Robird"
    ac_id="68"
    airframe="airframes/tudelft/robird.xml"
@@ -354,7 +354,7 @@
    settings_modules="[modules/air_data.xml] modules/geo_mag.xml modules/ins_extended.xml modules/ahrs_int_cmpl_quat.xml modules/stabilization_indi_simple.xml modules/nav_basic_rotorcraft.xml modules/guidance_rotorcraft.xml modules/gps_ubx_ucenter.xml modules/gps.xml modules/imu_common.xml"
    gui_color="#ffffcccaccca"
    release="677c4c77398cfbabffae3efdcafdacfd04a0b9ab"
-  />
+  /> -->
   <aircraft
    name="SkyWalker"
    ac_id="2"
