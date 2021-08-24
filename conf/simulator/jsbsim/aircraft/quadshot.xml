@@ -298,14 +298,14 @@
               <property>fcs/mot_B1_lag</property>
               <property>fcs/mot_A2_lag</property>
             </sum>
-            <value> 0.35 </value>
+            <value> 0.35 </value> <!-- old value-->
           </product>
           <product>
             <sum>
               <property>fcs/mot_A1_lag</property>
               <property>fcs/mot_B2_lag</property>
             </sum>
-            <value> -0.35 </value>
+            <value> -0.35 </value> <!-- old value-->
           </product>
         </sum>
       </function>
