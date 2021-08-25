@@ -36,9 +36,9 @@
   </metrics>
 
   <mass_balance> <!-- Inertia and CG -->
-    <ixx unit="SLUG*FT2"> 0.0132 </ixx> <!-- old value-->
-    <iyy unit="SLUG*FT2"> 0.00250 </iyy> <!-- old value-->
-    <izz unit="SLUG*FT2"> 0.0150 </izz> <!-- old value-->
+    <ixx unit="SLUG*FT2"> 0.0000921215124 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
+    <iyy unit="SLUG*FT2"> 0.0000680769864 </iyy> <!--Iyy = 0.0000923 [kgm2] obtained from Prawien-->
+    <izz unit="SLUG*FT2"> 0.0000861472590 </izz> <!--Izz = 0.0001168 [kgm2] obtained from Prawien-->
     <ixy unit="SLUG*FT2"> 0. </ixy>
     <ixz unit="SLUG*FT2"> 0. </ixz>
     <iyz unit="SLUG*FT2"> 0. </iyz>
