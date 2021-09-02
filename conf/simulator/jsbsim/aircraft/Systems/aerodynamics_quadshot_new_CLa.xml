@@ -1,0 +1,151 @@
+ <aerodynamics>
+
+  <axis name="YAW">
+    <function name="elevon_yaw" frame="BODY" unit="FT*LBS">
+      <sum>
+      <product>
+        <property>fcs/ele_left_lag</property>
+        <value> -0.35 </value> <!-- Replace These Values -->
+      </product>
+      <product>
+        <property>fcs/ele_right_lag</property>
+        <value> -0.35 </value> <!-- Replace These Values -->
+      </product>
+      </sum> <!-- Rotor Influences not added here, but in external forces. See 'quadshot.xml' -->
+    </function>
+  </axis>
+
+  <axis name="PITCH">
+    <function name="elevon_pitch" frame="BODY" unit="FT*LBS">
+      <sum>
+      <product>
+        <property>fcs/ele_left_lag</property>
+        <value> -0.0417 </value> <!-- Replace These Values -->
+      </product>
+      <product>
+        <property>fcs/ele_right_lag</property>
+        <value> 0.0417 </value> <!-- Replace These Values -->
+      </product>
+      </sum>
+    </function>
+  </axis>
+
+  <axis name="LIFT">
+
+    <function name="aero/force/Lift_alpha">
+      <description>Lift due to alpha</description>
+      <product>
+          <property>aero/qbar-psf</property>
+          <property>metrics/Sw-sqft</property>
+          <table>
+            <independentVar lookup="row">aero/alpha-deg</independentVar>
+            <tableData>
+             -180	      0
+             -161.541	 -0.495547218
+             -158.2328 -0.573533985
+             -154.9246 -0.629871521
+             -151.6164 -0.664559826
+             -148.3082 -0.677598901
+             -145	     -0.668988744
+             -142.6	   -0.657074949
+             -140.2	   -0.652809605
+             -137.8	   -0.657251053
+             -135.4	   -0.665590486
+             -133	     -0.668988744
+             -127.2	   -0.650865875
+             -121.4	   -0.607116135
+             -115.6	   -0.537739524
+             -109.8	   -0.442736043
+             -104	     -0.322105692
+             -90	      0
+             -70	      0.460150988
+             -65	      0.560676281
+             -60	      0.632176665
+             -55	      0.674652141
+             -50	      0.688102708
+             -45	      0.672528367
+             -42.8	    0.652551843
+             -40.6	    0.639598997
+             -38.4	    0.654549585
+             -36.2	    0.696545996
+             -34	      0.743320827
+             -32.474	  0.763351576
+             -30.948	  0.769827328
+             -29.422	  0.762748082
+             -27.896	  0.742113838
+             -26.37	    0.707924597
+              0	        0
+              26.37	    0.707924597
+              27.896	  0.742113838
+              29.422	  0.762748082
+              30.948	  0.769827328
+              32.474	  0.763351576
+              34	      0.743320827
+              36.2	    0.696545996
+              38.4	    0.654549585
+              40.6	    0.639598997
+              42.8	    0.652551843
+              45	      0.672528367
+              50	      0.688102708
+              55	      0.674652141
+              60	      0.632176665
+              65	      0.560676281
+              70	      0.460150988
+              90	      0
+              104	     -0.322105692
+              109.8	   -0.442736043
+              115.6	   -0.537739524
+              121.4	   -0.607116135
+              127.2	   -0.650865875
+              133	     -0.668988744
+              135.4	   -0.665590486
+              137.8	   -0.657251053
+              140.2	   -0.652809605
+              142.6	   -0.657074949
+              145	     -0.668988744
+              148.3082 -0.677598901
+              151.6164 -0.664559826
+              154.9246 -0.629871521
+              158.2328 -0.573533985
+              161.541	 -0.495547218
+              180	      0
+            </tableData>
+          </table>
+      </product>
+    </function>
+
+  </axis>
+
+  <axis name="DRAG">
+
+    <function name="aero/force/Drag_basic">
+       <description>Drag at zero lift</description>
+       <product>
+          <property>aero/qbar-psf</property>
+          <property>metrics/Sw-sqft</property>
+          <table>
+            <independentVar lookup="row">aero/alpha-rad</independentVar>
+            <tableData>
+             -1.57    0.4
+             -1.27    0.6
+              0.00    1.500
+              1.27    0.6
+              1.57    0.4
+            </tableData>
+          </table>
+       </product>
+    </function>
+
+    <function name="aero/force/Drag_induced">
+       <description>Induced drag</description>
+         <product>
+           <property>aero/qbar-psf</property>
+           <property>metrics/Sw-sqft</property>
+           <property>aero/cl-squared</property>
+           <value>0.8</value>
+         </product>
+    </function>
+
+  </axis>
+
+ </aerodynamics>
