@@ -62,10 +62,43 @@
   </command_laws>
 
   <section name="SIMULATOR" prefix="NPS_">
-    <define name="ACTUATOR_NAMES" value="ele_left, ele_right, mot_A1, mot_A2, mot_B1, mot_B2" type="string[]"/>
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_A1, mot_B1, mot_B2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B1, mot_B2, mot_A2, mot_A1" type="string[]"/> -->
+
+
+
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B1, mot_B2, mot_A1, mot_A2" type="string[]"/>  --> <!-- Score: 0, Spins a lot, att seemed fine in beginning-->
+
+
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B1, mot_B2, mot_A2, mot_A1" type="string[]"/> --> <!-- Score: 5 -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B1, mot_A1, mot_A2, mot_B2" type="string[]"/> --> <!-- 0-->>
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B1, mot_A1, mot_B2, mot_A2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B1, mot_A2, mot_A1, mot_B2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B1, mot_A2, mot_B2, mot_A1" type="string[]"/> -->
+
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_B1, mot_A1, mot_A2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_B1, mot_A2, mot_A1" type="string[]"/> --> <!-- 0 -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_A1, mot_A2, mot_B1" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_A1, mot_B1, mot_A2" type="string[]"/> -->
+    <define name="ACTUATOR_NAMES" value="mot_B2, mot_A2, mot_A1, mot_B1" type="string[]"/>
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_A2, mot_B1, mot_A1" type="string[]"/> -->
+
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_B2, mot_B1, mot_A2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_B2, mot_A2, mot_B1" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_B1, mot_A2, mot_B2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_B1, mot_B2, mot_A2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_A2, mot_B1, mot_B2" type="string[]"/> --> <!-- Score: 0 -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_A2, mot_B2, mot_B1" type="string[]"/> -->
+ 
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_B2, mot_A1, mot_B1" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_B2, mot_B1, mot_A1" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_A1, mot_B1, mot_B2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_A1, mot_B2, mot_B1" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_B1, mot_A1, mot_B2" type="string[]"/> -->
+    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_B1, mot_B2, mot_A1" type="string[]"/> -->
+
     <define name="JSBSIM_MODEL" value="quadshot" type="string"/>
     <define name="SENSORS_PARAMS" value="nps_sensors_params_default.h" type="string"/>
-    <define name="NO_MOTOR_MIXING" value="TRUE"/>
   </section>
 
 
@@ -75,11 +108,12 @@
     <define name="TRIM_YAW" value="0"/>
     <define name="NB_MOTOR" value="4"/>
     <define name="SCALE" value="256"/>
+    <!--                                  A1    A2    B1    B2  -->
     <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
     <define name="ROLL_COEF"   value="{  256, -256,  256, -256 }"/>
     <define name="YAW_COEF"    value="{ -256,  256,  128, -128 }"/>
     <define name="THRUST_COEF" value="{  256,  256,  256,  256 }"/>
-<!--    <define name="PITCH_COEF"  value="{ 0, 0, 0, 0 }"/>
+    <!--    <define name="PITCH_COEF"  value="{ 0, 0, 0, 0 }"/>
     <define name="ROLL_COEF"   value="{ 0, 0, 0, 0 }"/>
     <define name="YAW_COEF"    value="{ 0, 0, 0, 0 }"/>
     <define name="THRUST_COEF" value="{ 0, 0, 0, 0 }"/>-->
@@ -316,7 +350,8 @@
   </section>
 
   <modules main_freq="512">
-    <load name="gps_ubx_ucenter.xml"/>
+    <!--<load name="gps_ubx_ucenter.xml"/>-->
+    <module name="gps" type="ubx_ucenter"/>
 
     <!-- The the led_safety_status module will make the Quadshot LEDs blink in certain patterns when there are safety violations-->
     <load name="led_safety_status.xml">
@@ -355,7 +390,7 @@
   <firmware name="rotorcraft">
     <target name="ap" board="lisa_m_2.0">
 
-    <module name="radio_control" type="ppm">
+    <module name="radio_control" type="sbus">
       <!--<configure name="RADIO_CONTROL_PPM_PIN" value="UART1_RX"/> -->
       <configure name="SBUS_PORT" value="UART5"/>
       <define name="RADIO_KILL_SWITCH" value="RADIO_AUX1"/>
@@ -401,6 +436,8 @@
 <!--    <module name="telemetry"     type="transparent"/> -->
     <module name="imu"           type="aspirin_v2.1"/>
     <module name="gps"           type="ublox"/>
+
+
 <!--     <module name="stabilization" type="int_quat"/> -->
     <module name="stabilization" type="indi_simple"/>
     <module name="guidance"      type="hybrid"/>
@@ -419,9 +456,6 @@
       <define name="MS45XX_LOWPASS_TAU" value="0.15" />
       <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
     </module>
-
-
-
 
     <module name="AOA_adc">  
       <configure name="ADC_AOA" value="ADC_2"/>

@@ -36,9 +36,9 @@
   </metrics>
 
   <mass_balance> <!-- Inertia and CG -->
-    <ixx unit="SLUG*FT2"> 0.0132 </ixx> <!-- old value-->
-    <iyy unit="SLUG*FT2"> 0.00250 </iyy> <!-- old value-->
-    <izz unit="SLUG*FT2"> 0.0150 </izz> <!-- old value-->
+    <ixx unit="SLUG*FT2"> 0.0921215124 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
+    <iyy unit="SLUG*FT2"> 0.0080769864 </iyy> <!--Iyy = 0.0000923 [kgm2] obtained from Prawien-->
+    <izz unit="SLUG*FT2"> 0.0861472590 </izz> <!--Izz = 0.0001168 [kgm2] obtained from Prawien-->
     <ixy unit="SLUG*FT2"> 0. </ixy>
     <ixz unit="SLUG*FT2"> 0. </ixz>
     <iyz unit="SLUG*FT2"> 0. </iyz>
@@ -50,7 +50,8 @@
     </location>
   </mass_balance>
 
-  <ground_reactions> <!-- Collisions with Ground --> <!-- old values--> 
+  
+  <ground_reactions>
     <contact type="STRUCTURE" name="CONTACT_FRONT">
       <location unit="M">
         <x>-0.15 </x>
@@ -66,7 +67,7 @@
       <brake_group> NONE </brake_group>
       <retractable>0</retractable>
     </contact>
-
+    
     <contact type="STRUCTURE" name="CONTACT_BACK">
       <location unit="M">
         <x> 0.15</x>
@@ -119,18 +120,22 @@
   <flight_control name="actuator_dynamics"> <!-- Delays in Actuator Dynamics -->
     <channel name="filtering">
 
+      
       <!--First order filter represents actuator dynamics-->
+
+      <!-- Removed Elevon
       <lag_filter name="ele_left_lag">
         <input> fcs/ele_left </input>
-        <c1> 54 </c1> <!-- old value-->
+        <c1> 54 </c1> 
         <output> fcs/ele_left_lag</output>
       </lag_filter>
 
       <lag_filter name="ele_right_lag">
         <input> fcs/ele_right </input>
-        <c1> 54 </c1> <!-- old value-->
+        <c1> 54 </c1>
         <output> fcs/ele_right_lag</output>
       </lag_filter>
+      -->
       
       <lag_filter name="mot_A1_lag">
         <input> fcs/mot_A1 </input>
@@ -161,17 +166,21 @@
 
   <external_reactions> <!-- Addition of Thrust Forces -->
 
+    <!-- Removed Elevons
     <property>fcs/ele_left</property>
-    <property>fcs/ele_left_lag</property>
     <property>fcs/ele_right</property>
-    <property>fcs/ele_right_lag</property>
+    -->
     <property>fcs/mot_A1</property>
-    <property>fcs/mot_A1_lag</property>
     <property>fcs/mot_A2</property>
-    <property>fcs/mot_A2_lag</property>
     <property>fcs/mot_B1</property>
-    <property>fcs/mot_B1_lag</property>
     <property>fcs/mot_B2</property>
+    <!-- Removed Elevons
+    <property>fcs/ele_left_lag</property>
+    <property>fcs/ele_right_lag</property> 
+    -->
+    <property>fcs/mot_A1_lag</property>
+    <property>fcs/mot_A2_lag</property>
+    <property>fcs/mot_B1_lag</property>
     <property>fcs/mot_B2_lag</property>
 
 
