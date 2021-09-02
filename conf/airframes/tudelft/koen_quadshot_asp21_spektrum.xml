@@ -80,7 +80,7 @@
     <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_B1, mot_A2, mot_A1" type="string[]"/> --> <!-- 0 -->
     <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_A1, mot_A2, mot_B1" type="string[]"/> -->
     <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_A1, mot_B1, mot_A2" type="string[]"/> -->
-    <define name="ACTUATOR_NAMES" value="mot_B2, mot_A2, mot_A1, mot_B1" type="string[]"/>
+    <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_A2, mot_A1, mot_B1" type="string[]"/> -->
     <!-- <define name="ACTUATOR_NAMES" value="mot_B2, mot_A2, mot_B1, mot_A1" type="string[]"/> -->
 
     <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_B2, mot_B1, mot_A2" type="string[]"/> -->
@@ -91,7 +91,7 @@
     <!-- <define name="ACTUATOR_NAMES" value="mot_A1, mot_A2, mot_B2, mot_B1" type="string[]"/> -->
  
     <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_B2, mot_A1, mot_B1" type="string[]"/> -->
-    <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_B2, mot_B1, mot_A1" type="string[]"/> -->
+    <define name="ACTUATOR_NAMES" value="mot_A2, mot_B2, mot_B1, mot_A1" type="string[]"/>
     <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_A1, mot_B1, mot_B2" type="string[]"/> -->
     <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_A1, mot_B2, mot_B1" type="string[]"/> -->
     <!-- <define name="ACTUATOR_NAMES" value="mot_A2, mot_B1, mot_A1, mot_B2" type="string[]"/> -->
