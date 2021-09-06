@@ -194,8 +194,8 @@
         </product>
       </function>
       <location unit="IN">
-        <x>5.45</x>
-        <y>-3.09</y>
+        <x>3.09</x>
+        <y>5.45</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -213,8 +213,8 @@
         </product>
       </function>
       <location unit="IN">
-        <x> -5.45</x>
-        <y> -3.09</y>
+        <x> 3.09</x>
+        <y>-5.45</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -232,8 +232,8 @@
         </product>
       </function>
       <location unit="IN">
-        <x> 12.93</x>
-        <y> 3.09</y>
+        <x>-3.09</x>
+        <y> 12.93</y>
         <z>  0   </z>
       </location>
       <direction>
@@ -251,8 +251,8 @@
         </product>
       </function>
       <location unit="IN">
-        <x>-12.93</x>
-        <y>3.09</y>
+        <x>-3.09</x>
+        <y>-12.93</y>
         <z> 0   </z>
       </location>
       <direction>

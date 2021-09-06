@@ -405,8 +405,8 @@
     <module name="gps"           type="ublox"/>
 
 
-    <module name="stabilization" type="int_quat"/>
-    <!-- <module name="stabilization" type="indi_simple"/> -->
+    <!-- <module name="stabilization" type="int_quat"/> -->
+    <module name="stabilization" type="indi_simple"/>
     <module name="guidance"      type="hybrid"/>
 
     <module name="ahrs"          type="int_cmpl_quat">
