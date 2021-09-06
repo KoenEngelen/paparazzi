@@ -189,13 +189,13 @@
     <force name="mot_A1" frame="BODY" unit="LBS">
       <function>
         <product>
-          <property>fcs/mot_A1_lag</property>
-          <value> 1.1 </value> <!-- old value-->
+          <property>fcs/mot_A1</property>
+          <value> 1 </value> <!-- old value-->
         </product>
       </function>
       <location unit="IN">
-        <x>-3.09</x>
-        <y>-5.45</y>
+        <x>5.45</x>
+        <y>-3.09</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -208,13 +208,13 @@
     <force name="mot_A2" frame="BODY" unit="LBS">
       <function>
         <product>
-          <property>fcs/mot_A2_lag</property>
-          <value> 1.1 </value> <!-- old value-->
+          <property>fcs/mot_A2</property>
+          <value> 1 </value> <!-- old value-->
         </product>
       </function>
       <location unit="IN">
-        <x>-3.09</x>
-        <y> 5.45</y>
+        <x> -5.45</x>
+        <y> -3.09</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -227,13 +227,13 @@
     <force name="mot_B1" frame="BODY" unit="LBS">
       <function>
         <product>
-          <property>fcs/mot_B1_lag</property>
-          <value> 1.1 </value> <!-- old value-->
+          <property>fcs/mot_B1</property>
+          <value> 1 </value> <!-- old value-->
         </product>
       </function>
       <location unit="IN">
-        <x>  3.09</x>
-        <y>-12.93</y>
+        <x> 12.93</x>
+        <y> 3.09</y>
         <z>  0   </z>
       </location>
       <direction>
@@ -246,13 +246,13 @@
     <force name="mot_B2" frame="BODY" unit="LBS">
       <function>
         <product>
-          <property>fcs/mot_B2_lag</property>
-          <value> 1.1 </value> <!-- old value-->
+          <property>fcs/mot_B2</property>
+          <value> 1 </value> <!-- old value--> <!-- odd effect on attitude vis if only motor active-->
         </product>
       </function>
       <location unit="IN">
-        <x> 3.09</x>
-        <y>12.93</y>
+        <x>-12.93</x>
+        <y>3.09</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -274,14 +274,14 @@
               <property>fcs/mot_B1_lag</property>
               <property>fcs/mot_A2_lag</property>
             </sum>
-            <value> 0.35 </value> <!-- old value-->
+            <value> 0.3 </value> <!-- old value-->
           </product>
           <product>
             <sum>
               <property>fcs/mot_A1_lag</property>
               <property>fcs/mot_B2_lag</property>
             </sum>
-            <value> -0.35 </value> <!-- old value-->
+            <value> -0.3 </value> <!-- old value-->
           </product>
         </sum>
       </function>
@@ -293,7 +293,7 @@
         <z>0</z>
       </location>
       <direction>
-        <x>1</x>
+        <x>-1</x>
         <y>0</y>
         <z>0</z>
       </direction>
@@ -307,14 +307,14 @@
               <property>fcs/mot_B1_lag</property>
               <property>fcs/mot_A2_lag</property>
             </sum>
-            <value> 0.35 </value> <!-- old value-->
+            <value> 0.3 </value> <!-- old value-->
           </product>
           <product>
             <sum>
               <property>fcs/mot_A1_lag</property>
               <property>fcs/mot_B2_lag</property>
             </sum>
-            <value> -0.35 </value> <!-- old value-->
+            <value> -0.3 </value> <!-- old value-->
           </product>
         </sum>
       </function>
@@ -326,7 +326,7 @@
         <z>0</z>
       </location>
       <direction>
-        <x>-1</x>
+        <x>1</x>
         <y>0</y>
         <z>0</z>
       </direction>
@@ -338,6 +338,8 @@
 
   <flight_control name="FGFCS"/> <!--What is this linked to?-->
 
-  <aerodynamics file="Systems/aerodynamics_quadshot.xml"/> <!-- Forces and Moments due to Aerodynamic Surfaces -->
+  
+  <aerodynamics file="Systems/aerodynamics_quadshot.xml"/>
+  
 
 </fdm_config>
