@@ -5,14 +5,14 @@
   <fileheader>
     <author>Koen Engelen</author>
     <filecreationdate>28-01-2021</filecreationdate>
-    <version>Version 0.1 - beta</version>
+    <version>Version 0.2 - beta</version>
     <description>Quadshot</description>
   </fileheader>
 
   <metrics>  <!-- Wing Information -->
-    <wingarea unit="IN2"> 115 </wingarea> <!-- Ask Ewoud how he got to this value --> <!-- old value-->
+    <wingarea unit="IN2"> 300 </wingarea> 
     <wingspan unit="IN"> 39.37 </wingspan>
-    <chord unit="IN"> 6.40 </chord>
+    <chord unit="IN"> 7.87 </chord>
     <htailarea unit="FT2"> 0 </htailarea>
     <htailarm unit="FT"> 0 </htailarm>
     <vtailarea unit="FT2"> 0 </vtailarea>
@@ -36,9 +36,14 @@
   </metrics>
 
   <mass_balance> <!-- Inertia and CG -->
-    <ixx unit="SLUG*FT2"> 0.0921215124 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
-    <iyy unit="SLUG*FT2"> 0.0080769864 </iyy> <!--Iyy = 0.0000923 [kgm2] obtained from Prawien-->
-    <izz unit="SLUG*FT2"> 0.0861472590 </izz> <!--Izz = 0.0001168 [kgm2] obtained from Prawien-->
+    <!--
+    <ixx unit="SLUG*FT2"> 0.0921215124 </ixx>  
+    <iyy unit="SLUG*FT2"> 0.0080769864 </iyy> 
+    <izz unit="SLUG*FT2"> 0.0861472590 </izz> 
+    -->
+    <ixx unit="SLUG*FT2"> 0.04622 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
+    <iyy unit="SLUG*FT2"> 0.003685 </iyy> <!--Iyy = 0.0000923 [kgm2] obtained from Prawien-->
+    <izz unit="SLUG*FT2"> 0.04202 </izz> <!--Izz = 0.0001168 [kgm2] obtained from Prawien-->
     <ixy unit="SLUG*FT2"> 0. </ixy>
     <ixz unit="SLUG*FT2"> 0. </ixz>
     <iyz unit="SLUG*FT2"> 0. </iyz>
@@ -119,45 +124,28 @@
 
   <flight_control name="actuator_dynamics"> <!-- Delays in Actuator Dynamics -->
     <channel name="filtering">
-
-      
-      <!--First order filter represents actuator dynamics-->
-
-      <!-- Removed Elevon
-      <lag_filter name="ele_left_lag">
-        <input> fcs/ele_left </input>
-        <c1> 54 </c1> 
-        <output> fcs/ele_left_lag</output>
-      </lag_filter>
-
-      <lag_filter name="ele_right_lag">
-        <input> fcs/ele_right </input>
-        <c1> 54 </c1>
-        <output> fcs/ele_right_lag</output>
-      </lag_filter>
-      -->
       
       <lag_filter name="mot_A1_lag">
         <input> fcs/mot_A1 </input>
-        <c1> 31.7 </c1> <!-- old value-->
+        <c1> 15.596 </c1> 
         <output> fcs/mot_A1_lag</output>
       </lag_filter>
 
       <lag_filter name="mot_A2_lag">
         <input> fcs/mot_A2 </input>
-        <c1> 31.7 </c1> <!-- old value-->
+        <c1> 15.596 </c1>
         <output> fcs/mot_A2_lag</output>
       </lag_filter>
 
       <lag_filter name="mot_B1_lag">
         <input> fcs/mot_B1 </input>
-        <c1> 31.7 </c1> <!-- old value-->
+        <c1>  15.596  </c1>
         <output> fcs/mot_B1_lag</output>
       </lag_filter>
 
       <lag_filter name="mot_B2_lag">
         <input> fcs/mot_B2 </input>
-        <c1> 31.7 </c1> <!-- old value-->
+        <c1> 15.596 </c1>
         <output> fcs/mot_B2_lag</output>
       </lag_filter>
 
@@ -190,7 +178,7 @@
       <function>
         <product>
           <property>fcs/mot_A1</property>
-          <value> 1 </value> <!-- old value-->
+          <value> 1 </value>
         </product>
       </function>
       <location unit="IN">
@@ -209,7 +197,7 @@
       <function>
         <product>
           <property>fcs/mot_A2</property>
-          <value> 1 </value> <!-- old value-->
+          <value> 1 </value>
         </product>
       </function>
       <location unit="IN">
@@ -228,12 +216,12 @@
       <function>
         <product>
           <property>fcs/mot_B1</property>
-          <value> 1 </value> <!-- old value-->
+          <value> 1 </value>
         </product>
       </function>
       <location unit="IN">
         <x>-3.09</x>
-        <y> 12.93</y>
+        <y>12.93</y>
         <z>  0   </z>
       </location>
       <direction>
@@ -247,7 +235,7 @@
       <function>
         <product>
           <property>fcs/mot_B2</property>
-          <value> 1 </value> <!-- old value--> <!-- odd effect on attitude vis if only motor active-->
+          <value> 1 </value>
         </product>
       </function>
       <location unit="IN">
