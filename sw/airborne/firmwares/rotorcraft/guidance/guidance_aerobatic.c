@@ -28,7 +28,7 @@
 float guidance_aerobatic_indi_gain = 0.5;
 float debug_value;
 
-/*
+
 #include "subsystems/datalink/telemetry.h"
 
  #define PPRZ_MSG_ID_AEROBATIC_INDI 158
@@ -39,14 +39,14 @@ float debug_value;
                          &debug_value, 
                          &guidance_aerobatic_indi_gain);
  }
-*/
+
 
  void guidance_aerobatic_init(void) {
 
    debug_value = 0.0;
 
 
-// register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);]
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);]
  }
 
 

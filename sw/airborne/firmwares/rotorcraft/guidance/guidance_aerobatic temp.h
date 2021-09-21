@@ -59,6 +59,9 @@ extern float guidance_aerobatic_indi_gain;
 void guidance_aerobatic_init(void);
 void guidance_aerobatic_run(void);
 
+
+
+
 //#endif /* GUIDANCE_MODULE_H_ */
 
 
