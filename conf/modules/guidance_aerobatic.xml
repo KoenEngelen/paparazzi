@@ -17,8 +17,13 @@
     <file name="guidance_aerobatic.h"/>
   </header>
   <init fun="guidance_aerobatic_init()"/>
+  <periodic fun="guidance_aerobatic_run()" freq="512" autorun="TRUE"/>
+
+
   <makefile target="ap|nps" firmware="rotorcraft">
     <file name="guidance_aerobatic.c" dir="$(SRC_FIRMWARE)/guidance"/>
     <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
   </makefile>
+
+
 </module>
