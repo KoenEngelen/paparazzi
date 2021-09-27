@@ -3750,9 +3750,15 @@ void test_a_L_wing(void)
  theta = 4;
  psi = 60;
 
- printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\n");
+ printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\t");
 
+ printf("da_wing_x_dphii\tda_wing_x_dpsii\tda_wing_x_dthetai\tda_wing_y_dphii\tda_wing_y_dpsii\tda_wing_y_dthetai\tda_wing_z_dphii\tda_wing_z_dpsii\tda_wing_z_dthetai\t");
 
+ printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
+
+printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
+
+printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
 
  for (Vinf=0;Vinf<10;Vinf++)
  {
@@ -3796,6 +3802,60 @@ void test_a_L_wing(void)
         printf("\t%.4f",dCd(AoA(V)));
 
         printf("\t%.4f",Vxz_2(V));
+
+        printf("\t%.4f",da_wing_x_dphii(V));
+        printf("\t%.4f",da_wing_x_dpsii(V));
+        printf("\t%.4f",da_wing_x_dthetai(V));
+
+
+        printf("\t%.4f",da_wing_y_dphii(V));
+        printf("\t%.4f",da_wing_y_dpsii(V));
+        printf("\t%.4f",da_wing_y_dthetai());
+
+
+        printf("\t%.4f",da_wing_z_dphii(V));
+        printf("\t%.4f",da_wing_z_dpsii(V));
+        printf("\t%.4f",da_wing_z_dthetai(V));
+
+        printf("\t%.4f",dalphai_dphii(V));
+        printf("\t%.4f",dalphai_dpsii(V));
+        printf("\t%.4f",dalphai_dthetai());
+
+        printf("\t%.4f",dbetai_dphii());
+        printf("\t%.4f",dbetai_dpsii(V));
+        printf("\t%.4f",dbetai_dthetai(V));
+
+        printf("\t%.4f",dCd_dphii(V));
+        printf("\t%.4f",dCd_dpsii(V));
+        printf("\t%.4f",dCd_dthetai(V));
+        
+        printf("\t%.4f",dCl_dphii(V));
+        printf("\t%.4f",dCl_dpsii(V));
+        printf("\t%.4f",dCl_dthetai(V));
+
+        printf("\t%.4f",dVx_dphii());
+        printf("\t%.4f",dVx_dpsii(V));
+        printf("\t%.4f",dVx_dthetai(V));
+
+        printf("\t%.4f",dVxz_2_dphii(V));
+        printf("\t%.4f",dVxz_2_dpsii(V));
+        printf("\t%.4f",dVxz_2_dthetai());
+
+        printf("\t%.4f",dVy_dphii(V));
+        printf("\t%.4f",dVy_dthetai());
+        printf("\t%.4f",dVz_dphii(V));
+
+        printf("\t%.4f",dVz_dpsii());
+        printf("\t%.4f",dVz_dthetai(V));
+        printf("\t%.4f",Vxz_2_dalphai_dphii(V));
+
+        printf("\t%.4f",Vxz_2_dalphai_dpsii(V));
+        printf("\t%.4f",Vxz_2_dCd_dphii(V));
+        printf("\t%.4f",Vxz_2_dCd_dpsii(V));
+
+
+        printf("\t%.4f",Vxz_2_dCl_dphii(V));
+        printf("\t%.4f",Vxz_2_dCl_dpsii(V));
 
         printf("\n");
 
