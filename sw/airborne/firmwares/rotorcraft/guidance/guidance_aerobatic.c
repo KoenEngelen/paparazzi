@@ -93,7 +93,7 @@ float a_D_wing_x(const float V[3])
   /* 'a_D_wing_x:12' alpha = alpha_rad * 180 / pi; */
   /* 'a_D_wing_x:14' res = rho*S/(2*m)* ... */
   /* 'a_D_wing_x:15'                 ( sin(alpha_rad)* CE.Cd(alpha) * Vxz^2 ); */
-  x = alpha_rad * 180.0F / 3.14159274F;
+  x = alpha_rad * 180.0F / M_PI;
 
   /* 'CE:84' x  =      alpha     ; */
   /* 'CE:85' if x > 180 */
@@ -157,7 +157,7 @@ float a_D_wing_z(const float V[3], float phi)
   float c_CDa_tmp;
 
   /* 'a_D_wing_z:2' phi_rad = -phi * pi/180.0; */
-  phi_rad = -phi * 3.14159274F / 180.0F;
+  phi_rad = -phi * M_PI / 180.0F;
 
   /* 'a_D_wing_z:3' R = [1 0 0; 0 cos(phi_rad) -sin(phi_rad); 0 sin(phi_rad) cos(phi_rad)]; */
   R_tmp = sinf(phi_rad);
@@ -191,7 +191,7 @@ float a_D_wing_z(const float V[3], float phi)
   /* 'a_D_wing_z:17' alpha = alpha_rad * 180 / pi; */
   /* 'a_D_wing_z:19' res = rho*S/(2*m)* cos(phi*pi/180) *... */
   /* 'a_D_wing_z:20'                 ( cos(alpha_rad)* CE.Cd(alpha) * Vxz^2 ); */
-  phi_rad = alpha_rad * 180.0F / 3.14159274F;
+  phi_rad = alpha_rad * 180.0F / M_PI;
 
   /* 'CE:84' x  =      alpha     ; */
   /* 'CE:85' if x > 180 */
@@ -232,7 +232,7 @@ float a_D_wing_z(const float V[3], float phi)
   /*              CDa = interp1(CDa_x,CDa_y,alpha); */
   /*              res =  CDa; */
   /*              res =  1.02-cos(2*alpha*pi/180); */
-  return 0.153125F * cosf(phi * 3.14159274F / 180.0F) * (cosf(alpha_rad) *
+  return 0.153125F * cosf(phi * M_PI / 180.0F) * (cosf(alpha_rad) *
     ((((((((0.1004F * cosf(CDa_tmp) + 0.8371F) + 0.01822F * sinf(CDa_tmp)) +
           -0.6466F * cosf(b_CDa_tmp)) + -0.005324F * sinf(b_CDa_tmp)) +
         -0.02505F * cosf(c_CDa_tmp)) + 0.008351F * sinf(c_CDa_tmp)) + -0.05651F *
@@ -263,7 +263,7 @@ float a_L_wing_x(const float V[3])
   /* 'a_L_wing_x:12' alpha = alpha_rad * 180 / pi; */
   /* 'a_L_wing_x:14' res = rho*S/(2*m)* ... */
   /* 'a_L_wing_x:15'                 ( cos(alpha_rad)* CE.Cl(alpha) * Vxz^2 ); */
-  x = alpha_rad * 180.0F / 3.14159274F;
+  x = alpha_rad * 180.0F / M_PI;
 
   /* Aerodynamic Coefficients */
   /* 'CE:39' x  =      alpha     ; */
@@ -333,7 +333,7 @@ float a_L_wing_z(const float V[3], float phi)
   float x;
 
   /* 'a_L_wing_z:2' phi_rad = -phi * pi/180.0; */
-  phi_rad = -phi * 3.14159274F / 180.0F;
+  phi_rad = -phi * M_PI / 180.0F;
 
   /* 'a_L_wing_z:3' R = [1 0 0; 0 cos(phi_rad) -sin(phi_rad); 0 sin(phi_rad) cos(phi_rad)]; */
   alpha_rad = sinf(phi_rad);
@@ -367,7 +367,7 @@ float a_L_wing_z(const float V[3], float phi)
   /* 'a_L_wing_z:17' alpha = alpha_rad * 180 / pi; */
   /* 'a_L_wing_z:19' res = rho*S/(2*m)* cos(phi*pi/180) *... */
   /* 'a_L_wing_z:20'                 ( -sin(alpha_rad)* CE.Cl(alpha) * Vxz^2 ); */
-  x = alpha_rad * 180.0F / 3.14159274F;
+  x = alpha_rad * 180.0F / M_PI;
 
   /* Aerodynamic Coefficients */
   /* 'CE:39' x  =      alpha     ; */
@@ -415,7 +415,7 @@ float a_L_wing_z(const float V[3], float phi)
   /*              end */
   /*              CLa = interp1(CLa_x,CLa_y,alpha); */
   /*              res =  sin(alpha*pi/180); */
-  return 0.153125F * cosf(phi * 3.14159274F / 180.0F) * (-sinf(alpha_rad) *
+  return 0.153125F * cosf(phi * M_PI / 180.0F) * (-sinf(alpha_rad) *
     (((((((1.233F * sinf(0.04068F * x + 0.09493F) + 141.1F * sinf(0.05424F * x +
     0.1637F)) + 0.1126F * sinf(0.101F * x + 0.2612F)) + 0.08224F * sinf(0.136F *
     x + 0.2642F)) + 0.1197F * sinf(0.01427F * x + 0.6238F)) + 0.05624F * sinf
@@ -450,7 +450,7 @@ float a_wing_x(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'a_wing_x:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'a_wing_x:14' res = rho*S/(2*m)* ... */
   /* 'a_wing_x:15'                 ( cos(alpha_rad)* CE.Cl(alpha) * Vxz^2 ... */
@@ -574,7 +574,7 @@ float a_wing_z(const float V[3], float phi)
   float d_CDa_tmp;
 
   /* 'a_wing_z:2' phi_rad = -phi * pi/180.0; */
-  phi_rad = -phi * 3.14159274F / 180.0F;
+  phi_rad = -phi * M_PI / 180.0F;
 
   /* 'a_wing_z:3' R = [1 0 0; 0 cos(phi_rad) -sin(phi_rad); 0 sin(phi_rad) cos(phi_rad)]; */
   Vxz = sinf(phi_rad);
@@ -606,7 +606,7 @@ float a_wing_z(const float V[3], float phi)
   alpha_rad = atan2f(fv1[0], fv1[2]);
 
   /* 'a_wing_z:17' alpha = alpha_rad * 180 / pi; */
-  phi_rad = alpha_rad * 180.0F / 3.14159274F;
+  phi_rad = alpha_rad * 180.0F / M_PI;
 
   /* 'a_wing_z:19' res = rho*S/(2*m)* cos(phi*pi/180) * ... */
   /* 'a_wing_z:20'                 ( -sin(alpha_rad)* CE.Cl(alpha) * Vxz^2 ... */
@@ -699,7 +699,7 @@ float a_wing_z(const float V[3], float phi)
   /*              res =  CDa; */
   /*              res =  1.02-cos(2*alpha*pi/180); */
   phi_rad = Vxz * Vxz;
-  return 0.153125F * cosf(phi * 3.14159274F / 180.0F) * (-sinf(alpha_rad) *
+  return 0.153125F * cosf(phi * M_PI / 180.0F) * (-sinf(alpha_rad) *
     (((((((1.233F * sinf(0.04068F * x + 0.09493F) + 141.1F * sinf(0.05424F * x +
     0.1637F)) + 0.1126F * sinf(0.101F * x + 0.2612F)) + 0.08224F * sinf(0.136F *
     x + 0.2642F)) + 0.1197F * sinf(0.01427F * x + 0.6238F)) + 0.05624F * sinf
@@ -723,7 +723,7 @@ float AoA(const float V[3])
   /* 'AoA:3' Vz = V(3); */
   /* 'AoA:5' alpha_rad = atan2(Vx,Vz); */
   /* 'AoA:6' alpha = alpha_rad * 180 / pi; */
-  res = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  res = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'AoA:8' res = alpha; */
   return res;
@@ -742,7 +742,7 @@ float AoD(const float V[3])
   /* sign of gamma not sure yet, remove comment if checked */
   /* 'AoD:6' gamma_rad = atan2(Vx,Vy); */
   /* 'AoD:7' gamma = gamma_rad * 180 / pi; */
-  res = atan2f(V[0], V[1]) * 180.0F / 3.14159274F;
+  res = atan2f(V[0], V[1]) * 180.0F / M_PI;
 
   /* 'AoD:9' res = gamma; */
   return res;
@@ -760,7 +760,7 @@ float AoS(const float V[3])
   /* 'AoS:3' Vz = V(3); */
   /* 'AoS:5' alpha_rad = atan2(Vy,Vz); */
   /* 'AoS:6' alpha = alpha_rad * 180 / pi; */
-  res = atan2f(V[1], V[2]) * 180.0F / 3.14159274F;
+  res = atan2f(V[1], V[2]) * 180.0F / M_PI;
 
   /* 'AoS:8' res = alpha; */
   return res;
@@ -1040,7 +1040,7 @@ float da_wing_x_dphii(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_x_dphii:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_x_dphii:14' res = rho*S/(2*m)* ... */
   /* 'da_wing_x_dphii:15' 		(-sin(alpha_rad)* CE.Cl(alpha)          * CE.Vxz_2_dalphai_dphii(V) ... */
@@ -1163,7 +1163,7 @@ float da_wing_x_dphii(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:313' res = CE.dCl(alpha) * CE.Vxz_2_dalphai_dphii(V); */
@@ -1214,7 +1214,7 @@ float da_wing_x_dphii(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  alpha_rad = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  alpha_rad = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:340' res = CE.dCd(alpha) * CE.Vxz_2_dalphai_dphii(V); */
@@ -1269,8 +1269,7 @@ float da_wing_x_dphii(const float V[3])
   /* 'CE:21' alpha = alpha_rad * 180 / pi; */
   /* 'CE:23' res = alpha; */
   /* 'CE:466' res = 2*Vz*sin(beta_rad)*sqrt(Vy^2+Vz^2); */
-  CDa_tmp = 2.0F * V[2] * sinf(atan2f(V[1], V[2]) * 180.0F / 3.14159274F *
-    3.14159274F / 180.0F) * sqrtf(V[1] * V[1] + V[2] * V[2]);
+  CDa_tmp = 2.0F * V[2] * sinf(atan2f(V[1], V[2])) * sqrtf(V[1] * V[1] + V[2] * V[2]);
   return 0.153125F * (((((-c_res_tmp * b_res_tmp * res_tmp_tmp + res_tmp *
     (57.2957802F * (((((((0.0501584411F * cosf(0.04068F * x + 0.09493F) +
     7.65326405F * cosf(0.05424F * x + 0.1637F)) + 0.0113726F * cosf(0.101F * x +
@@ -1315,7 +1314,7 @@ float da_wing_x_dpsii(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_x_dpsii:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_x_dpsii:14' res = rho*S/(2*m)* ... */
   /* 'da_wing_x_dpsii:15' 		(+sin(alpha_rad)* CE.Cl(alpha)          * CE.Vxz_2_dalphai_dpsii(V)... */
@@ -1443,7 +1442,7 @@ float da_wing_x_dpsii(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:329' res = CE.dCl(alpha) * CE.Vxz_2_dalphai_dpsii(V); */
@@ -1493,7 +1492,7 @@ float da_wing_x_dpsii(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  alpha_rad = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  alpha_rad = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:355' res = CE.dCd(alpha) * CE.Vxz_2_dalphai_dpsii(V); */
@@ -1576,7 +1575,7 @@ float da_wing_x_dthetai(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_x_dthetai:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_x_dthetai:14' res = -rho*S/(2*m)* ... */
   /* 'da_wing_x_dthetai:15' 		(-cos(alpha_rad)* CE.dCl_dthetai(V)* Vxz^2                                                   ... */
@@ -1680,7 +1679,7 @@ float da_wing_x_dthetai(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  b_x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  b_x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:319' res = CE.dCl(alpha) * CE.dalphai_dthetai(); */
@@ -1727,7 +1726,7 @@ float da_wing_x_dthetai(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  alpha_rad = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  alpha_rad = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:345' res = CE.dCd(alpha) * CE.dalphai_dthetai(); */
@@ -1808,7 +1807,7 @@ float da_wing_y_dphii(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_y_dphii:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_y_dphii:14' res = rho*S/(2*m)* ... */
   /* 'da_wing_y_dphii:15' 		(+sin(alpha_rad)* CE.Cl(alpha) * Vxz^2 ... */
@@ -1940,7 +1939,7 @@ float da_wing_y_dpsii(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_y_dpsii:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_y_dpsii:14' res = rho*S/(2*m)* ... */
   /* 'da_wing_y_dpsii:15' 		(-cos(alpha_rad)* CE.Cl(alpha) * Vxz^2 ... */
@@ -2082,7 +2081,7 @@ float da_wing_z_dphii(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_z_dphii:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_z_dphii:14' res = rho*S/(2*m)* ... */
   /* 'da_wing_z_dphii:15' 		(-cos(alpha_rad)* CE.Cl(alpha)          * CE.Vxz_2_dalphai_dphii(V)... */
@@ -2205,7 +2204,7 @@ float da_wing_z_dphii(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:313' res = CE.dCl(alpha) * CE.Vxz_2_dalphai_dphii(V); */
@@ -2256,7 +2255,7 @@ float da_wing_z_dphii(const float V[3])
   /* 'CE:8' Vz = V(3); */
   /* 'CE:10' alpha_rad = atan2(Vx,Vz); */
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
-  alpha_rad = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  alpha_rad = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:13' res = alpha; */
   /* 'CE:340' res = CE.dCd(alpha) * CE.Vxz_2_dalphai_dphii(V); */
@@ -2311,8 +2310,7 @@ float da_wing_z_dphii(const float V[3])
   /* 'CE:21' alpha = alpha_rad * 180 / pi; */
   /* 'CE:23' res = alpha; */
   /* 'CE:466' res = 2*Vz*sin(beta_rad)*sqrt(Vy^2+Vz^2); */
-  CDa_tmp = 2.0F * V[2] * sinf(atan2f(V[1], V[2]) * 180.0F / 3.14159274F *
-    3.14159274F / 180.0F) * sqrtf(V[1] * V[1] + V[2] * V[2]);
+  CDa_tmp = 2.0F * V[2] * sinf(atan2f(V[1], V[2])) * sqrtf(V[1] * V[1] + V[2] * V[2]);
   return 0.153125F * (((((-c_res_tmp * b_res_tmp * res_tmp_tmp - res_tmp *
     (57.2957802F * (((((((0.0501584411F * cosf(0.04068F * x + 0.09493F) +
     7.65326405F * cosf(0.05424F * x + 0.1637F)) + 0.0113726F * cosf(0.101F * x +
@@ -2357,7 +2355,7 @@ float da_wing_z_dpsii(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_z_dpsii:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_z_dpsii:14' res = rho*S/(2*m)* ... */
   /* 'da_wing_z_dpsii:15' 		(-cos(alpha_rad)* CE.Cl(alpha)          * CE.Vxz_2_dalphai_dpsii(V)... */
@@ -2502,7 +2500,7 @@ float da_wing_z_dpsii(const float V[3])
   /* 'CE:385' Vy = V(2); */
   /* 'CE:386' Vz = V(3); */
   /* 'CE:387' res = Vy * Vz; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:119' x  =      alpha     ; */
   /* 'CE:120' if x > 180 */
@@ -2540,7 +2538,7 @@ float da_wing_z_dpsii(const float V[3])
   /* 'CE:149'                  b7*a7*cos(b7*x+c7) + b8*a8*cos(b8*x+c8); */
   /* 'CE:150' res =  180/pi*dCLa; */
   /*              res = cos(alpha*pi/180); */
-  alpha_rad = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  alpha_rad = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:155' x  =      alpha   ; */
   /* 'CE:156' if x > 180 */
@@ -2618,7 +2616,7 @@ float da_wing_z_dthetai(const float V[3])
   alpha_rad = atan2f(V[0], V[2]);
 
   /* 'da_wing_z_dthetai:12' alpha = alpha_rad * 180 / pi; */
-  alpha = alpha_rad * 180.0F / 3.14159274F;
+  alpha = alpha_rad * 180.0F / M_PI;
 
   /* 'da_wing_z_dthetai:14' res =  - rho*S/(2*m)* ... */
   /* 'da_wing_z_dthetai:15' 		( -sin(alpha_rad)* CE.dCl_dthetai(V)* Vxz^2                                                   ... */
@@ -2646,7 +2644,7 @@ float da_wing_z_dthetai(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'CE:345' res = CE.dCd(alpha) * CE.dalphai_dthetai(); */
-  alpha_rad = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  alpha_rad = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:119' x  =      alpha     ; */
   x = alpha_rad;
@@ -2919,7 +2917,7 @@ float dCd_dphii(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dCd_dphii:3' res = CE.dCd(alpha) * CE.dalphai_dphii(V); */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:155' x  =      alpha   ; */
   /* 'CE:156' if x > 180 */
@@ -2980,7 +2978,7 @@ float dCd_dpsii(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dCd_dpsii:3' res = CE.dCd(alpha) * CE.dalphai_dpsii(V); */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:155' x  =      alpha   ; */
   /* 'CE:156' if x > 180 */
@@ -3040,7 +3038,7 @@ float dCd_dthetai(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dCd_dthetai:3' res = CE.dCd(alpha) * CE.dalphai_dthetai(); */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:155' x  =      alpha   ; */
   /* 'CE:156' if x > 180 */
@@ -3092,7 +3090,7 @@ float dCl_dphii(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dCl_dphii:3' res = CE.dCl(alpha) * CE.dalphai_dphii(V); */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:119' x  =      alpha     ; */
   /* 'CE:120' if x > 180 */
@@ -3161,7 +3159,7 @@ float dCl_dpsii(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dCl_dpsii:3' res = CE.dCl(alpha) * CE.dalphai_dpsii(V); */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:119' x  =      alpha     ; */
   /* 'CE:120' if x > 180 */
@@ -3229,7 +3227,7 @@ float dCl_dthetai(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dCl_dthetai:3' res = CE.dCl(alpha) * CE.dalphai_dthetai(); */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:119' x  =      alpha     ; */
   /* 'CE:120' if x > 180 */
@@ -3320,8 +3318,7 @@ float dVx_dthetai(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dVx_dthetai:5' res = cos(alpha_rad)*sqrt(Vx^2+Vz^2); */
-  return cosf(atan2f(V[0], V[2]) * 180.0F / 3.14159274F * 3.14159274F /
-              180.0F) * sqrtf(V[0] * V[0] + V[2] * V[2]);
+  return cosf(atan2f(V[0], V[2])) * sqrtf(V[0] * V[0] + V[2] * V[2]);
 }
 /* End of code generation (dVx_dthetai.c) */
 
@@ -3340,8 +3337,7 @@ float dVxz_2_dphii(const float V[3])
   /* 'CE:21' alpha = alpha_rad * 180 / pi; */
   /* 'CE:23' res = alpha; */
   /* 'dVxz_2_dphii:5' res = 2*Vz*sin(beta_rad)*sqrt(Vy^2+Vz^2); */
-  return 2.0F * V[2] * sinf(atan2f(V[1], V[2]) * 180.0F / 3.14159274F *
-    3.14159274F / 180.0F) * sqrtf(V[1] * V[1] + V[2] * V[2]);
+  return 2.0F * V[2] * sinf(atan2f(V[1], V[2])) * sqrtf(V[1] * V[1] + V[2] * V[2]);
 }
 /* End of code generation (dVxz_2_dphii.c) */
 
@@ -3385,8 +3381,7 @@ float dVy_dphii(const float V[3])
   /* 'CE:21' alpha = alpha_rad * 180 / pi; */
   /* 'CE:23' res = alpha; */
   /* 'dVy_dphii:5' res = -cos(beta_rad)*sqrt(Vy^2+Vz^2); */
-  return -cosf(atan2f(V[1], V[2]) * 180.0F / 3.14159274F * 3.14159274F /
-               180.0F) * sqrtf(V[1] * V[1] + V[2] * V[2]);
+  return -cosf(atan2f(V[1], V[2])) * sqrtf(V[1] * V[1] + V[2] * V[2]);
 }
 /* End of code generation (dVy_dphii.c) */
 
@@ -3416,8 +3411,7 @@ float dVz_dphii(const float V[3])
   /* 'CE:21' alpha = alpha_rad * 180 / pi; */
   /* 'CE:23' res = alpha; */
   /* 'dVz_dphii:5' res = sin(beta_rad)*sqrt(Vy^2+Vz^2); */
-  return sinf(atan2f(V[1], V[2]) * 180.0F / 3.14159274F * 3.14159274F /
-              180.0F) * sqrtf(V[1] * V[1] + V[2] * V[2]);
+  return sinf(atan2f(V[1], V[2])) * sqrtf(V[1] * V[1] + V[2] * V[2]);
 }
 /* End of code generation (dVz_dphii.c) */
 
@@ -3449,8 +3443,7 @@ float dVz_dthetai(const float V[3])
   /* 'CE:11' alpha = alpha_rad * 180 / pi; */
   /* 'CE:13' res = alpha; */
   /* 'dVz_dthetai:5' res = -sin(alpha_rad)*sqrt(Vx^2+Vz^2); */
-  return -sinf(atan2f(V[0], V[2]) * 180.0F / 3.14159274F * 3.14159274F /
-               180.0F) * sqrtf(V[0] * V[0] + V[2] * V[2]);
+  return -sinf(atan2f(V[0], V[2])) * sqrtf(V[0] * V[0] + V[2] * V[2]);
 }
 /* End of code generation (dVz_dthetai.c) */
 
@@ -3504,7 +3497,7 @@ float Vxz_2_dCd_dphii(const float V[3])
   /* 'CE:379' Vy = V(2); */
   /* 'CE:380' Vz = V(3); */
   /* 'CE:381' res = Vx * Vy; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:155' x  =      alpha   ; */
   /* 'CE:156' if x > 180 */
@@ -3563,7 +3556,7 @@ float Vxz_2_dCd_dpsii(const float V[3])
   /* 'CE:385' Vy = V(2); */
   /* 'CE:386' Vz = V(3); */
   /* 'CE:387' res = Vy * Vz; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:155' x  =      alpha   ; */
   /* 'CE:156' if x > 180 */
@@ -3620,7 +3613,7 @@ float Vxz_2_dCl_dphii(const float V[3])
   /* 'CE:379' Vy = V(2); */
   /* 'CE:380' Vz = V(3); */
   /* 'CE:381' res = Vx * Vy; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:119' x  =      alpha     ; */
   /* 'CE:120' if x > 180 */
@@ -3686,7 +3679,7 @@ float Vxz_2_dCl_dpsii(const float V[3])
   /* 'CE:385' Vy = V(2); */
   /* 'CE:386' Vz = V(3); */
   /* 'CE:387' res = Vy * Vz; */
-  x = atan2f(V[0], V[2]) * 180.0F / 3.14159274F;
+  x = atan2f(V[0], V[2]) * 180.0F / M_PI;
 
   /* 'CE:119' x  =      alpha     ; */
   /* 'CE:120' if x > 180 */
