@@ -25,6 +25,7 @@
 *.gdb_history
 
 .cache.xml
+.directory
 
 # Eclipse IDE project files
 *.cproject
@@ -50,6 +51,9 @@ paparazzi.sublime-workspace
 
 # Vagrant VM files
 /.vagrant
+
+# Rust
+Cargo.lock
 
 /var
 /dox

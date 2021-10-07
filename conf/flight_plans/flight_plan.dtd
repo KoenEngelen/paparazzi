@@ -66,6 +66,7 @@ max_dist_from_home CDATA #REQUIRED
 ground_alt CDATA #REQUIRED
 security_height CDATA #REQUIRED
 alt CDATA #REQUIRED
+wp_frame CDATA #IMPLIED
 qfu CDATA #IMPLIED
 home_mode_height CDATA #IMPLIED
 geofence_max_alt CDATA #IMPLIED
@@ -168,6 +169,8 @@ climb CDATA #IMPLIED
 pitch CDATA #IMPLIED
 pre_call CDATA #IMPLIED
 post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED
 until CDATA #REQUIRED>
 
 <!ATTLIST attitude
@@ -180,6 +183,8 @@ climb CDATA #IMPLIED
 pitch CDATA #IMPLIED
 pre_call CDATA #IMPLIED
 post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED
 until CDATA #IMPLIED>
 
 <!ATTLIST manual
@@ -193,6 +198,8 @@ throttle CDATA #IMPLIED
 climb CDATA #IMPLIED
 pre_call CDATA #IMPLIED
 post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED
 until CDATA #IMPLIED>
 
 <!ATTLIST go
@@ -213,6 +220,8 @@ throttle CDATA #IMPLIED
 climb CDATA #IMPLIED
 pre_call CDATA #IMPLIED
 post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED
 until CDATA #IMPLIED>
 
 <!ATTLIST path
@@ -244,7 +253,9 @@ ac_id CDATA #REQUIRED
 distance CDATA #REQUIRED
 height CDATA #REQUIRED
 pre_call CDATA #IMPLIED
-post_call CDATA #IMPLIED>
+post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED>
 
 <!ATTLIST xyz
 radius CDATA #IMPLIED>
@@ -264,6 +275,8 @@ pitch CDATA #IMPLIED
 throttle CDATA #IMPLIED
 pre_call CDATA #IMPLIED
 post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED
 until CDATA #IMPLIED>
 
 <!ATTLIST eight
@@ -300,6 +313,8 @@ wp1 CDATA #REQUIRED
 wp2 CDATA #REQUIRED
 pre_call CDATA #IMPLIED
 post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED
 until CDATA #IMPLIED>
 
 <!ATTLIST stay
@@ -311,6 +326,8 @@ alt CDATA #IMPLIED
 until CDATA #IMPLIED
 pre_call CDATA #IMPLIED
 post_call CDATA #IMPLIED
+nav_type CDATA #IMPLIED
+nav_params CDATA #IMPLIED
 height CDATA #IMPLIED>
 
 <!ATTLIST deroute

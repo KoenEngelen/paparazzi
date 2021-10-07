@@ -14,7 +14,13 @@
 #    limitations under the License.
 #
 # Required include directories
-BOARDINC = $(CHIBIOS_BOARD_DIR)
+BOARDCOMMON = $(CHIBIOS_BOARD_DIR)/../common
+BOARDINC = $(CHIBIOS_BOARD_DIR) $(BOARDCOMMON)
 
 # List of all the board related files.
-BOARDSRC = ${BOARDINC}/board.c
+BOARDSRC = ${BOARDCOMMON}/board.c
+
+# Shared variables
+ALLCSRC += $(BOARDSRC)
+ALLINC  += $(BOARDINC)
+

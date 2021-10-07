@@ -26,6 +26,7 @@ let my_id = "ground"
 let gps_mode_3D = 3
 let no_md5_check = ref false
 let replay_old_log = ref false
+let log_name_arg = ref ""
 
 
 open Printf
@@ -121,8 +122,8 @@ let logger = fun () ->
     printf "Creating '%s'\n" logs_path; flush stdout;
     Unix.mkdir logs_path 0o755
   end;
-  let log_name = sprintf "%s.log" basename
-  and data_name = sprintf "%s.data" basename in
+  let log_name = if (!log_name_arg = "") then sprintf "%s.log" basename else sprintf "%s__%s.log" !log_name_arg basename in
+  let data_name = if (!log_name_arg = "") then sprintf "%s.data" basename else sprintf "%s__%s.log" !log_name_arg basename in 
   let f = open_out (logs_path // log_name) in
   (* version string with whitespace/newline at the end stripped *)
   output_string f ("<!-- logged with runtime paparazzi_version " ^  Env.get_paparazzi_version () ^ " -->\n");
@@ -327,9 +328,16 @@ let send_wind = fun a ->
 let send_telemetry_status = fun a ->
   let id = a.id in
   let tl_payload = fun link_id datalink_status link_status ->
+    let time_since_last_msg = if link_id = "no_id" then
+            U.gettimeofday () -. a.last_msg_date
+        else
+            let tslm = U.gettimeofday () -. a.last_msg_date in
+            let tsllm = U.gettimeofday () -. link_status.last_link_status_date +. (float_of_int link_status.rx_lost_time) in
+            if tslm > tsllm then tslm else tsllm (* greatest time between last message and last message from this link *)
+    in
     [ "ac_id", PprzLink.String id;
       "link_id", PprzLink.String link_id;
-      "time_since_last_msg", PprzLink.Float (U.gettimeofday () -. a.last_msg_date); (* don't use rx_lost_time from LINK_REPORT so it also works in simulation *)
+      "time_since_last_msg", PprzLink.Float (time_since_last_msg); (* don't use rx_lost_time from LINK_REPORT so it also works in simulation *)
       "rx_bytes", PprzLink.Int64 (Int64.of_int link_status.rx_bytes);
       "rx_msgs", PprzLink.Int64 (Int64.of_int link_status.rx_msgs);
       "rx_bytes_rate", PprzLink.Float link_status.rx_bytes_rate;
@@ -689,6 +697,11 @@ let listen_acs = fun log timestamp ->
   if !replay_old_log then
     ignore (Tm_Pprz.message_bind "PPRZ_MODE" (ident_msg log timestamp))
 
+(* Remove aicraft on AIRCRAFT_DIE message.  *)
+let remove_aircraft = fun _sender vs ->
+  let ac_id = PprzLink.string_assoc "ac_id" vs in
+  Hashtbl.remove aircrafts ac_id
+
 let send_intruder_acinfo = fun id intruder ->
   let cm_of_m_32 = fun f -> PprzLink.Int32 (Int32.of_int (truncate (100. *. f))) in
   let cm_of_m = fun f -> PprzLink.Int (truncate (100. *. f)) in
@@ -749,9 +762,9 @@ let listen_intruders = fun log ->
   ignore(Ground_Pprz.message_bind "INTRUDER" (update_intruder log))
 
 let send_config = fun http _asker args ->
-  let ac_id' = PprzLink.string_assoc "ac_id" args in
+  let real_id = PprzLink.string_assoc "ac_id" args in
   try
-    let _is_replayed, ac_id, root_dir, conf_xml = replayed ac_id' in
+    let _is_replayed, ac_id, root_dir, conf_xml = replayed real_id in
 
     let conf = ExtXml.child conf_xml "aircraft" ~select:(fun x -> ExtXml.attrib x "ac_id" = ac_id) in
     let ac_name = ExtXml.attrib conf "name" in
@@ -766,11 +779,10 @@ let send_config = fun http _asker args ->
     let fp = prefix ("var" // "aircrafts" // ac_name // "flight_plan.xml")
     and af = prefix ("conf" // ExtXml.attrib conf "airframe")
     and rc = prefix ("conf" // ExtXml.attrib conf "radio")
-    and settings = if not _is_replayed then prefix ("var" // "aircrafts" // ac_name //
-                                                       "settings.xml") else "file://replay" in
+    and settings = prefix ("var" // "aircrafts" // ac_name // "settings.xml") in
     let col = try Xml.attrib conf "gui_color" with _ -> new_color () in
     let ac_name = try Xml.attrib conf "name" with _ -> "" in
-    [ "ac_id", PprzLink.String ac_id;
+    [ "ac_id", PprzLink.String real_id;
       "flight_plan", PprzLink.String fp;
       "airframe", PprzLink.String af;
       "radio", PprzLink.String rc;
@@ -779,7 +791,7 @@ let send_config = fun http _asker args ->
       "ac_name", PprzLink.String ac_name ]
   with
       Not_found ->
-        failwith (sprintf "ground UNKNOWN %s" ac_id')
+        failwith (sprintf "ground UNKNOWN %s" real_id)
 
 let ivy_server = fun http ->
   ignore (Ground_Pprz.message_answerer my_id "AIRCRAFTS" send_aircrafts_msg);
@@ -820,10 +832,12 @@ let setting = fun logging _sender vs ->
              "value", List.assoc "value" vs] in
   Dl_Pprz.message_send dl_id "SETTING" vs;
   log logging ac_id "SETTING" vs;
-  (* mark the setting as not yet confirmed *)
-  let ac = Hashtbl.find aircrafts ac_id in
-  let idx = PprzLink.int_of_value (List.assoc "index" vs) in
-  ac.dl_setting_values.(idx) <- None
+  try
+    (* mark the setting as not yet confirmed *)
+    let ac = Hashtbl.find aircrafts ac_id in
+    let idx = PprzLink.int_of_value (List.assoc "index" vs) in
+    ac.dl_setting_values.(idx) <- None
+  with Not_found -> ()
 
 
 (** Got a GET_DL_SETTING, and send an GET_SETTING *)
@@ -833,10 +847,12 @@ let get_setting = fun logging _sender vs ->
              "ac_id", PprzLink.String ac_id ] in
   Dl_Pprz.message_send dl_id "GET_SETTING" vs;
   log logging ac_id "GET_SETTING" vs;
-  (* mark the setting as not yet confirmed *)
-  let ac = Hashtbl.find aircrafts ac_id in
-  let idx = PprzLink.int_of_value (List.assoc "index" vs) in
-  ac.dl_setting_values.(idx) <- None
+  try
+    (* mark the setting as not yet confirmed *)
+    let ac = Hashtbl.find aircrafts ac_id in
+    let idx = PprzLink.int_of_value (List.assoc "index" vs) in
+    ac.dl_setting_values.(idx) <- None
+  with Not_found -> ()
 
 
 (** Got a JUMP_TO_BLOCK, and send an BLOCK *)
@@ -865,6 +881,7 @@ let link_report = fun logging _sender vs ->
   try
     let ac = Hashtbl.find aircrafts ac_id in
     let link_status = {
+      last_link_status_date = U.gettimeofday ();
       Aircraft_server.rx_lost_time = PprzLink.int_assoc "rx_lost_time" vs;
       rx_bytes = PprzLink.int_assoc "rx_bytes" vs;
       rx_msgs = PprzLink.int_assoc "rx_msgs" vs;
@@ -907,6 +924,7 @@ let () =
       "-n", Arg.Clear logging, "Disable log";
       "-timestamp", Arg.Set timestamp, "Bind on timestampped messages";
       "-no_md5_check", Arg.Set no_md5_check, "Disable safety matching of live and current configurations";
+      "-log_name", Arg.Set_string log_name_arg, "Name for output log (Time stamp will be";
       "-replay_old_log", Arg.Set replay_old_log, "Enable aircraft registering on PPRZ_MODE messages"] in
 
   Arg.parse
@@ -927,6 +945,8 @@ let () =
 
   (* Waits for new aircrafts *)
   listen_acs logging !timestamp;
+
+  ignore(Ground_Pprz.message_bind "AIRCRAFT_DIE" remove_aircraft);
 
   (* wait for new external vehicles/intruders *)
   listen_intruders logging;

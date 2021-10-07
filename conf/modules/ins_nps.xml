@@ -1,11 +1,15 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 
-<module name="ins_nps" dir="ins">
+<module name="ins_nps" dir="ins" task="estimation">
   <doc>
     <description>
      Simulated AHRS and INS.
     </description>
   </doc>
+  <dep>
+    <depends>@imu,@gps</depends>
+    <provides>ins</provides>
+  </dep>
   <autoload name="gps_nps"/>
   <header>
     <file name="ins_gps_passthrough.h" dir="subsystems/ins"/>
@@ -19,6 +23,10 @@
 
     <!-- use attitude from nps sim -->
     <define name="NPS_BYPASS_AHRS" value="TRUE"/>
+    <test>
+      <include name="../simulator/nps"/>
+      <shell cmd="pkg-config glib-2.0 --cflags"/>
+    </test>
   </makefile>
 
   <makefile target="nps|hitl" firmware="rotorcraft">

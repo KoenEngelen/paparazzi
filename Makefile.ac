@@ -58,10 +58,11 @@ GENERATE_KEYS ?= 0
 # Number of processes can also be explicitly set with e.g. J=4
 # For serial compilation, call make with J=1
 NPROCS := 1
+UNAME = $(shell uname -s)
 J ?= AUTO
 ifeq ($J,AUTO)
 ifeq ($(UNAME),Linux)
-	NPROCS := $(shell grep -c ^processor /proc/cpuinfo)
+	NPROCS := $(shell grep -c '^processor' /proc/cpuinfo)
 else ifeq ($(UNAME),Darwin)
 	NPROCS := $(shell sysctl hw.ncpu | awk '{print $$2}')
 endif # $(UNAME)

@@ -618,6 +618,44 @@ void float_quat_of_rmat(struct FloatQuat *q, struct FloatRMat *rm)
   }
 }
 
+/**
+ * @brief Tilt twist decomposition of a quaternion (z axis)
+ * 
+ * Decomposes a quaternion rotation in two rotations:
+ * 1. A rotation that aligns the z axis.
+ * 2. A rotation around the z axis.
+ * 
+ * Useful for control of vehicles that are slow in rotation around the z axis.
+ *
+ * @param tilt Tilt output
+ * @param twist Twist output
+ * @param quat Quaternion input
+ */
+void float_quat_tilt_twist(struct FloatQuat *tilt, struct FloatQuat *twist, struct FloatQuat *quat)
+{
+  struct FloatVect3 z = {0., 0., 1.};
+  struct FloatVect3 z_rot;
+
+  // Find the z axis of the target quaternion reference frame
+  struct FloatQuat qinv;
+  float_quat_invert(&qinv, quat);
+  float_quat_vmult(&z_rot, &qinv, &z);
+
+  // The cross product gives the axis around which to rotate to match the Z vectors.
+  struct FloatVect3 axis;
+  VECT3_CROSS_PRODUCT(axis, z, z_rot); 
+
+  tilt->qi = 1 + z_rot.z;
+  tilt->qx = axis.x;
+  tilt->qy = axis.y;
+  tilt->qz = axis.z;
+
+  float_quat_normalize(tilt);
+
+  // The tilt quaternion completes the rotation.
+  float_quat_inv_comp_norm_shortest(twist, tilt, quat);
+}
+
 
 /*
  *
@@ -629,9 +667,13 @@ void float_eulers_of_rmat(struct FloatEulers *e, struct FloatRMat *rm)
 {
   const float dcm00 = rm->m[0];
   const float dcm01 = rm->m[1];
-  const float dcm02 = rm->m[2];
+  float dcm02 = rm->m[2];
   const float dcm12 = rm->m[5];
   const float dcm22 = rm->m[8];
+
+  // asinf does not exist outside [-1,1]
+  BoundAbs(dcm02, 1.0);
+
   e->phi   = atan2f(dcm12, dcm22);
   e->theta = -asinf(dcm02);
   e->psi   = atan2f(dcm01, dcm00);
@@ -656,9 +698,12 @@ void float_eulers_of_quat(struct FloatEulers *e, struct FloatQuat *q)
   const float qyqz = q->qy * q->qz;
   const float dcm00 = 1.0 - 2.*(qy2 +  qz2);
   const float dcm01 =       2.*(qxqy + qiqz);
-  const float dcm02 =       2.*(qxqz - qiqy);
+  float dcm02 =       2.*(qxqz - qiqy);
   const float dcm12 =       2.*(qyqz + qiqx);
   const float dcm22 = 1.0 - 2.*(qx2 +  qy2);
+
+  // asinf does not exist outside [-1,1]
+  BoundAbs(dcm02, 1.0);
 
   e->phi = atan2f(dcm12, dcm22);
   e->theta = -asinf(dcm02);
@@ -688,9 +733,12 @@ void float_eulers_of_quat_yxz(struct FloatEulers *e, struct FloatQuat *q)
   const float qyqz = q->qy * q->qz;
   const float r11  = 2.f * (qxqz + qiqy);
   const float r12  = qi2 - qx2 + qy2 + qz2;
-  const float r21  = -2.f * (qyqz - qiqx);
+  float r21  = -2.f * (qyqz - qiqx);
   const float r31  = 2.f * (qxqy + qiqz);
   const float r32  = qi2 - qx2 + qy2 - qz2;
+
+  // asinf does not exist outside [-1,1]
+  BoundAbs(r21, 1.0);
 
   e->theta = atan2f(r11, r12);
   e->phi = asinf(r21);
@@ -718,9 +766,12 @@ void float_eulers_of_quat_zxy(struct FloatEulers *e, struct FloatQuat *q)
   const float qyqz = q->qy * q->qz;
   const float r11  = -2 * (qxqy - qiqz);
   const float r12  = qi2 - qx2 + qy2 - qz2;
-  const float r21  =  2 * (qyqz + qiqx);
+  float r21  =  2 * (qyqz + qiqx);
   const float r31  = -2 * (qxqz - qiqy);
   const float r32  = qi2 - qx2 - qy2 + qz2;
+
+  // asinf does not exist outside [-1,1]
+  BoundAbs(r21, 1.0);
 
   e->psi = atan2f(r11, r12);
   e->phi = asinf(r21);
