@@ -52,6 +52,7 @@
 
 //#include "generated/modules.h"
 #include "math/pprz_algebra_int.h"
+#include "math/pprz_matrix_decomp_float.h"
 
 extern float guidance_aerobatic_indi_gain;
 

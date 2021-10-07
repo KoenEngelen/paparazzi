@@ -28,12 +28,20 @@
 #include <math.h>
 #include <stdio.h>
 
+
+#include "math/pprz_algebra_float.h"
+#include "math/pprz_matrix_decomp_float.h"
+#include "math/pprz_simple_matrix.h"
+
 float guidance_aerobatic_indi_gain = 0.5;
 float debug_value;
+
+
 
 #include "subsystems/datalink/telemetry.h"
 
  #define PPRZ_MSG_ID_AEROBATIC_INDI 158
+
 
  static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev)
  {
@@ -42,15 +50,13 @@ float debug_value;
                          &guidance_aerobatic_indi_gain);
  }
 
-
  void guidance_aerobatic_init(void) {
 
-   debug_value = 0.0;
-   
+  debug_value = 0.0;
+  SVD()
+  //test_a_L_wing();
 
-   test_a_L_wing();
-
- register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
 
 
@@ -63,6 +69,63 @@ float debug_value;
 
 
  }
+
+void SVD(){
+
+    int m = 3; //rows
+    int n = 4; //columns
+
+    float V[m];
+    V[0] = -2.5f;
+    V[1] =  0.5f;
+    V[2] =  3.0f;
+
+    float _AA[m][n];
+    MAKE_MATRIX_PTR(AA, _AA, m);
+
+    AA[0][0] = da_wing_x_dphii(V); 
+    AA[0][1] = da_wing_y_dphii(V); 
+    AA[0][2] = da_wing_z_dphii(V); 
+    AA[0][3] = 0.0f; 
+    AA[1][0] = da_wing_x_dthetai(V); 
+    AA[1][1] = da_wing_y_dthetai(); 
+    AA[1][2] = da_wing_z_dthetai(V); 
+    AA[1][3] = 0.0f; 
+    AA[2][0] = da_wing_x_dpsii(V); 
+    AA[2][1] = da_wing_y_dpsii(V); 
+    AA[2][2] = da_wing_z_dpsii(V); 
+    AA[2][3] = -1.0f; 
+
+    float _UU[m][n];
+    MAKE_MATRIX_PTR(UU, _UU, m);
+    printf("\nControl Effectiveness:\n\n")
+    for (r = 0; r < m; r++) {
+      for (c = 0; c < n; c++) {
+        UU[r][c] = AA[r][c];
+        printf("%0.f\t",AA[r][c]);
+      }
+      printf("\n")
+    }
+    printf("\n")
+
+    float w[m], _v[n][n];
+    MAKE_MATRIX_PTR(v, _v, n);
+
+    int status = pprz_svd_float(UU, w, v, m, n);
+    if (status != 1) {
+      printf("\nPseudo inverse failed to converge!");
+    } else {
+      printf("Pseudo inverse:\n\n")
+      for (r = 0; r < m; r++) {
+        for (c = 0; c < n; c++) {
+          printf("%0.f\t",UU[r][c]);
+        }
+        printf("\n")
+      }
+      printf("\n")
+    }
+}
+
 
 
 // CELib
