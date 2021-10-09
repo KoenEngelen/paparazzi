@@ -53,8 +53,8 @@ extern "C" {
  * @param[out] parameters* Parameters of the linear fit
  * @param[out] fit_error* Total error of the fit
  */
-void RANSAC_linear_model(int n_samples, int n_iterations, float error_threshold, float *targets, int D,
-                         float (*samples)[D], uint16_t count, float *params, float *fit_error);
+// void RANSAC_linear_model(int n_samples, int n_iterations, float error_threshold, float *targets, int D,
+//                          float (*samples)[D], uint16_t count, float *params, float *fit_error);
 
 /** Get indices without replacement.
  *

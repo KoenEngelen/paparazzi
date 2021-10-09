@@ -54,77 +54,77 @@
  * @param[out] fit_error* Total error of the fit
  *
  */
-void RANSAC_linear_model(int n_samples, int n_iterations, float error_threshold, float *targets, int D,
-                         float (*samples)[D], uint16_t count, float *params, float *fit_error __attribute__((unused)))
-{
+// void RANSAC_linear_model(int n_samples, int n_iterations, float error_threshold, float *targets, int D,
+//                          float (*samples)[D], uint16_t count, float *params, float *fit_error __attribute__((unused)))
+// {
 
-  uint8_t D_1 = D + 1;
-  float err;
-  float errors[n_iterations];
-  int indices_subset[n_samples];
-  float subset_targets[n_samples];
-  float subset_samples[n_samples][D];
-  float subset_params[n_iterations][D_1];
-  bool use_bias = true;
+//   uint8_t D_1 = D + 1;
+//   float err;
+//   float errors[n_iterations];
+//   int indices_subset[n_samples];
+//   float subset_targets[n_samples];
+//   float subset_samples[n_samples][D];
+//   float subset_params[n_iterations][D_1];
+//   bool use_bias = true;
 
-  // ensure that n_samples is high enough to ensure a result for a single fit:
-  n_samples = (n_samples < D_1) ? D_1 : n_samples;
-  // n_samples should not be higher than count:
-  n_samples = (n_samples < count) ? n_samples : count;
+//   // ensure that n_samples is high enough to ensure a result for a single fit:
+//   n_samples = (n_samples < D_1) ? D_1 : n_samples;
+//   // n_samples should not be higher than count:
+//   n_samples = (n_samples < count) ? n_samples : count;
 
-  // do the RANSAC iterations:
-  for (int i = 0; i < n_iterations; i++) {
+//   // do the RANSAC iterations:
+//   for (int i = 0; i < n_iterations; i++) {
 
-    // get a subset of indices
-    get_indices_without_replacement(indices_subset, n_samples, count);
+//     // get a subset of indices
+//     get_indices_without_replacement(indices_subset, n_samples, count);
 
-    // get the corresponding samples and targets:
-    for (int j = 0; j < n_samples; j++) {
-      subset_targets[j] = targets[indices_subset[j]];
-      for (int k = 0; k < D; k++) {
-        subset_samples[j][k] = samples[indices_subset[j]][k];
-      }
-    }
+//     // get the corresponding samples and targets:
+//     for (int j = 0; j < n_samples; j++) {
+//       subset_targets[j] = targets[indices_subset[j]];
+//       for (int k = 0; k < D; k++) {
+//         subset_samples[j][k] = samples[indices_subset[j]][k];
+//       }
+//     }
 
-    // fit a linear model on the small system:
-    fit_linear_model(subset_targets, D, subset_samples, n_samples, use_bias, subset_params[i], &err);
-    printf("params normal: %f, %f\n", subset_params[i][0], subset_params[i][1]);
-    float priors[2];
-    priors[0] = 1.0f;
-    priors[1] = 10.0f;
-    fit_linear_model_prior(subset_targets, D, subset_samples, n_samples, use_bias, priors, subset_params[i], &err);
-    printf("params prior: %f, %f\n", subset_params[i][0], subset_params[i][1]);
+//     // fit a linear model on the small system:
+//     fit_linear_model(subset_targets, D, subset_samples, n_samples, use_bias, subset_params[i], &err);
+//     printf("params normal: %f, %f\n", subset_params[i][0], subset_params[i][1]);
+//     float priors[2];
+//     priors[0] = 1.0f;
+//     priors[1] = 10.0f;
+//     fit_linear_model_prior(subset_targets, D, subset_samples, n_samples, use_bias, priors, subset_params[i], &err);
+//     printf("params prior: %f, %f\n", subset_params[i][0], subset_params[i][1]);
 
-    // determine the error on the whole set:
-    float err_sum = 0.0f;
-    float prediction;
-    for (int j = 0; j < count; j++) {
-      // predict the sample's value and determine the absolute error:
-      prediction = predict_value(samples[j], subset_params[i], D, use_bias);
-      err = fabsf(prediction - targets[j]);
-      // cap the error with the threshold:
-      err = (err > error_threshold) ? error_threshold : err;
-      err_sum += err;
-    }
-    errors[i] = err_sum;
-  }
+//     // determine the error on the whole set:
+//     float err_sum = 0.0f;
+//     float prediction;
+//     for (int j = 0; j < count; j++) {
+//       // predict the sample's value and determine the absolute error:
+//       prediction = predict_value(samples[j], subset_params[i], D, use_bias);
+//       err = fabsf(prediction - targets[j]);
+//       // cap the error with the threshold:
+//       err = (err > error_threshold) ? error_threshold : err;
+//       err_sum += err;
+//     }
+//     errors[i] = err_sum;
+//   }
 
-  // determine the minimal error:
-  float min_err = errors[0];
-  int min_ind = 0;
-  for (int i = 1; i < n_iterations; i++) {
-    if (errors[i] < min_err) {
-      min_err = errors[i];
-      min_ind = i;
-    }
-  }
+//   // determine the minimal error:
+//   float min_err = errors[0];
+//   int min_ind = 0;
+//   for (int i = 1; i < n_iterations; i++) {
+//     if (errors[i] < min_err) {
+//       min_err = errors[i];
+//       min_ind = i;
+//     }
+//   }
 
-  // copy the parameters:
-  for (int d = 0; d < D_1; d++) {
-    params[d] = subset_params[min_ind][d];
-  }
+//   // copy the parameters:
+//   for (int d = 0; d < D_1; d++) {
+//     params[d] = subset_params[min_ind][d];
+//   }
 
-}
+// }
 
 /** Predict the value of a sample with linear weights.
  *

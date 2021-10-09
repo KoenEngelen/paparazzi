@@ -25,22 +25,89 @@
  */
 
 
+#include <stdlib.h>
+#include <string.h>
+
+
 #include <math.h>
 #include <stdio.h>
 
 
 #include "math/pprz_algebra_float.h"
 #include "math/pprz_matrix_decomp_float.h"
+#include "math/pprz_matrix_decomp_float.c"
 #include "math/pprz_simple_matrix.h"
 
 float guidance_aerobatic_indi_gain = 0.5;
 float debug_value;
 
 
-
 #include "subsystems/datalink/telemetry.h"
 
  #define PPRZ_MSG_ID_AEROBATIC_INDI 158
+
+/*
+Declarations for in header file:
+*/
+ 
+// void test_SVD(void);
+// void test_a_L_wing(void);
+
+// float a_D_wing_x(float V[3]);
+// float a_D_wing_z(float V[3], float phi);
+// float a_L_wing_x(float V[3]);
+// float a_L_wing_z(float V[3], float phi);
+// float a_wing_x(float V[3]);
+// float a_wing_z(float V[3], float phi);
+// float AoA(float V[3]);
+// float AoD(float V[3])
+// float AoS(float V[3])
+// float Cd(alpha);
+// float Cl(float alpha);
+// float dCd(float alpha);
+// float dCl(float alpha);
+// float Vxz_2(float V[3]);
+// float da_wing_x_dphii(float V[3]);
+// float da_wing_x_dpsii(float V[3]);
+// float da_wing_x_dthetai(float V[3]);
+// float da_wing_y_dphii(float V[3]);
+// float da_wing_y_dpsii(float V[3]);
+// float da_wing_y_dthetai(void);
+// float da_wing_z_dphii(float V[3]);
+// float da_wing_z_dpsii(float V[3]);
+// float da_wing_z_dthetai(float V[3]);
+// float dalphai_dphii(float V[3]);
+// float dalphai_dpsii(float V[3]);
+// float dalphai_dthetai(void);
+// float dbetai_dphii(void);
+// float dbetai_dpsii(float V[3]);
+// float dbetai_dthetai(float V[3]);
+// float dCd_dphii(float V[3]);
+// float dCd_dpsii(float V[3]);
+// float dCd_dthetai(float V[3]);
+// float dCl_dphii(float V[3]);
+// float dCl_dpsii(float V[3]);
+// float dCl_dthetai(float V[3]);
+// float dVx_dphii(void);
+// float dVx_dpsii(float V[3]);
+// float dVx_dthetai(float V[3]);
+
+// float dVxz_2_dphii(float V[3]);
+// float dVxz_2_dpsii(float V[3]);
+// float dVxz_2_dthetai(void);
+// float dVy_dphii(float V[3]);
+// float dVy_dthetai(void);
+// float dVz_dphii(float V[3]);
+// float dVz_dpsii(void);
+// float dVz_dthetai(float V[3]);
+// float Vxz_2_dalphai_dphii(float V[3]);
+// float Vxz_2_dalphai_dpsii(float V[3]);
+// float Vxz_2_dCd_dphii(float V[3]);
+// float Vxz_2_dCd_dpsii(float V[3]);
+// float Vxz_2_dCl_dphii(float V[3]);
+// float Vxz_2_dCl_dpsii(float V[3]);
+
+
 
 
  static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev)
@@ -53,7 +120,7 @@ float debug_value;
  void guidance_aerobatic_init(void) {
 
   debug_value = 0.0;
-  SVD()
+  test_SVD();
   //test_a_L_wing();
 
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
@@ -70,59 +137,129 @@ float debug_value;
 
  }
 
-void SVD(){
+void test_SVD(){
 
-    int m = 3; //rows
-    int n = 4; //columns
+    int m = 4; //rows
+    int n = 3; //columns
 
     float V[m];
     V[0] = -2.5f;
     V[1] =  0.5f;
     V[2] =  3.0f;
 
-    float _AA[m][n];
-    MAKE_MATRIX_PTR(AA, _AA, m);
 
-    AA[0][0] = da_wing_x_dphii(V); 
-    AA[0][1] = da_wing_y_dphii(V); 
-    AA[0][2] = da_wing_z_dphii(V); 
-    AA[0][3] = 0.0f; 
-    AA[1][0] = da_wing_x_dthetai(V); 
-    AA[1][1] = da_wing_y_dthetai(); 
-    AA[1][2] = da_wing_z_dthetai(V); 
-    AA[1][3] = 0.0f; 
-    AA[2][0] = da_wing_x_dpsii(V); 
-    AA[2][1] = da_wing_y_dpsii(V); 
-    AA[2][2] = da_wing_z_dpsii(V); 
-    AA[2][3] = -1.0f; 
+    // AA[0][0] = da_wing_x_dphii(V); 
+    // AA[0][1] = da_wing_y_dphii(V); 
+    // AA[0][2] = da_wing_z_dphii(V); 
+    // AA[1][0] = da_wing_x_dthetai(V); 
+    // AA[1][1] = da_wing_y_dthetai(); 
+    // AA[1][2] = da_wing_z_dthetai(V); 
+    // AA[2][0] = da_wing_x_dpsii(V); 
+    // AA[2][1] = da_wing_y_dpsii(V); 
+    // AA[2][2] = da_wing_z_dpsii(V); 
 
-    float _UU[m][n];
-    MAKE_MATRIX_PTR(UU, _UU, m);
-    printf("\nControl Effectiveness:\n\n")
-    for (r = 0; r < m; r++) {
-      for (c = 0; c < n; c++) {
-        UU[r][c] = AA[r][c];
-        printf("%0.f\t",AA[r][c]);
+    float _A[m][n];
+    MAKE_MATRIX_PTR(ptrA, _A, m);
+    
+
+    // float A[m][n];
+    // float *ptrA[m];
+    // for (int r = 0; r < m; r++) 
+    // { 
+    //   ptrA[r] = A[r];
+    // }
+
+    for (int r = 0; r < m; r++) 
+    { 
+      printf("\n\npointer ptrA[%d] points to %u\t pointer A[%d] points to %u\n\n",r,ptrA[r],r,_A[r]);
+      for (int c = 0; c < n; c++) 
+      { 
+        printf("adress ptrA[%d][%d] @ %u\t adress A[%d][%d] @ %u\n",r,c,&ptrA[r][c],r,c,&_A[r][c]);
       }
-      printf("\n")
+
     }
-    printf("\n")
+
+    // *(ptrA[r] + c)
+
+    *(ptrA[0]+0) =  1.0f; 
+    *(ptrA[0]+1) =  2.0f; 
+    *(ptrA[0]+2) =  1.0f; 
+    *(ptrA[1]+0) =  3.0f; 
+    *(ptrA[1]+1) =  1.0f; 
+    *(ptrA[1]+2) =  0.0f; 
+    *(ptrA[2]+0) =  3.0f; 
+    *(ptrA[2]+1) =  2.0f; 
+    *(ptrA[2]+2) =  0.0f; 
+    *(ptrA[3]+0) = -2.0f; 
+    *(ptrA[3]+1) =  1.0f; 
+    *(ptrA[3]+2) = -1.0f; 
+
+    // ptrA[0][0] = 1.0f; 
+    // ptrA[0][1] = 2.0f; 
+    // ptrA[0][2] = 1.0f; 
+    // ptrA[0][3] = 3.0f; 
+    // ptrA[1][0] = 1.0f; 
+    // ptrA[1][1] = 0.0f; 
+    // ptrA[1][2] = 3.0f; 
+    // ptrA[1][3] = 2.0f; 
+    // ptrA[2][0] = -0.0f;
+    // ptrA[2][1] = -2.0f;
+    // ptrA[2][2] =  1.0f;
+    // ptrA[2][3] = -1.0f; 
+
+    printf("\nptrA:\n\n");
+    for (int r = 0; r < m; r++) {
+      for (int c = 0; c < n; c++) {
+        printf("%0.f\t",ptrA[r][c]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+
+      printf("\nA:\n\n");
+    for (int r = 0; r < m; r++) {
+      for (int c = 0; c < n; c++) {
+        printf("%0.f\t",_A[r][c]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+
+    // Copy AA matrix in UU
+    float U[m][n];
+    MAKE_MATRIX_PTR(ptrU, U, m);
+    // float *ptrU[m];
+    // for (int r = 0; r < m; r++) 
+    // { 
+    //   ptrU[r] = U[r];
+    // }
+
+    
+    for (int r = 0; r < m; r++) {
+      for (int c = 0; c < n; c++) {
+        ptrU[r][c] = ptrA[r][c];
+      }
+      printf("\n");
+    }
+    printf("\n");
 
     float w[m], _v[n][n];
     MAKE_MATRIX_PTR(v, _v, n);
 
-    int status = pprz_svd_float(UU, w, v, m, n);
+    int status = 0;
+    printf("\nControl Effectiveness:\n\n");
+    status = pprz_svd_float(ptrU, w, v, m, n);
     if (status != 1) {
       printf("\nPseudo inverse failed to converge!");
     } else {
-      printf("Pseudo inverse:\n\n")
-      for (r = 0; r < m; r++) {
-        for (c = 0; c < n; c++) {
-          printf("%0.f\t",UU[r][c]);
+      printf("Pseudo inverse:\n\n");
+      for (int r = 0; r < m; r++) {
+        for (int c = 0; c < n; c++) {
+          printf("%0.f\t",ptrU[r][c]);
         }
-        printf("\n")
+        printf("\n");
       }
-      printf("\n")
+      printf("\n");
     }
 }
 
@@ -3812,9 +3949,9 @@ void test_a_L_wing(void)
 
  printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
 
-printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
+ printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
 
-printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
+ printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
 
  for (Vinf=0;Vinf<10;Vinf++)
  {
@@ -3921,52 +4058,4 @@ printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
 
  }
  printf("\n");
-
- 
- /*V[0] = 1.0f;
- V[1] = 0.5f;
- V[2] = 0.3f;
- 
- 
-
-
- pf3t(V);
- pf1t(phi);
- pf3t(a_L_wing);
- printf("\n\n");
-*/
-
-// pV3(V       ,"V_inf");
-// pV3(a_L_wing,"a_L"  );
-
-}
-
-void pV3(float V[3], char Vname[20])
-{
- printf("\n%s:\n\t|%.4f|\n  \t|%.4f|\n  \t|%.4f|\n",Vname,V[0],V[1],V[2]) ;
-}
-
-void pf1t(float V)
-{
-  printf("\t%.4f",V) ;
-}
-
-void pi1t(int V)
-{
-  printf("\t%i",V) ;
-}
-
-void pf2t(float V[2])
-{
-  printf("\t%.4f\t%.4f",V[0],V[1]) ;
-}
-
-void pf3t(float V[3])
-{
-  printf("\t%.4f\t%.4f\t%.4f",V[0],V[1],V[2]) ;
-}
-
-void pf4t(float V[4])
-{
-  printf("\t%.4f\t%.4f\t%.4f\t%.4f",V[0],V[1],V[2],V[3]);
 }
