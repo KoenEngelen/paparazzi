@@ -53,62 +53,63 @@ Declarations for in header file:
 // void test_SVD(void);
 // void test_a_L_wing(void);
 
-// float a_D_wing_x(float V[3]);
-// float a_D_wing_z(float V[3], float phi);
-// float a_L_wing_x(float V[3]);
-// float a_L_wing_z(float V[3], float phi);
-// float a_wing_x(float V[3]);
-// float a_wing_z(float V[3], float phi);
-// float AoA(float V[3]);
-// float AoD(float V[3])
-// float AoS(float V[3])
-// float Cd(alpha);
+// float a_D_wing_x(const float V[3]);
+// float a_D_wing_z(const float V[3], float phi);
+// float a_L_wing_x(const float V[3]);
+// float a_L_wing_z(const float V[3], float phi);
+// float a_wing_x(const float V[3]);
+// float a_wing_z(const float V[3], float phi);
+// float AoA(const float V[3]);
+// float AoD(const float V[3])
+// float AoS(const float V[3])
+// float Cd(float alpha);
 // float Cl(float alpha);
 // float dCd(float alpha);
 // float dCl(float alpha);
-// float Vxz_2(float V[3]);
-// float da_wing_x_dphii(float V[3]);
-// float da_wing_x_dpsii(float V[3]);
-// float da_wing_x_dthetai(float V[3]);
-// float da_wing_y_dphii(float V[3]);
-// float da_wing_y_dpsii(float V[3]);
-// float da_wing_y_dthetai(void);
-// float da_wing_z_dphii(float V[3]);
-// float da_wing_z_dpsii(float V[3]);
-// float da_wing_z_dthetai(float V[3]);
-// float dalphai_dphii(float V[3]);
-// float dalphai_dpsii(float V[3]);
+// float Vxz_2(const float V[3]);
+float da_wing_x_dphii(const float V[3]);
+float da_wing_x_dpsii(const float V[3]);
+float da_wing_x_dthetai(const float V[3]);
+float da_wing_y_dphii(const float V[3]);
+float da_wing_y_dpsii(const float V[3]);
+float da_wing_y_dthetai(void);
+float da_wing_z_dphii(const float V[3]);
+float da_wing_z_dpsii(const float V[3]);
+float da_wing_z_dthetai(const float V[3]);
+// float dalphai_dphii(const float V[3]);
+// float dalphai_dpsii(const float V[3]);
 // float dalphai_dthetai(void);
 // float dbetai_dphii(void);
-// float dbetai_dpsii(float V[3]);
-// float dbetai_dthetai(float V[3]);
-// float dCd_dphii(float V[3]);
-// float dCd_dpsii(float V[3]);
-// float dCd_dthetai(float V[3]);
-// float dCl_dphii(float V[3]);
-// float dCl_dpsii(float V[3]);
-// float dCl_dthetai(float V[3]);
+// float dbetai_dpsii(const float V[3]);
+// float dbetai_dthetai(const float V[3]);
+// float dCd_dphii(const float V[3]);
+// float dCd_dpsii(const float V[3]);
+// float dCd_dthetai(const float V[3]);
+// float dCl_dphii(const float V[3]);
+// float dCl_dpsii(const float V[3]);
+// float dCl_dthetai(const float V[3]);
 // float dVx_dphii(void);
-// float dVx_dpsii(float V[3]);
-// float dVx_dthetai(float V[3]);
+// float dVx_dpsii(const float V[3]);
+// float dVx_dthetai(const float V[3]);
 
-// float dVxz_2_dphii(float V[3]);
-// float dVxz_2_dpsii(float V[3]);
+// float dVxz_2_dphii(const float V[3]);
+// float dVxz_2_dpsii(const float V[3]);
 // float dVxz_2_dthetai(void);
-// float dVy_dphii(float V[3]);
+// float dVy_dphii(const float V[3]);
 // float dVy_dthetai(void);
-// float dVz_dphii(float V[3]);
+// float dVz_dphii(const float V[3]);
 // float dVz_dpsii(void);
-// float dVz_dthetai(float V[3]);
-// float Vxz_2_dalphai_dphii(float V[3]);
-// float Vxz_2_dalphai_dpsii(float V[3]);
-// float Vxz_2_dCd_dphii(float V[3]);
-// float Vxz_2_dCd_dpsii(float V[3]);
-// float Vxz_2_dCl_dphii(float V[3]);
-// float Vxz_2_dCl_dpsii(float V[3]);
+// float dVz_dthetai(const float V[3]);
+// float Vxz_2_dalphai_dphii(const float V[3]);
+// float Vxz_2_dalphai_dpsii(const float V[3]);
+// float Vxz_2_dCd_dphii(const float V[3]);
+// float Vxz_2_dCd_dpsii(const float V[3]);
+// float Vxz_2_dCl_dphii(const float V[3]);
+// float Vxz_2_dCl_dpsii(const float V[3]);
 
 
 
+// float da_wing_x_dphii(const float V[3]);  
 
  static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev)
  {
@@ -116,6 +117,8 @@ Declarations for in header file:
                          &debug_value, 
                          &guidance_aerobatic_indi_gain);
  }
+
+
 
  void guidance_aerobatic_init(void) {
 
@@ -137,15 +140,20 @@ Declarations for in header file:
 
  }
 
+
+
+
 void test_SVD(){
 
     int m = 4; //rows
     int n = 3; //columns
 
-    float V[m];
+    float V[3];
     V[0] = -2.5f;
     V[1] =  0.5f;
     V[2] =  3.0f;
+
+    // float *V = (float [3]) {-2.5f, 0.5f, 3.0f};
 
 
     // AA[0][0] = da_wing_x_dphii(V); 
@@ -181,19 +189,33 @@ void test_SVD(){
 
     // *(ptrA[r] + c)
 
-    *(ptrA[0]+0) =  1.0f; 
-    *(ptrA[0]+1) =  2.0f; 
-    *(ptrA[0]+2) =  1.0f; 
-    *(ptrA[1]+0) =  3.0f; 
-    *(ptrA[1]+1) =  1.0f; 
-    *(ptrA[1]+2) =  0.0f; 
-    *(ptrA[2]+0) =  3.0f; 
-    *(ptrA[2]+1) =  2.0f; 
-    *(ptrA[2]+2) =  0.0f; 
-    *(ptrA[3]+0) = -2.0f; 
-    *(ptrA[3]+1) =  1.0f; 
+    if (m > n){
+    *(ptrA[0]+0) =  da_wing_x_dphii(V); 
+    *(ptrA[0]+1) =  da_wing_y_dphii(V); 
+    *(ptrA[0]+2) =  da_wing_z_dphii(V); 
+    *(ptrA[1]+0) =  da_wing_x_dthetai(V); 
+    *(ptrA[1]+1) =  da_wing_y_dthetai(); 
+    *(ptrA[1]+2) =  da_wing_z_dthetai(V); 
+    *(ptrA[2]+0) =  da_wing_x_dpsii(V); 
+    *(ptrA[2]+1) =  da_wing_y_dpsii(V); 
+    *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
+    *(ptrA[3]+0) =  0.0f; 
+    *(ptrA[3]+1) =  0.0f; 
     *(ptrA[3]+2) = -1.0f; 
-
+    } else {
+    *(ptrA[0]+0) =  da_wing_x_dphii(V); 
+    *(ptrA[1]+0) =  da_wing_y_dphii(V); 
+    *(ptrA[2]+0) =  da_wing_z_dphii(V); 
+    *(ptrA[0]+1) =  da_wing_x_dthetai(V); 
+    *(ptrA[1]+1) =  da_wing_y_dthetai(); 
+    *(ptrA[2]+1) =  da_wing_z_dthetai(V); 
+    *(ptrA[0]+2) =  da_wing_x_dpsii(V); 
+    *(ptrA[1]+2) =  da_wing_y_dpsii(V); 
+    *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
+    *(ptrA[0]+3) =  0.0f; 
+    *(ptrA[1]+3) =  0.0f; 
+    *(ptrA[2]+3) = -1.0f; 
+    }
     // ptrA[0][0] = 1.0f; 
     // ptrA[0][1] = 2.0f; 
     // ptrA[0][2] = 1.0f; 
@@ -210,7 +232,7 @@ void test_SVD(){
     printf("\nptrA:\n\n");
     for (int r = 0; r < m; r++) {
       for (int c = 0; c < n; c++) {
-        printf("%0.f\t",ptrA[r][c]);
+        printf("%.4f\t",ptrA[r][c]);
       }
       printf("\n");
     }
@@ -219,7 +241,7 @@ void test_SVD(){
       printf("\nA:\n\n");
     for (int r = 0; r < m; r++) {
       for (int c = 0; c < n; c++) {
-        printf("%0.f\t",_A[r][c]);
+        printf("%.4f\t",_A[r][c]);
       }
       printf("\n");
     }
@@ -246,16 +268,47 @@ void test_SVD(){
     float w[m], _v[n][n];
     MAKE_MATRIX_PTR(v, _v, n);
 
+    printf("Matrix W:\n\n");
+    for (int r = 0; r < m; r++) {
+        printf("%.4f\t",w[r]);
+    }
+    printf("\n");
+
+    printf("Matrix V:\n\n");
+    for (int r = 0; r < n; r++) {
+      for (int c = 0; c < n; c++) {
+        printf("%.4f\t",v[r][c]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+
+
     int status = 0;
-    printf("\nControl Effectiveness:\n\n");
+    printf("\n\n\n");
     status = pprz_svd_float(ptrU, w, v, m, n);
     if (status != 1) {
       printf("\nPseudo inverse failed to converge!");
     } else {
-      printf("Pseudo inverse:\n\n");
+      printf("Matrix U:\n\n");
       for (int r = 0; r < m; r++) {
         for (int c = 0; c < n; c++) {
-          printf("%0.f\t",ptrU[r][c]);
+          printf("%.4f\t",ptrU[r][c]);
+        }
+        printf("\n");
+      }
+      printf("\n");
+
+      printf("Matrix W:\n\n");
+      for (int r = 0; r < m; r++) {
+          printf("%.4f\t",w[r]);
+      }
+      printf("\n");
+
+      printf("Matrix V:\n\n");
+      for (int r = 0; r < n; r++) {
+        for (int c = 0; c < n; c++) {
+          printf("%.4f\t",v[r][c]);
         }
         printf("\n");
       }
