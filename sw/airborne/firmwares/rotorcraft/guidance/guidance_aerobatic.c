@@ -142,121 +142,101 @@ float da_wing_z_dthetai(const float V[3]);
 
 
 
+void print_matrix(float **ptr,int m, int n){
+    for (int r = 0; r < m; r++) {
+      for (int c = 0; c < n; c++) {
+        printf("\t%.4f\t",ptr[r][c]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+
+}
+
+void print_row(float *ptr,int m){
+    for (int r = 0; r < m; r++) {
+        printf("\t%.4f\t",ptr[r]);
+    }
+    printf("\n\n");
+
+}
 
 void test_SVD(){
 
-    int m = 4; //rows
-    int n = 3; //columns
+    int m = 3; //rows
+    int n = 4; //columns
 
     float V[3];
     V[0] = -2.5f;
     V[1] =  0.5f;
     V[2] =  3.0f;
 
-    // float *V = (float [3]) {-2.5f, 0.5f, 3.0f};
+    float A[m][n];
+    MAKE_MATRIX_PTR(ptrA, A, m);
 
-
-    // AA[0][0] = da_wing_x_dphii(V); 
-    // AA[0][1] = da_wing_y_dphii(V); 
-    // AA[0][2] = da_wing_z_dphii(V); 
-    // AA[1][0] = da_wing_x_dthetai(V); 
-    // AA[1][1] = da_wing_y_dthetai(); 
-    // AA[1][2] = da_wing_z_dthetai(V); 
-    // AA[2][0] = da_wing_x_dpsii(V); 
-    // AA[2][1] = da_wing_y_dpsii(V); 
-    // AA[2][2] = da_wing_z_dpsii(V); 
-
-    float _A[m][n];
-    MAKE_MATRIX_PTR(ptrA, _A, m);
-    
-
-    // float A[m][n];
-    // float *ptrA[m];
-    // for (int r = 0; r < m; r++) 
-    // { 
-    //   ptrA[r] = A[r];
-    // }
-
-    for (int r = 0; r < m; r++) 
-    { 
-      printf("\n\npointer ptrA[%d] points to %u\t pointer A[%d] points to %u\n\n",r,ptrA[r],r,_A[r]);
-      for (int c = 0; c < n; c++) 
-      { 
-        printf("adress ptrA[%d][%d] @ %u\t adress A[%d][%d] @ %u\n",r,c,&ptrA[r][c],r,c,&_A[r][c]);
-      }
-
-    }
-
-    // *(ptrA[r] + c)
-
-    if (m > n){
-    *(ptrA[0]+0) =  da_wing_x_dphii(V); 
-    *(ptrA[0]+1) =  da_wing_y_dphii(V); 
-    *(ptrA[0]+2) =  da_wing_z_dphii(V); 
-    *(ptrA[1]+0) =  da_wing_x_dthetai(V); 
-    *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-    *(ptrA[1]+2) =  da_wing_z_dthetai(V); 
-    *(ptrA[2]+0) =  da_wing_x_dpsii(V); 
-    *(ptrA[2]+1) =  da_wing_y_dpsii(V); 
-    *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
-    *(ptrA[3]+0) =  0.0f; 
-    *(ptrA[3]+1) =  0.0f; 
-    *(ptrA[3]+2) = -1.0f; 
-    } else {
-    *(ptrA[0]+0) =  da_wing_x_dphii(V); 
-    *(ptrA[1]+0) =  da_wing_y_dphii(V); 
-    *(ptrA[2]+0) =  da_wing_z_dphii(V); 
-    *(ptrA[0]+1) =  da_wing_x_dthetai(V); 
-    *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-    *(ptrA[2]+1) =  da_wing_z_dthetai(V); 
-    *(ptrA[0]+2) =  da_wing_x_dpsii(V); 
-    *(ptrA[1]+2) =  da_wing_y_dpsii(V); 
-    *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
-    *(ptrA[0]+3) =  0.0f; 
-    *(ptrA[1]+3) =  0.0f; 
-    *(ptrA[2]+3) = -1.0f; 
-    }
-    // ptrA[0][0] = 1.0f; 
-    // ptrA[0][1] = 2.0f; 
-    // ptrA[0][2] = 1.0f; 
-    // ptrA[0][3] = 3.0f; 
-    // ptrA[1][0] = 1.0f; 
-    // ptrA[1][1] = 0.0f; 
-    // ptrA[1][2] = 3.0f; 
-    // ptrA[1][3] = 2.0f; 
-    // ptrA[2][0] = -0.0f;
-    // ptrA[2][1] = -2.0f;
-    // ptrA[2][2] =  1.0f;
-    // ptrA[2][3] = -1.0f; 
-
-    printf("\nptrA:\n\n");
-    for (int r = 0; r < m; r++) {
-      for (int c = 0; c < n; c++) {
-        printf("%.4f\t",ptrA[r][c]);
-      }
-      printf("\n");
-    }
-    printf("\n");
-
-      printf("\nA:\n\n");
-    for (int r = 0; r < m; r++) {
-      for (int c = 0; c < n; c++) {
-        printf("%.4f\t",_A[r][c]);
-      }
-      printf("\n");
-    }
-    printf("\n");
-
-    // Copy AA matrix in UU
     float U[m][n];
     MAKE_MATRIX_PTR(ptrU, U, m);
-    // float *ptrU[m];
-    // for (int r = 0; r < m; r++) 
-    // { 
-    //   ptrU[r] = U[r];
-    // }
 
+    float ptrW[n];
+
+    float v[n][n];
+    MAKE_MATRIX_PTR(ptrV, v, n);
+
+    float X[n][1];
+    MAKE_MATRIX_PTR(ptrX, X, n);
+
+    float B[m][1];
+    MAKE_MATRIX_PTR(ptrB, B, m);
+
+    // float * ptrV1[n];
+    // for (int i = 0; i < n; i++) { ptrV1[i] = &v[i][i];}
     
+    printf("\n\nInitialize Check\n\n");
+    printf("\tInitial Matrix A:\n");
+    print_matrix(ptrA,m,n);
+    printf("\tInitial Matrix U:\n");
+    print_matrix(ptrU,m,n);
+    printf("\tInitial Matrix V:\n");
+    print_matrix(ptrV,n,n);
+    // printf("\tInitial Matrix V1:\n");
+    // print_matrix(ptrV1,n,n);
+    printf("\tInitial Diagonal W:\n");
+    print_row(ptrW,n);
+
+    printf("\tInitial Matrix B:\n");
+    print_matrix(ptrB,m,1);
+    printf("\tInitial Matrix X:\n");
+    print_matrix(ptrX,n,1);
+
+    if (m > n){
+      *(ptrA[0]+0) =  da_wing_x_dphii(V); 
+      *(ptrA[0]+1) =  da_wing_y_dphii(V); 
+      *(ptrA[0]+2) =  da_wing_z_dphii(V); 
+      *(ptrA[1]+0) =  da_wing_x_dthetai(V); 
+      *(ptrA[1]+1) =  da_wing_y_dthetai(); 
+      *(ptrA[1]+2) =  da_wing_z_dthetai(V); 
+      *(ptrA[2]+0) =  da_wing_x_dpsii(V); 
+      *(ptrA[2]+1) =  da_wing_y_dpsii(V); 
+      *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
+      *(ptrA[3]+0) =  0.0f; 
+      *(ptrA[3]+1) =  0.0f; 
+      *(ptrA[3]+2) = -1.0f; 
+    } else {
+      *(ptrA[0]+0) =  da_wing_x_dphii(V); 
+      *(ptrA[1]+0) =  da_wing_y_dphii(V); 
+      *(ptrA[2]+0) =  da_wing_z_dphii(V); 
+      *(ptrA[0]+1) =  da_wing_x_dthetai(V); 
+      *(ptrA[1]+1) =  da_wing_y_dthetai(); 
+      *(ptrA[2]+1) =  da_wing_z_dthetai(V); 
+      *(ptrA[0]+2) =  da_wing_x_dpsii(V); 
+      *(ptrA[1]+2) =  da_wing_y_dpsii(V); 
+      *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
+      *(ptrA[0]+3) =  0.0f; 
+      *(ptrA[1]+3) =  0.0f; 
+      *(ptrA[2]+3) = -1.0f; 
+    }
+
+    //Copy A data to U
     for (int r = 0; r < m; r++) {
       for (int c = 0; c < n; c++) {
         ptrU[r][c] = ptrA[r][c];
@@ -265,55 +245,64 @@ void test_SVD(){
     }
     printf("\n");
 
-    float w[m], _v[n][n];
-    MAKE_MATRIX_PTR(v, _v, n);
+    // printf("\n\nPointer Check\n\n");
+    // printf("\tpointer ptrA points to %u\t pointer A points to %u\n",ptrA,A);
+    // for (int r = 0; r < m; r++) 
+    // { 
+    //   printf("\n\n\tpointer ptrA[%d] points to %u\t pointer A[%d] points to %u\n\n",r,ptrA[r],r,A[r]);
+    //   for (int c = 0; c < n; c++) 
+    //   { 
+    //     printf("\tadress ptrA[%d][%d] @ %u\t adress A[%d][%d] @ %u\n",r,c,&ptrA[r][c],r,c,&A[r][c]);
+    //   }
+    // }
 
-    printf("Matrix W:\n\n");
-    for (int r = 0; r < m; r++) {
-        printf("%.4f\t",w[r]);
-    }
-    printf("\n");
 
-    printf("Matrix V:\n\n");
-    for (int r = 0; r < n; r++) {
-      for (int c = 0; c < n; c++) {
-        printf("%.4f\t",v[r][c]);
-      }
-      printf("\n");
-    }
-    printf("\n");
+    printf("\n\nMatrix Check\n\n");
+    printf("\tMatrix A:\n");
+    print_matrix(ptrA,m,n);
+    printf("\tMatrix U (copy of A):\n");
+    print_matrix(ptrU,m,n);
+
+
+ 
+
+
+    
 
 
     int status = 0;
-    printf("\n\n\n");
-    status = pprz_svd_float(ptrU, w, v, m, n);
+    status = pprz_svd_float(ptrU, ptrW, ptrV, m, n);
     if (status != 1) {
       printf("\nPseudo inverse failed to converge!");
     } else {
-      printf("Matrix U:\n\n");
-      for (int r = 0; r < m; r++) {
-        for (int c = 0; c < n; c++) {
-          printf("%.4f\t",ptrU[r][c]);
-        }
-        printf("\n");
-      }
+
+      printf("\tMatrix U:\n");
+      print_matrix(ptrU,m,n);
+      printf("\tDiagonal W:\n");
+      print_row(ptrW,n);
+      printf("\tMatrix V:\n");
+      print_matrix(ptrV,n,n);
+
       printf("\n");
 
-      printf("Matrix W:\n\n");
-      for (int r = 0; r < m; r++) {
-          printf("%.4f\t",w[r]);
-      }
+      pprz_svd_solve_float(ptrX, ptrU, ptrW, ptrV, ptrB, m, n, 1);
+      
+     
+      printf("\tMatrix B:\n");
+      print_matrix(ptrB,m,1);
+
+      printf("\tMatrix X:\n");
+      print_matrix(ptrX,n,1);
+
       printf("\n");
 
-      printf("Matrix V:\n\n");
-      for (int r = 0; r < n; r++) {
-        for (int c = 0; c < n; c++) {
-          printf("%.4f\t",v[r][c]);
-        }
-        printf("\n");
-      }
-      printf("\n");
+
+
+
     }
+   
+
+
 }
 
 
