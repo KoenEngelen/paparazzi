@@ -124,7 +124,6 @@ float da_wing_z_dthetai(const float V[3]);
 
   debug_value = 0.0;
   test_SVD();
-  //test_a_L_wing();
 
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
@@ -136,6 +135,7 @@ float da_wing_z_dthetai(const float V[3]);
    if (debug_value > 60){
      debug_value = 0;
    }
+  //  test_SVD();
 
 
  }
@@ -161,31 +161,35 @@ void print_row(float *ptr,int m){
 
 }
 
+#define m 3 //rows
+#define n 4 //columns
+
+float A[m][n];
+
+float U[m][n];
+
+float ptrW[n];
+
+float v[n][n];
+
+float X[n][1];
+
+float B[m][1];
+
 void test_SVD(){
 
-    int m = 3; //rows
-    int n = 4; //columns
+
 
     float V[3];
     V[0] = -2.5f;
     V[1] =  0.5f;
     V[2] =  3.0f;
 
-    float A[m][n];
+
     MAKE_MATRIX_PTR(ptrA, A, m);
-
-    float U[m][n];
     MAKE_MATRIX_PTR(ptrU, U, m);
-
-    float ptrW[n];
-
-    float v[n][n];
     MAKE_MATRIX_PTR(ptrV, v, n);
-
-    float X[n][1];
     MAKE_MATRIX_PTR(ptrX, X, n);
-
-    float B[m][1];
     MAKE_MATRIX_PTR(ptrB, B, m);
 
     // float * ptrV1[n];
