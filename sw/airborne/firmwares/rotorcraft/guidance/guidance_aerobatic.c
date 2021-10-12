@@ -24,7 +24,6 @@
  *
  */
 
-
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -136,22 +135,50 @@ void print_matrix(float **ptr,int m, int n){
     printf("\n");
 }
 
-void print_row(float *ptr,int m){
+void print_ptrarray(float **ptr,int m, int n){
     for (int r = 0; r < m; r++) {
-        printf("\t%.4f\t",ptr[r]);
+      for (int c = 0; c < n; c++) {
+        printf("\t%x\t",ptr[r]);
+      }
+      printf("\n");
     }
-    printf("\n\n");
+    printf("\n");
 }
 
-#define m 3 //rows
-#define n 4 //columns
+void print_adrarray(float *mat,int m, int n){
+    for (int r = 0; r < m; r++) {
+      for (int c = 0; c < n; c++) {
+        printf("\t%x\t",&(mat[r*n]));
+      }
+      printf("\n");
+    }
+    printf("\n");
+}
 
-float A[m][n];
-float U[m][n];
-float ptrW[n];
-float V[n][n];
-float X[n][1];
-float B[m][1];
+void print_array(float *ptr,int m, int n){
+    for (int r = 0; r < m; r++) {
+      for (int c = 0; c < n; c++) {
+        printf("\t%.4f\t", *(ptr+r*n+c));
+      }
+      printf("\n");
+    }
+    printf("\n");
+}
+
+// void print_row(float *ptr,int m){
+//     for (int r = 0; r < m; r++) {
+//         printf("\t%.4f\t",ptr[r]);
+//     }
+//     printf("\n\n");
+// }
+
+#define ROWS_GUIDANCE 3 //rows
+#define COLS_GUIDANCE 4 //columns
+
+float A[ROWS_GUIDANCE][COLS_GUIDANCE];
+float U[ROWS_GUIDANCE][COLS_GUIDANCE];
+float ptrW[COLS_GUIDANCE];
+float V[COLS_GUIDANCE][COLS_GUIDANCE];
 
 void test_SVD(){
     //temporary Velocity Vector for debugging purposes
@@ -161,83 +188,90 @@ void test_SVD(){
     Vel[2] =  3.0f;
 
     //Create pointers to float arrays
-    MAKE_MATRIX_PTR(ptrA, A, m);
-    MAKE_MATRIX_PTR(ptrU, U, m);
-    MAKE_MATRIX_PTR(ptrV, V, n);
-    MAKE_MATRIX_PTR(ptrX, X, n);
-    MAKE_MATRIX_PTR(ptrB, B, m);
+    MAKE_MATRIX_PTR(ptrA, A, ROWS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrU, U, ROWS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrV, V, COLS_GUIDANCE);
     
     //Print matrices from pointers
-    printf("\n\nInitialize Check\n\n");
-    printf("\tInitial Matrix A:\n");
-    print_matrix(ptrA,m,n);
-    printf("\tInitial Matrix U:\n");
-    print_matrix(ptrU,m,n);
-    printf("\tInitial Matrix V:\n");
-    print_matrix(ptrV,n,n);
-    printf("\tInitial Diagonal W:\n");
-    print_row(ptrW,n);
-    printf("\tInitial Matrix B:\n");
-    print_matrix(ptrB,m,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
-    printf("\tInitial Matrix X:\n");
-    print_matrix(ptrX,n,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
+    // printf("\n\nInitialize Check\n\n");
+    // printf("\tInitial Matrix A:\n");
+    // print_matrix(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
+    // printf("\tInitial Matrix U:\n");
+    // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+    // printf("\tInitial Matrix V:\n");
+    // print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
+    // printf("\tInitial Diagonal W:\n");
+    // print_row(ptrW,COLS_GUIDANCE);
+    // printf("\tInitial Matrix B:\n");
+    // print_matrix(ptrB,ROWS_GUIDANCE,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
+    // printf("\tInitial Matrix X:\n");
+    // print_matrix(ptrX,COLS_GUIDANCE,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
 
     //Assign Values to A matrix
-    if (m > n){
-      *(ptrA[0]+0) =  da_wing_x_dphii(Vel); 
-      *(ptrA[0]+1) =  da_wing_y_dphii(Vel); 
-      *(ptrA[0]+2) =  da_wing_z_dphii(Vel); 
-      *(ptrA[1]+0) =  da_wing_x_dthetai(Vel); 
-      *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-      *(ptrA[1]+2) =  da_wing_z_dthetai(Vel); 
-      *(ptrA[2]+0) =  da_wing_x_dpsii(Vel); 
-      *(ptrA[2]+1) =  da_wing_y_dpsii(Vel); 
-      *(ptrA[2]+2) =  da_wing_z_dpsii(Vel); 
-      *(ptrA[3]+0) =  0.0f; 
-      *(ptrA[3]+1) =  0.0f; 
-      *(ptrA[3]+2) = -1.0f; 
+    if (ROWS_GUIDANCE > COLS_GUIDANCE){
+      A[0][0] =  da_wing_x_dphii(Vel); 
+      A[0][1] =  da_wing_y_dphii(Vel); 
+      A[0][2] =  da_wing_z_dphii(Vel); 
+      A[1][0] =  da_wing_x_dthetai(Vel); 
+      A[1][1] =  da_wing_y_dthetai(); 
+      A[1][2] =  da_wing_z_dthetai(Vel); 
+      A[2][0] =  da_wing_x_dpsii(Vel); 
+      A[2][1] =  da_wing_y_dpsii(Vel); 
+      A[2][2] =  da_wing_z_dpsii(Vel); 
+      A[3][0] =  0.0f; 
+      A[3][1] =  0.0f; 
+      A[3][2] = -1.0f; 
     } else {
-      *(ptrA[0]+0) =  da_wing_x_dphii(Vel); 
-      *(ptrA[1]+0) =  da_wing_y_dphii(Vel); 
-      *(ptrA[2]+0) =  da_wing_z_dphii(Vel); 
-      *(ptrA[0]+1) =  da_wing_x_dthetai(Vel); 
-      *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-      *(ptrA[2]+1) =  da_wing_z_dthetai(Vel); 
-      *(ptrA[0]+2) =  da_wing_x_dpsii(Vel); 
-      *(ptrA[1]+2) =  da_wing_y_dpsii(Vel); 
-      *(ptrA[2]+2) =  da_wing_z_dpsii(Vel); 
-      *(ptrA[0]+3) =  0.0f; 
-      *(ptrA[1]+3) =  0.0f; 
-      *(ptrA[2]+3) = -1.0f; 
+      A[0][0] =  da_wing_x_dphii(Vel); 
+      A[1][0] =  da_wing_y_dphii(Vel); 
+      A[2][0] =  da_wing_z_dphii(Vel); 
+      A[0][1] =  da_wing_x_dthetai(Vel); 
+      A[1][1] =  da_wing_y_dthetai(); 
+      A[2][1] =  da_wing_z_dthetai(Vel); 
+      A[0][2] =  da_wing_x_dpsii(Vel); 
+      A[1][2] =  da_wing_y_dpsii(Vel); 
+      A[2][2] =  da_wing_z_dpsii(Vel); 
+      A[0][3] =  0.0f; 
+      A[1][3] =  0.0f; 
+      A[2][3] = -1.0f; 
     }
 
     //Copy data from A to U
-    for (int r = 0; r < m; r++) {
-      for (int c = 0; c < n; c++) {
+    for (int r = 0; r < ROWS_GUIDANCE; r++) {
+      for (int c = 0; c < COLS_GUIDANCE; c++) {
         ptrU[r][c] = ptrA[r][c];
       }
     }
 
     printf("\n\nMatrix Check\n\n");
+    printf("\tMatrix ptrA:\n");
+    print_matrix(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
     printf("\tMatrix A:\n");
-    print_matrix(ptrA,m,n);
+    print_array(A[0],ROWS_GUIDANCE,COLS_GUIDANCE);
     printf("\tMatrix U (copy of A):\n");
-    print_matrix(ptrU,m,n);
+    print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+
+    printf("\tMatrix ptrA pointers:\n");
+    print_ptrarray(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
+
+
+    printf("\tMatrix adress A:\n");
+    print_adrarray(A,ROWS_GUIDANCE,COLS_GUIDANCE);
 
     //Store Status to see if SVD succeeded
     int status = 0;
-    status = pprz_svd_float(ptrU, ptrW, ptrV, m, n);
+    status = pprz_svd_float(ptrU, ptrW, ptrV, ROWS_GUIDANCE, COLS_GUIDANCE);
     //Fail and Succeed prints:
     if (status != 1) {
       printf("\nSVD failed!\n\n");
     } else {
-      printf("\tMatrix U:\n");
-      print_matrix(ptrU,m,n);
-      printf("\tDiagonal W:\n");
-      print_row(ptrW,n);
-      printf("\tMatrix V:\n");
-      print_matrix(ptrV,n,n);
-      printf("\n");
+      // printf("\tMatrix U:\n");
+      // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+      // printf("\tDiagonal W:\n");
+      // print_row(ptrW,COLS_GUIDANCE);
+      // printf("\tMatrix V:\n");
+      // print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
+      // printf("\n");
       printf("\n\nSVD succeeded!\n\n");
     }
 }
@@ -260,7 +294,7 @@ float a_D_wing_x(const float V[3])
   /* 'a_D_wing_x:3' Vz = V(3); */
   /* 'a_D_wing_x:5' rho = 1.225; */
   /* 'a_D_wing_x:6' S = 0.2; */
-  /* 'a_D_wing_x:7' m = 0.8; */
+  /* 'a_D_wing_x:7' m= 0.8; */
   /* 'a_D_wing_x:9' Vxz = (Vx^2 + Vz^2)^0.5; */
   a = sqrtf(V[0] * V[0] + V[2] * V[2]);
 
