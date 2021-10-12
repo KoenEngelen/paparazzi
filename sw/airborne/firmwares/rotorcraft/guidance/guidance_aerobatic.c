@@ -27,27 +27,21 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-
 #include <math.h>
 #include <stdio.h>
-
-
 #include "math/pprz_algebra_float.h"
 #include "math/pprz_matrix_decomp_float.h"
 #include "math/pprz_matrix_decomp_float.c"
 #include "math/pprz_simple_matrix.h"
+#include "subsystems/datalink/telemetry.h"
 
 float guidance_aerobatic_indi_gain = 0.5;
 float debug_value;
 
-
-#include "subsystems/datalink/telemetry.h"
-
- #define PPRZ_MSG_ID_AEROBATIC_INDI 158
+#define PPRZ_MSG_ID_AEROBATIC_INDI 158
 
 /*
-Declarations for in header file:
+Declarations
 */
  
 // void test_SVD(void);
@@ -91,7 +85,6 @@ float da_wing_z_dthetai(const float V[3]);
 // float dVx_dphii(void);
 // float dVx_dpsii(const float V[3]);
 // float dVx_dthetai(const float V[3]);
-
 // float dVxz_2_dphii(const float V[3]);
 // float dVxz_2_dpsii(const float V[3]);
 // float dVxz_2_dthetai(void);
@@ -107,38 +100,31 @@ float da_wing_z_dthetai(const float V[3]);
 // float Vxz_2_dCl_dphii(const float V[3]);
 // float Vxz_2_dCl_dpsii(const float V[3]);
 
-
-
-// float da_wing_x_dphii(const float V[3]);  
-
- static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev)
- {
-   pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
-                         &debug_value, 
-                         &guidance_aerobatic_indi_gain);
- }
+static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev)
+{
+  pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
+                        &debug_value, 
+                        &guidance_aerobatic_indi_gain);
+}
 
 
 
- void guidance_aerobatic_init(void) {
-
+void guidance_aerobatic_init(void) {
   debug_value = 0.0;
+  //This test_SVD works
   test_SVD();
-
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
- }
+}
 
 
- void guidance_aerobatic_run(void) {
-   debug_value = debug_value + 0.00195;
-
-   if (debug_value > 60){
-     debug_value = 0;
-   }
-  //  test_SVD();
-
-
- }
+void guidance_aerobatic_run(void) {
+  debug_value = debug_value + 0.00195; //just a time counter
+  if (debug_value > 60){ //resets on 60s
+    debug_value = 0;
+  }
+  //This test_SVD does not work
+  // test_SVD();
+}
 
 
 
@@ -150,7 +136,6 @@ void print_matrix(float **ptr,int m, int n){
       printf("\n");
     }
     printf("\n");
-
 }
 
 void print_row(float *ptr,int m){
@@ -158,42 +143,25 @@ void print_row(float *ptr,int m){
         printf("\t%.4f\t",ptr[r]);
     }
     printf("\n\n");
-
 }
 
 #define m 3 //rows
 #define n 4 //columns
 
 float A[m][n];
-
 float U[m][n];
-
+float V[n][n];
 float ptrW[n];
 
-float v[n][n];
-
-float X[n][1];
-
-float B[m][1];
-
 void test_SVD(){
-
-
-
-    float V[3];
-    V[0] = -2.5f;
-    V[1] =  0.5f;
-    V[2] =  3.0f;
-
+    float Velocity[3];
+    Velocity[0] = -2.5f;
+    Velocity[1] =  0.5f;
+    Velocity[2] =  3.0f;
 
     MAKE_MATRIX_PTR(ptrA, A, m);
     MAKE_MATRIX_PTR(ptrU, U, m);
-    MAKE_MATRIX_PTR(ptrV, v, n);
-    MAKE_MATRIX_PTR(ptrX, X, n);
-    MAKE_MATRIX_PTR(ptrB, B, m);
-
-    // float * ptrV1[n];
-    // for (int i = 0; i < n; i++) { ptrV1[i] = &v[i][i];}
+    MAKE_MATRIX_PTR(ptrV, V, n);
     
     printf("\n\nInitialize Check\n\n");
     printf("\tInitial Matrix A:\n");
@@ -202,39 +170,32 @@ void test_SVD(){
     print_matrix(ptrU,m,n);
     printf("\tInitial Matrix V:\n");
     print_matrix(ptrV,n,n);
-    // printf("\tInitial Matrix V1:\n");
-    // print_matrix(ptrV1,n,n);
     printf("\tInitial Diagonal W:\n");
     print_row(ptrW,n);
 
-    printf("\tInitial Matrix B:\n");
-    print_matrix(ptrB,m,1);
-    printf("\tInitial Matrix X:\n");
-    print_matrix(ptrX,n,1);
-
     if (m > n){
-      *(ptrA[0]+0) =  da_wing_x_dphii(V); 
-      *(ptrA[0]+1) =  da_wing_y_dphii(V); 
-      *(ptrA[0]+2) =  da_wing_z_dphii(V); 
-      *(ptrA[1]+0) =  da_wing_x_dthetai(V); 
+      *(ptrA[0]+0) =  da_wing_x_dphii(Velocity); 
+      *(ptrA[0]+1) =  da_wing_y_dphii(Velocity); 
+      *(ptrA[0]+2) =  da_wing_z_dphii(Velocity); 
+      *(ptrA[1]+0) =  da_wing_x_dthetai(Velocity); 
       *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-      *(ptrA[1]+2) =  da_wing_z_dthetai(V); 
-      *(ptrA[2]+0) =  da_wing_x_dpsii(V); 
-      *(ptrA[2]+1) =  da_wing_y_dpsii(V); 
-      *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
+      *(ptrA[1]+2) =  da_wing_z_dthetai(Velocity); 
+      *(ptrA[2]+0) =  da_wing_x_dpsii(Velocity); 
+      *(ptrA[2]+1) =  da_wing_y_dpsii(Velocity); 
+      *(ptrA[2]+2) =  da_wing_z_dpsii(Velocity); 
       *(ptrA[3]+0) =  0.0f; 
       *(ptrA[3]+1) =  0.0f; 
       *(ptrA[3]+2) = -1.0f; 
     } else {
-      *(ptrA[0]+0) =  da_wing_x_dphii(V); 
-      *(ptrA[1]+0) =  da_wing_y_dphii(V); 
-      *(ptrA[2]+0) =  da_wing_z_dphii(V); 
-      *(ptrA[0]+1) =  da_wing_x_dthetai(V); 
+      *(ptrA[0]+0) =  da_wing_x_dphii(Velocity); 
+      *(ptrA[1]+0) =  da_wing_y_dphii(Velocity); 
+      *(ptrA[2]+0) =  da_wing_z_dphii(Velocity); 
+      *(ptrA[0]+1) =  da_wing_x_dthetai(Velocity); 
       *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-      *(ptrA[2]+1) =  da_wing_z_dthetai(V); 
-      *(ptrA[0]+2) =  da_wing_x_dpsii(V); 
-      *(ptrA[1]+2) =  da_wing_y_dpsii(V); 
-      *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
+      *(ptrA[2]+1) =  da_wing_z_dthetai(Velocity); 
+      *(ptrA[0]+2) =  da_wing_x_dpsii(Velocity); 
+      *(ptrA[1]+2) =  da_wing_y_dpsii(Velocity); 
+      *(ptrA[2]+2) =  da_wing_z_dpsii(Velocity); 
       *(ptrA[0]+3) =  0.0f; 
       *(ptrA[1]+3) =  0.0f; 
       *(ptrA[2]+3) = -1.0f; 
@@ -245,21 +206,7 @@ void test_SVD(){
       for (int c = 0; c < n; c++) {
         ptrU[r][c] = ptrA[r][c];
       }
-      printf("\n");
     }
-    printf("\n");
-
-    // printf("\n\nPointer Check\n\n");
-    // printf("\tpointer ptrA points to %u\t pointer A points to %u\n",ptrA,A);
-    // for (int r = 0; r < m; r++) 
-    // { 
-    //   printf("\n\n\tpointer ptrA[%d] points to %u\t pointer A[%d] points to %u\n\n",r,ptrA[r],r,A[r]);
-    //   for (int c = 0; c < n; c++) 
-    //   { 
-    //     printf("\tadress ptrA[%d][%d] @ %u\t adress A[%d][%d] @ %u\n",r,c,&ptrA[r][c],r,c,&A[r][c]);
-    //   }
-    // }
-
 
     printf("\n\nMatrix Check\n\n");
     printf("\tMatrix A:\n");
@@ -267,48 +214,22 @@ void test_SVD(){
     printf("\tMatrix U (copy of A):\n");
     print_matrix(ptrU,m,n);
 
-
- 
-
-
-    
-
-
+    //Status checks if SVD returned fail flag
     int status = 0;
     status = pprz_svd_float(ptrU, ptrW, ptrV, m, n);
     if (status != 1) {
-      printf("\nPseudo inverse failed to converge!");
+      printf("\nSVD failed to converge!");
     } else {
+      printf("\nSVD Succesfull\n\n!");
 
       printf("\tMatrix U:\n");
       print_matrix(ptrU,m,n);
       printf("\tDiagonal W:\n");
       print_row(ptrW,n);
       printf("\tMatrix V:\n");
-      print_matrix(ptrV,n,n);
-
-      printf("\n");
-
-      pprz_svd_solve_float(ptrX, ptrU, ptrW, ptrV, ptrB, m, n, 1);
-      
-     
-      printf("\tMatrix B:\n");
-      print_matrix(ptrB,m,1);
-
-      printf("\tMatrix X:\n");
-      print_matrix(ptrX,n,1);
-
-      printf("\n");
-
-
-
-
-    }
-   
-
-
+      print_matrix(ptrV,n,n);    
+  }
 }
-
 
 
 // CELib
@@ -3974,134 +3895,134 @@ float Vxz_2_dCl_dpsii(const float V[3])
 
 
 
-void test_a_L_wing(void)
-{
- printf("\nRunning test_a_L_wing func in guidance_aerobatic\n\n");
- int Vinf;
- int theta;
- int psi;
- float V[3];
- float phi = 10.0f;
+// void test_a_L_wing(void)
+// {
+//  printf("\nRunning test_a_L_wing func in guidance_aerobatic\n\n");
+//  int Vinf;
+//  int theta;
+//  int psi;
+//  float V[3];
+//  float phi = 10.0f;
 
- float temp_res[3];
+//  float temp_res[3];
 
- Vinf = 10;
- theta = 4;
- psi = 60;
+//  Vinf = 10;
+//  theta = 4;
+//  psi = 60;
 
- printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\t");
+//  printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\t");
 
- printf("da_wing_x_dphii\tda_wing_x_dpsii\tda_wing_x_dthetai\tda_wing_y_dphii\tda_wing_y_dpsii\tda_wing_y_dthetai\tda_wing_z_dphii\tda_wing_z_dpsii\tda_wing_z_dthetai\t");
+//  printf("da_wing_x_dphii\tda_wing_x_dpsii\tda_wing_x_dthetai\tda_wing_y_dphii\tda_wing_y_dpsii\tda_wing_y_dthetai\tda_wing_z_dphii\tda_wing_z_dpsii\tda_wing_z_dthetai\t");
 
- printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
+//  printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
 
- printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
+//  printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
 
- printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
+//  printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
 
- for (Vinf=0;Vinf<10;Vinf++)
- {
-    for (theta = -90; theta <= 90; theta = theta + 10)
-    {
-      for (psi = -180; psi < 180; psi = psi + 10)
-      {
-        V[0] = (float)Vinf*cosf((float)psi/180.0f*M_PI)*sinf((float)theta/180.0f*M_PI);
-        V[1] = (float)Vinf*cosf((float)psi/180.0f*M_PI)*cosf((float)theta/180.0f*M_PI);
-        V[2] = (float)Vinf*sinf((float)psi/180.0f*M_PI);
+//  for (Vinf=0;Vinf<10;Vinf++)
+//  {
+//     for (theta = -90; theta <= 90; theta = theta + 10)
+//     {
+//       for (psi = -180; psi < 180; psi = psi + 10)
+//       {
+//         V[0] = (float)Vinf*cosf((float)psi/180.0f*M_PI)*sinf((float)theta/180.0f*M_PI);
+//         V[1] = (float)Vinf*cosf((float)psi/180.0f*M_PI)*cosf((float)theta/180.0f*M_PI);
+//         V[2] = (float)Vinf*sinf((float)psi/180.0f*M_PI);
 
 
       
-        printf("%i"  ,Vinf );
+//         printf("%i"  ,Vinf );
         
-        printf("\t%.4f",phi  );
+//         printf("\t%.4f",phi  );
         
-        printf("\t%i"  ,theta);
-        printf("\t%i"  ,psi  );
+//         printf("\t%i"  ,theta);
+//         printf("\t%i"  ,psi  );
         
-        printf("\t%.4f",V[0]  );
-        printf("\t%.4f",V[1]  );
-        printf("\t%.4f",V[2]  );
+//         printf("\t%.4f",V[0]  );
+//         printf("\t%.4f",V[1]  );
+//         printf("\t%.4f",V[2]  );
 
-        printf("\t%.4f",a_wing_x(V));
-        printf("\t%.4f",a_wing_z(V,phi));
+//         printf("\t%.4f",a_wing_x(V));
+//         printf("\t%.4f",a_wing_z(V,phi));
 
-        printf("\t%.4f",a_L_wing_x(V));
-        printf("\t%.4f",a_L_wing_z(V,phi));
+//         printf("\t%.4f",a_L_wing_x(V));
+//         printf("\t%.4f",a_L_wing_z(V,phi));
 
-        printf("\t%.4f",a_D_wing_x(V));
-        printf("\t%.4f",a_D_wing_z(V,phi));
+//         printf("\t%.4f",a_D_wing_x(V));
+//         printf("\t%.4f",a_D_wing_z(V,phi));
 
-        printf("\t%.4f",AoA(V));
-        printf("\t%.4f",AoS(V));
-        printf("\t%.4f",AoD(V));
+//         printf("\t%.4f",AoA(V));
+//         printf("\t%.4f",AoS(V));
+//         printf("\t%.4f",AoD(V));
 
-        printf("\t%.4f",Cl(AoA(V)));
-        printf("\t%.4f",Cd(AoA(V)));
-        printf("\t%.4f",dCl(AoA(V)));
-        printf("\t%.4f",dCd(AoA(V)));
+//         printf("\t%.4f",Cl(AoA(V)));
+//         printf("\t%.4f",Cd(AoA(V)));
+//         printf("\t%.4f",dCl(AoA(V)));
+//         printf("\t%.4f",dCd(AoA(V)));
 
-        printf("\t%.4f",Vxz_2(V));
+//         printf("\t%.4f",Vxz_2(V));
 
-        printf("\t%.4f",da_wing_x_dphii(V));
-        printf("\t%.4f",da_wing_x_dpsii(V));
-        printf("\t%.4f",da_wing_x_dthetai(V));
-
-
-        printf("\t%.4f",da_wing_y_dphii(V));
-        printf("\t%.4f",da_wing_y_dpsii(V));
-        printf("\t%.4f",da_wing_y_dthetai());
+//         printf("\t%.4f",da_wing_x_dphii(V));
+//         printf("\t%.4f",da_wing_x_dpsii(V));
+//         printf("\t%.4f",da_wing_x_dthetai(V));
 
 
-        printf("\t%.4f",da_wing_z_dphii(V));
-        printf("\t%.4f",da_wing_z_dpsii(V));
-        printf("\t%.4f",da_wing_z_dthetai(V));
+//         printf("\t%.4f",da_wing_y_dphii(V));
+//         printf("\t%.4f",da_wing_y_dpsii(V));
+//         printf("\t%.4f",da_wing_y_dthetai());
 
-        printf("\t%.4f",dalphai_dphii(V));
-        printf("\t%.4f",dalphai_dpsii(V));
-        printf("\t%.4f",dalphai_dthetai());
 
-        printf("\t%.4f",dbetai_dphii());
-        printf("\t%.4f",dbetai_dpsii(V));
-        printf("\t%.4f",dbetai_dthetai(V));
+//         printf("\t%.4f",da_wing_z_dphii(V));
+//         printf("\t%.4f",da_wing_z_dpsii(V));
+//         printf("\t%.4f",da_wing_z_dthetai(V));
 
-        printf("\t%.4f",dCd_dphii(V));
-        printf("\t%.4f",dCd_dpsii(V));
-        printf("\t%.4f",dCd_dthetai(V));
+//         printf("\t%.4f",dalphai_dphii(V));
+//         printf("\t%.4f",dalphai_dpsii(V));
+//         printf("\t%.4f",dalphai_dthetai());
+
+//         printf("\t%.4f",dbetai_dphii());
+//         printf("\t%.4f",dbetai_dpsii(V));
+//         printf("\t%.4f",dbetai_dthetai(V));
+
+//         printf("\t%.4f",dCd_dphii(V));
+//         printf("\t%.4f",dCd_dpsii(V));
+//         printf("\t%.4f",dCd_dthetai(V));
         
-        printf("\t%.4f",dCl_dphii(V));
-        printf("\t%.4f",dCl_dpsii(V));
-        printf("\t%.4f",dCl_dthetai(V));
+//         printf("\t%.4f",dCl_dphii(V));
+//         printf("\t%.4f",dCl_dpsii(V));
+//         printf("\t%.4f",dCl_dthetai(V));
 
-        printf("\t%.4f",dVx_dphii());
-        printf("\t%.4f",dVx_dpsii(V));
-        printf("\t%.4f",dVx_dthetai(V));
+//         printf("\t%.4f",dVx_dphii());
+//         printf("\t%.4f",dVx_dpsii(V));
+//         printf("\t%.4f",dVx_dthetai(V));
 
-        printf("\t%.4f",dVxz_2_dphii(V));
-        printf("\t%.4f",dVxz_2_dpsii(V));
-        printf("\t%.4f",dVxz_2_dthetai());
+//         printf("\t%.4f",dVxz_2_dphii(V));
+//         printf("\t%.4f",dVxz_2_dpsii(V));
+//         printf("\t%.4f",dVxz_2_dthetai());
 
-        printf("\t%.4f",dVy_dphii(V));
-        printf("\t%.4f",dVy_dthetai());
-        printf("\t%.4f",dVz_dphii(V));
+//         printf("\t%.4f",dVy_dphii(V));
+//         printf("\t%.4f",dVy_dthetai());
+//         printf("\t%.4f",dVz_dphii(V));
 
-        printf("\t%.4f",dVz_dpsii());
-        printf("\t%.4f",dVz_dthetai(V));
-        printf("\t%.4f",Vxz_2_dalphai_dphii(V));
+//         printf("\t%.4f",dVz_dpsii());
+//         printf("\t%.4f",dVz_dthetai(V));
+//         printf("\t%.4f",Vxz_2_dalphai_dphii(V));
 
-        printf("\t%.4f",Vxz_2_dalphai_dpsii(V));
-        printf("\t%.4f",Vxz_2_dCd_dphii(V));
-        printf("\t%.4f",Vxz_2_dCd_dpsii(V));
-
-
-        printf("\t%.4f",Vxz_2_dCl_dphii(V));
-        printf("\t%.4f",Vxz_2_dCl_dpsii(V));
-
-        printf("\n");
+//         printf("\t%.4f",Vxz_2_dalphai_dpsii(V));
+//         printf("\t%.4f",Vxz_2_dCd_dphii(V));
+//         printf("\t%.4f",Vxz_2_dCd_dpsii(V));
 
 
-      }
-    }
+//         printf("\t%.4f",Vxz_2_dCl_dphii(V));
+//         printf("\t%.4f",Vxz_2_dCl_dpsii(V));
 
- }
- printf("\n");
-}
+//         printf("\n");
+
+
+//       }
+//     }
+
+//  }
+//  printf("\n");
+// }
