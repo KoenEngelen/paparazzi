@@ -43,61 +43,64 @@ float debug_value;
 Declarations
 */
  
+float V[3]={0.1f,2.0f,1.0f};
+float phi = 0;
+float alpha = 0;
+
 void test_SVD(void);
 void test_a_L_wing(void);
-float a_D_wing_x(const float V[3]);
-float a_D_wing_z(const float V[3], float phi);
-float a_L_wing_x(const float V[3]);
-float a_L_wing_z(const float V[3], float phi);
-float a_wing_x(const float V[3]);
-float a_wing_z(const float V[3], float phi);
-float AoA(const float V[3]);
-float AoD(const float V[3]);
-float AoS(const float V[3]);
-float Cd(float alpha);
-float Cl(float alpha);
-float dCd(float alpha);
-float dCl(float alpha);
-float Vxz_2(const float V[3]);
-float da_wing_x_dphii(const float V[3]);
-float da_wing_x_dpsii(const float V[3]);
-float da_wing_x_dthetai(const float V[3]);
-float da_wing_y_dphii(const float V[3]);
-float da_wing_y_dpsii(const float V[3]);
+float a_D_wing_x(void);
+float a_D_wing_z(void);
+float a_L_wing_x(void);
+float a_L_wing_z(void);
+float a_wing_x(void);
+float a_wing_z(void);
+float AoA(void);
+float AoD(void);
+float AoS(void);
+float Cd(void);
+float Cl(void);
+float dCd(void);
+float dCl(void);
+float Vxz_2(void);
+float da_wing_x_dphii(void);
+float da_wing_x_dpsii(void);
+float da_wing_x_dthetai(void);
+float da_wing_y_dphii(void);
+float da_wing_y_dpsii(void);
 float da_wing_y_dthetai(void);
-float da_wing_z_dphii(const float V[3]);
-float da_wing_z_dpsii(const float V[3]);
-float da_wing_z_dthetai(const float V[3]);
-float dalphai_dphii(const float V[3]);
-float dalphai_dpsii(const float V[3]);
+float da_wing_z_dphii(void);
+float da_wing_z_dpsii(void);
+float da_wing_z_dthetai(void);
+float dalphai_dphii(void);
+float dalphai_dpsii(void);
 float dalphai_dthetai(void);
 float dbetai_dphii(void);
-float dbetai_dpsii(const float V[3]);
-float dbetai_dthetai(const float V[3]);
-float dCd_dphii(const float V[3]);
-float dCd_dpsii(const float V[3]);
-float dCd_dthetai(const float V[3]);
-float dCl_dphii(const float V[3]);
-float dCl_dpsii(const float V[3]);
-float dCl_dthetai(const float V[3]);
+float dbetai_dpsii(void);
+float dbetai_dthetai(void);
+float dCd_dphii(void);
+float dCd_dpsii(void);
+float dCd_dthetai(void);
+float dCl_dphii(void);
+float dCl_dpsii(void);
+float dCl_dthetai(void);
 float dVx_dphii(void);
-float dVx_dpsii(const float V[3]);
-float dVx_dthetai(const float V[3]);
-
-float dVxz_2_dphii(const float V[3]);
-float dVxz_2_dpsii(const float V[3]);
+float dVx_dpsii(void);
+float dVx_dthetai(void);
+float dVxz_2_dphii(void);
+float dVxz_2_dpsii(void);
 float dVxz_2_dthetai(void);
-float dVy_dphii(const float V[3]);
+float dVy_dphii(void);
 float dVy_dthetai(void);
-float dVz_dphii(const float V[3]);
+float dVz_dphii(void);
 float dVz_dpsii(void);
-float dVz_dthetai(const float V[3]);
-float Vxz_2_dalphai_dphii(const float V[3]);
-float Vxz_2_dalphai_dpsii(const float V[3]);
-float Vxz_2_dCd_dphii(const float V[3]);
-float Vxz_2_dCd_dpsii(const float V[3]);
-float Vxz_2_dCl_dphii(const float V[3]);
-float Vxz_2_dCl_dpsii(const float V[3]);
+float dVz_dthetai(void);
+float Vxz_2_dalphai_dphii(void);
+float Vxz_2_dalphai_dpsii(void);
+float Vxz_2_dCd_dphii(void);
+float Vxz_2_dCd_dpsii(void);
+float Vxz_2_dCl_dphii(void);
+float Vxz_2_dCl_dpsii(void);
 void print_matrix(float** ptr,int m, int n);
 void print_row(float* ptr,int m);
 
@@ -125,6 +128,7 @@ void print_row(float* ptr,int m);
   //  test_SVD();  //ERROR: This function does not work in periodic function
  }
 
+//Print_matix_function
 void print_matrix(float **ptr,int m, int n){
     for (int r = 0; r < m; r++) {
       for (int c = 0; c < n; c++) {
@@ -138,7 +142,7 @@ void print_matrix(float **ptr,int m, int n){
 void print_ptrarray(float **ptr,int m, int n){
     for (int r = 0; r < m; r++) {
       for (int c = 0; c < n; c++) {
-        printf("\t%x\t",ptr[r]);
+        printf("\t%x\t",&ptr[r][c]);
       }
       printf("\n");
     }
@@ -165,75 +169,84 @@ void print_array(float *ptr,int m, int n){
     printf("\n");
 }
 
-// void print_row(float *ptr,int m){
-//     for (int r = 0; r < m; r++) {
-//         printf("\t%.4f\t",ptr[r]);
-//     }
-//     printf("\n\n");
-// }
+void print_row(float *ptr,int m){
+    for (int r = 0; r < m; r++) {
+        printf("\t%.4f\t",ptr[r]);
+    }
+    printf("\n\n");
+}
 
 #define ROWS_GUIDANCE 3 //rows
 #define COLS_GUIDANCE 4 //columns
 
-float A[ROWS_GUIDANCE][COLS_GUIDANCE];
-float U[ROWS_GUIDANCE][COLS_GUIDANCE];
-float ptrW[COLS_GUIDANCE];
-float V[COLS_GUIDANCE][COLS_GUIDANCE];
+
+float Asvd[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
+float Usvd[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
+float ptrW[COLS_GUIDANCE] = {0};
+float Vsvd[COLS_GUIDANCE][COLS_GUIDANCE] = {0};
+
+float Bsvd[ROWS_GUIDANCE][1] = {0};
+float Xsvd[COLS_GUIDANCE][1] = {0};
 
 void test_SVD(){
     //temporary Velocity Vector for debugging purposes
-    float Vel[3];
-    Vel[0] = -2.5f;
-    Vel[1] =  0.5f;
-    Vel[2] =  3.0f;
+    V[0] = -2.5f;
+    V[1] =  0.5f;
+    V[2] =  3.0f;
 
+    float* ptrA[ROWS_GUIDANCE];
+    for (int r = 0; r < ROWS_GUIDANCE; r++){
+      ptrA[r] = &Asvd[r][0];  
+    }
     //Create pointers to float arrays
-    MAKE_MATRIX_PTR(ptrA, A, ROWS_GUIDANCE);
-    MAKE_MATRIX_PTR(ptrU, U, ROWS_GUIDANCE);
-    MAKE_MATRIX_PTR(ptrV, V, COLS_GUIDANCE);
+    // MAKE_MATRIX_PTR(ptrA, Asvd, ROWS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrU, Usvd, ROWS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrV, Vsvd, COLS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrB, Bsvd, ROWS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrX, Xsvd, COLS_GUIDANCE);
     
-    //Print matrices from pointers
-    // printf("\n\nInitialize Check\n\n");
-    // printf("\tInitial Matrix A:\n");
-    // print_matrix(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
-    // printf("\tInitial Matrix U:\n");
-    // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
-    // printf("\tInitial Matrix V:\n");
-    // print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
-    // printf("\tInitial Diagonal W:\n");
-    // print_row(ptrW,COLS_GUIDANCE);
-    // printf("\tInitial Matrix B:\n");
-    // print_matrix(ptrB,ROWS_GUIDANCE,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
-    // printf("\tInitial Matrix X:\n");
-    // print_matrix(ptrX,COLS_GUIDANCE,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
+    // Print matrices from pointers
+    printf("\n\nInitialize Check\n\n");
+    printf("\tInitial Matrix A:\n");
+    print_matrix(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
+    printf("\tInitial Matrix U:\n");
+    print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+    printf("\tInitial Matrix V:\n");
+    print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
+    printf("\tInitial Diagonal W:\n");
+    print_row(ptrW,COLS_GUIDANCE);
+    printf("\tInitial Matrix B:\n");
+    print_matrix(ptrB,ROWS_GUIDANCE,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
+    printf("\tInitial Matrix X:\n");
+    print_matrix(ptrX,COLS_GUIDANCE,1);             //ERROR: If you comment this line out, the simulation will stop (function is defined above) -> this value is never used
 
     //Assign Values to A matrix
     if (ROWS_GUIDANCE > COLS_GUIDANCE){
-      A[0][0] =  da_wing_x_dphii(Vel); 
-      A[0][1] =  da_wing_y_dphii(Vel); 
-      A[0][2] =  da_wing_z_dphii(Vel); 
-      A[1][0] =  da_wing_x_dthetai(Vel); 
-      A[1][1] =  da_wing_y_dthetai(); 
-      A[1][2] =  da_wing_z_dthetai(Vel); 
-      A[2][0] =  da_wing_x_dpsii(Vel); 
-      A[2][1] =  da_wing_y_dpsii(Vel); 
-      A[2][2] =  da_wing_z_dpsii(Vel); 
-      A[3][0] =  0.0f; 
-      A[3][1] =  0.0f; 
-      A[3][2] = -1.0f; 
+      Asvd[0][0] =  da_wing_x_dphii(); 
+      Asvd[0][1] =  da_wing_y_dphii(); 
+      Asvd[0][2] =  da_wing_z_dphii(); 
+      Asvd[1][0] =  da_wing_x_dthetai(); 
+      Asvd[1][1] =  da_wing_y_dthetai(); 
+      Asvd[1][2] =  da_wing_z_dthetai(); 
+      Asvd[2][0] =  da_wing_x_dpsii(); 
+      Asvd[2][1] =  da_wing_y_dpsii(); 
+      Asvd[2][2] =  da_wing_z_dpsii(); 
+      Asvd[3][0] =  0.0f; 
+      Asvd[3][1] =  0.0f; 
+      Asvd[3][2] = -1.0f; 
     } else {
-      A[0][0] =  da_wing_x_dphii(Vel); 
-      A[1][0] =  da_wing_y_dphii(Vel); 
-      A[2][0] =  da_wing_z_dphii(Vel); 
-      A[0][1] =  da_wing_x_dthetai(Vel); 
-      A[1][1] =  da_wing_y_dthetai(); 
-      A[2][1] =  da_wing_z_dthetai(Vel); 
-      A[0][2] =  da_wing_x_dpsii(Vel); 
-      A[1][2] =  da_wing_y_dpsii(Vel); 
-      A[2][2] =  da_wing_z_dpsii(Vel); 
-      A[0][3] =  0.0f; 
-      A[1][3] =  0.0f; 
-      A[2][3] = -1.0f; 
+      Asvd[0][0] =  da_wing_x_dphii(); 
+      Asvd[1][0] =  da_wing_y_dphii(); 
+      Asvd[2][0] =  da_wing_z_dphii(); 
+      Asvd[0][1] =  da_wing_x_dthetai(); 
+      Asvd[1][1] =  da_wing_y_dthetai(); 
+      Asvd[2][1] =  da_wing_z_dthetai(); 
+      Asvd[0][2] =  da_wing_x_dpsii(); 
+      Asvd[1][2] =  da_wing_y_dpsii(); 
+      Asvd[2][2] =  da_wing_z_dpsii(); 
+      Asvd[0][3] =  0.0f; 
+      Asvd[1][3] =  0.0f; 
+      Asvd[2][3] = -1.0f; 
     }
 
     //Copy data from A to U
@@ -247,7 +260,7 @@ void test_SVD(){
     printf("\tMatrix ptrA:\n");
     print_matrix(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
     printf("\tMatrix A:\n");
-    print_array(A[0],ROWS_GUIDANCE,COLS_GUIDANCE);
+    print_array(Asvd[0],ROWS_GUIDANCE,COLS_GUIDANCE);
     printf("\tMatrix U (copy of A):\n");
     print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
 
@@ -255,25 +268,27 @@ void test_SVD(){
     print_ptrarray(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
 
 
+
     printf("\tMatrix adress A:\n");
-    print_adrarray(A,ROWS_GUIDANCE,COLS_GUIDANCE);
+    print_adrarray(Asvd,ROWS_GUIDANCE,COLS_GUIDANCE);
 
     //Store Status to see if SVD succeeded
-    int status = 0;
-    status = pprz_svd_float(ptrU, ptrW, ptrV, ROWS_GUIDANCE, COLS_GUIDANCE);
-    //Fail and Succeed prints:
-    if (status != 1) {
-      printf("\nSVD failed!\n\n");
-    } else {
-      // printf("\tMatrix U:\n");
-      // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
-      // printf("\tDiagonal W:\n");
-      // print_row(ptrW,COLS_GUIDANCE);
-      // printf("\tMatrix V:\n");
-      // print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
-      // printf("\n");
-      printf("\n\nSVD succeeded!\n\n");
-    }
+    // int status = 0;
+    // status = 
+    pprz_svd_float(ptrU, ptrW, ptrV, ROWS_GUIDANCE, COLS_GUIDANCE);
+    // //Fail and Succeed prints:
+    // if (status != 1) {
+    //   printf("\nSVD failed!\n\n");
+    // } else {
+    //   // printf("\tMatrix U:\n");
+    //   // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+    //   // printf("\tDiagonal W:\n");
+    //   // print_row(ptrW,COLS_GUIDANCE);
+    //   // printf("\tMatrix V:\n");
+    //   // print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
+    //   // printf("\n");
+    //   printf("\n\nSVD succeeded!\n\n");
+    // }
 }
 
 // CELib (matlab functions)
@@ -281,7 +296,7 @@ void test_SVD(){
 /*
  * function res = a_D_wing_x(V)
  */
-float a_D_wing_x(const float V[3])
+float a_D_wing_x(void)
 {
   float a;
   float alpha_rad;
@@ -355,7 +370,7 @@ float a_D_wing_x(const float V[3])
 /*
  * function res = a_D_wing_z(V,phi)
  */
-float a_D_wing_z(const float V[3], float phi)
+float a_D_wing_z(void)
 {
   float phi_rad;
   float R_tmp;
@@ -454,7 +469,7 @@ float a_D_wing_z(const float V[3], float phi)
 /*
  * function res = a_L_wing_x(V)
  */
-float a_L_wing_x(const float V[3])
+float a_L_wing_x(void)
 {
   float a;
   float alpha_rad;
@@ -534,7 +549,7 @@ float a_L_wing_x(const float V[3])
 /*
  * function res = a_L_wing_z(V,phi)
  */
-float a_L_wing_z(const float V[3], float phi)
+float a_L_wing_z(void)
 {
   float phi_rad;
   float alpha_rad;
@@ -638,11 +653,10 @@ float a_L_wing_z(const float V[3], float phi)
 /*
  * function res = a_wing_x(V)
  */
-float a_wing_x(const float V[3])
+float a_wing_x(void)
 {
   float Vxz;
   float alpha_rad;
-  float alpha;
   float x;
   float CDa_tmp;
   float b_CDa_tmp;
@@ -770,7 +784,7 @@ float a_wing_x(const float V[3])
 /*
  * function res = a_wing_z(V,phi)
  */
-float a_wing_z(const float V[3], float phi)
+float a_wing_z(void)
 {
   float phi_rad;
   float Vxz;
@@ -926,7 +940,7 @@ float a_wing_z(const float V[3], float phi)
 /*
  * function res = AoA(V)
  */
-float AoA(const float V[3])
+float AoA(void)
 {
   float res;
 
@@ -944,7 +958,7 @@ float AoA(const float V[3])
 /*
  * function res = AoD(V)
  */
-float AoD(const float V[3])
+float AoD(void)
 {
   float res;
 
@@ -963,7 +977,7 @@ float AoD(const float V[3])
 /*
  * function res = AoS(V)
  */
-float AoS(const float V[3])
+float AoS(void)
 {
   float res;
 
@@ -981,7 +995,7 @@ float AoS(const float V[3])
 /*
  * function res = Cd(alpha)
  */
-float Cd(float alpha)
+float Cd(void)
 {
   float res;
   float x;
@@ -1041,7 +1055,7 @@ float Cd(float alpha)
 /*
  * function res = Cl(alpha)
  */
-float Cl(float alpha)
+float Cl(void)
 {
   float res;
   float x;
@@ -1106,7 +1120,7 @@ float Cl(float alpha)
 /*
  * function res = dCd(alpha)
  */
-float dCd(float alpha)
+float dCd(void)
 {
   float res;
   float x;
@@ -1155,7 +1169,7 @@ float dCd(float alpha)
 /*
  * function res = dCl(alpha)
  */
-float dCl(float alpha)
+float dCl(void)
 {
   float res;
   float x;
@@ -1212,7 +1226,7 @@ float dCl(float alpha)
 /*
  * function res = Vxz_2(V)
  */
-float Vxz_2(const float V[3])
+float Vxz_2(void)
 {
   /* 'Vxz_2:2' Vx = V(1); */
   /* 'Vxz_2:3' Vz = V(3); */
@@ -1221,16 +1235,13 @@ float Vxz_2(const float V[3])
 }
 /* End of code generation (Vxz_2.c) */
 
-
 //New Functions
-
 /*
  * function res = da_wing_x_dphii(V)
  */
-float da_wing_x_dphii(const float V[3])
+float da_wing_x_dphii(void)
 {
   float alpha_rad;
-  float alpha;
   float res_tmp;
   float x;
   float b_res_tmp;
@@ -1501,10 +1512,9 @@ float da_wing_x_dphii(const float V[3])
 /*
  * function res = da_wing_x_dpsii(V)
  */
-float da_wing_x_dpsii(const float V[3])
+float da_wing_x_dpsii(void)
 {
   float alpha_rad;
-  float alpha;
   float res_tmp;
   float x;
   float b_res_tmp;
@@ -1757,11 +1767,10 @@ float da_wing_x_dpsii(const float V[3])
 /*
  * function res = da_wing_x_dthetai(V)
  */
-float da_wing_x_dthetai(const float V[3])
+float da_wing_x_dthetai(void)
 {
   float Vxz;
   float alpha_rad;
-  float alpha;
   float res_tmp;
   float b_res_tmp;
   float x;
@@ -1995,11 +2004,10 @@ float da_wing_x_dthetai(const float V[3])
 /*
  * function res = da_wing_y_dphii(V)
  */
-float da_wing_y_dphii(const float V[3])
+float da_wing_y_dphii(void)
 {
   float Vxz;
   float alpha_rad;
-  float alpha;
   float x;
   float CDa_tmp;
   float b_CDa_tmp;
@@ -2127,11 +2135,10 @@ float da_wing_y_dphii(const float V[3])
 /*
  * function res = da_wing_y_dpsii(V)
  */
-float da_wing_y_dpsii(const float V[3])
+float da_wing_y_dpsii(void)
 {
   float Vxz;
   float alpha_rad;
-  float alpha;
   float x;
   float CDa_tmp;
   float b_CDa_tmp;
@@ -2269,10 +2276,9 @@ float da_wing_y_dthetai(void)
 /*
  * function res = da_wing_z_dphii(V)
  */
-float da_wing_z_dphii(const float V[3])
+float da_wing_z_dphii(void)
 {
   float alpha_rad;
-  float alpha;
   float res_tmp;
   float x;
   float b_res_tmp;
@@ -2542,10 +2548,9 @@ float da_wing_z_dphii(const float V[3])
 /*
  * function res = da_wing_z_dpsii(V)
  */
-float da_wing_z_dpsii(const float V[3])
+float da_wing_z_dpsii(void)
 {
   float alpha_rad;
-  float alpha;
   float res_tmp;
   float x;
   float b_res_tmp;
@@ -2798,11 +2803,10 @@ float da_wing_z_dpsii(const float V[3])
 /*
  * function res = da_wing_z_dthetai(V)
  */
-float da_wing_z_dthetai(const float V[3])
+float da_wing_z_dthetai(void)
 {
   float Vxz;
   float alpha_rad;
-  float alpha;
   float res_tmp;
   float b_res_tmp;
   float x;
@@ -3036,7 +3040,7 @@ float da_wing_z_dthetai(const float V[3])
 /*
  * function res = dalphai_dphii(V)
  */
-float dalphai_dphii(const float V[3])
+float dalphai_dphii(void)
 {
 
   /* 'dalphai_dphii:2' Vx = V(1); */
@@ -3050,7 +3054,7 @@ float dalphai_dphii(const float V[3])
 /*
  * function res = dalphai_dpsii(V)
  */
-float dalphai_dpsii(const float V[3])
+float dalphai_dpsii(void)
 {
 
   /* 'dalphai_dpsii:2' Vx = V(1); */
@@ -3084,7 +3088,7 @@ float dbetai_dphii(void)
 /*
  * function res = dbetai_dpsii(V)
  */
-float dbetai_dpsii(const float V[3])
+float dbetai_dpsii(void)
 {
 
   /* 'dbetai_dpsii:2' Vx = V(1); */
@@ -3098,7 +3102,7 @@ float dbetai_dpsii(const float V[3])
 /*
  * function res = dbetai_dthetai(V)
  */
-float dbetai_dthetai(const float V[3])
+float dbetai_dthetai(void)
 {
 
   /* 'dbetai_dthetai:2' Vx = V(1); */
@@ -3112,7 +3116,7 @@ float dbetai_dthetai(const float V[3])
 /*
  * function res = dCd_dphii(V)
  */
-float dCd_dphii(const float V[3])
+float dCd_dphii(void)
 {
   float x;
   float dCDa_tmp;
@@ -3173,7 +3177,7 @@ float dCd_dphii(const float V[3])
 /*
  * function res = dCd_dpsii(V)
  */
-float dCd_dpsii(const float V[3])
+float dCd_dpsii(void)
 {
   float x;
   float dCDa_tmp;
@@ -3233,7 +3237,7 @@ float dCd_dpsii(const float V[3])
 /*
  * function res = dCd_dthetai(V)
  */
-float dCd_dthetai(const float V[3])
+float dCd_dthetai(void)
 {
   float x;
   float dCDa_tmp;
@@ -3288,7 +3292,7 @@ float dCd_dthetai(const float V[3])
 /*
  * function res = dCl_dphii(V)
  */
-float dCl_dphii(const float V[3])
+float dCl_dphii(void)
 {
   float x;
 
@@ -3357,7 +3361,7 @@ float dCl_dphii(const float V[3])
 /*
  * function res = dCl_dpsii(V)
  */
-float dCl_dpsii(const float V[3])
+float dCl_dpsii(void)
 {
   float x;
 
@@ -3425,7 +3429,7 @@ float dCl_dpsii(const float V[3])
 /*
  * function res = dCl_dthetai(V)
  */
-float dCl_dthetai(const float V[3])
+float dCl_dthetai(void)
 {
   float x;
 
@@ -3498,7 +3502,7 @@ float dVx_dphii(void)
 /*
  * function res = dVx_dpsii(V)
  */
-float dVx_dpsii(const float V[3])
+float dVx_dpsii(void)
 {
   float res;
 
@@ -3516,7 +3520,7 @@ float dVx_dpsii(const float V[3])
 /*
  * function res = dVx_dthetai(V)
  */
-float dVx_dthetai(const float V[3])
+float dVx_dthetai(void)
 {
   /* 'dVx_dthetai:2' Vx = V(1); */
   /* 'dVx_dthetai:3' Vz = V(3); */
@@ -3536,7 +3540,7 @@ float dVx_dthetai(const float V[3])
 /*
  * function res = dVxz_2_dphii(V)
  */
-float dVxz_2_dphii(const float V[3])
+float dVxz_2_dphii(void)
 {
 
   /* 'dVxz_2_dphii:2' Vy = V(2); */
@@ -3555,7 +3559,7 @@ float dVxz_2_dphii(const float V[3])
 /*
  * function res = dVxz_2_dpsii(V)
  */
-float dVxz_2_dpsii(const float V[3])
+float dVxz_2_dpsii(void)
 {
 
   /* 'dVxz_2_dpsii:2' Vx = V(1); */
@@ -3580,7 +3584,7 @@ float dVxz_2_dthetai(void)
 /*
  * function res = dVy_dphii(V)
  */
-float dVy_dphii(const float V[3])
+float dVy_dphii(void)
 {
 
   /* 'dVy_dphii:2' Vy = V(2); */
@@ -3610,7 +3614,7 @@ float dVy_dthetai(void)
 /*
  * function res = dVz_dphii(V)
  */
-float dVz_dphii(const float V[3])
+float dVz_dphii(void)
 {
 
   /* 'dVz_dphii:2' Vy = V(2); */
@@ -3640,7 +3644,7 @@ float dVz_dpsii(void)
 /*
  * function res = dVz_dthetai(V)
  */
-float dVz_dthetai(const float V[3])
+float dVz_dthetai(void)
 {
 
   /* 'dVz_dthetai:2' Vx = V(1); */
@@ -3661,7 +3665,7 @@ float dVz_dthetai(const float V[3])
 /*
  * function res = Vxz_2_dalphai_dphii(V)
  */
-float Vxz_2_dalphai_dphii(const float V[3])
+float Vxz_2_dalphai_dphii(void)
 {
 
   /* 'Vxz_2_dalphai_dphii:2' Vx = V(1); */
@@ -3675,7 +3679,7 @@ float Vxz_2_dalphai_dphii(const float V[3])
 /*
  * function res = Vxz_2_dalphai_dpsii(V)
  */
-float Vxz_2_dalphai_dpsii(const float V[3])
+float Vxz_2_dalphai_dpsii(void)
 {
 
   /* 'Vxz_2_dalphai_dpsii:2' Vy = V(2); */
@@ -3688,7 +3692,7 @@ float Vxz_2_dalphai_dpsii(const float V[3])
 /*
  * function res = Vxz_2_dCd_dphii(V)
  */
-float Vxz_2_dCd_dphii(const float V[3])
+float Vxz_2_dCd_dphii(void)
 {
   float x;
   float dCDa_tmp;
@@ -3748,7 +3752,7 @@ float Vxz_2_dCd_dphii(const float V[3])
 /*
  * function res = Vxz_2_dCd_dpsii(V)
  */
-float Vxz_2_dCd_dpsii(const float V[3])
+float Vxz_2_dCd_dpsii(void)
 {
   float x;
   float dCDa_tmp;
@@ -3807,7 +3811,7 @@ float Vxz_2_dCd_dpsii(const float V[3])
 /*
  * function res = Vxz_2_dCl_dphii(V)
  */
-float Vxz_2_dCl_dphii(const float V[3])
+float Vxz_2_dCl_dphii(void)
 {
   float x;
 
@@ -3874,7 +3878,7 @@ float Vxz_2_dCl_dphii(const float V[3])
 /*
  * function res = Vxz_2_dCl_dpsii(V)
  */
-float Vxz_2_dCl_dpsii(const float V[3])
+float Vxz_2_dCl_dpsii(void)
 {
   float x;
 
@@ -3937,16 +3941,12 @@ float Vxz_2_dCl_dpsii(const float V[3])
 }
 /* End of code generation (Vxz_2_dCl_dpsii.c) */
 
-
-
 void test_a_L_wing(void)
 {
  printf("\nRunning test_a_L_wing func in guidance_aerobatic\n\n");
  int Vinf;
  int theta;
  int psi;
- float V[3];
- float phi = 10.0f;
 
 //  float temp_res[3];
 
@@ -3987,79 +3987,79 @@ void test_a_L_wing(void)
         printf("\t%.4f",V[1]  );
         printf("\t%.4f",V[2]  );
 
-        printf("\t%.4f",a_wing_x(V));
-        printf("\t%.4f",a_wing_z(V,phi));
+        printf("\t%.4f",a_wing_x());
+        printf("\t%.4f",a_wing_z());
 
-        printf("\t%.4f",a_L_wing_x(V));
-        printf("\t%.4f",a_L_wing_z(V,phi));
+        printf("\t%.4f",a_L_wing_x());
+        printf("\t%.4f",a_L_wing_z());
 
-        printf("\t%.4f",a_D_wing_x(V));
-        printf("\t%.4f",a_D_wing_z(V,phi));
+        printf("\t%.4f",a_D_wing_x());
+        printf("\t%.4f",a_D_wing_z());
 
-        printf("\t%.4f",AoA(V));
-        printf("\t%.4f",AoS(V));
-        printf("\t%.4f",AoD(V));
+        printf("\t%.4f",AoA());
+        printf("\t%.4f",AoS());
+        printf("\t%.4f",AoD());
 
-        printf("\t%.4f",Cl(AoA(V)));
-        printf("\t%.4f",Cd(AoA(V)));
-        printf("\t%.4f",dCl(AoA(V)));
-        printf("\t%.4f",dCd(AoA(V)));
+        printf("\t%.4f",Cl());
+        printf("\t%.4f",Cd());
+        printf("\t%.4f",dCl());
+        printf("\t%.4f",dCd());
 
-        printf("\t%.4f",Vxz_2(V));
+        printf("\t%.4f",Vxz_2());
 
-        printf("\t%.4f",da_wing_x_dphii(V));
-        printf("\t%.4f",da_wing_x_dpsii(V));
-        printf("\t%.4f",da_wing_x_dthetai(V));
+        printf("\t%.4f",da_wing_x_dphii());
+        printf("\t%.4f",da_wing_x_dpsii());
+        printf("\t%.4f",da_wing_x_dthetai());
 
 
-        printf("\t%.4f",da_wing_y_dphii(V));
-        printf("\t%.4f",da_wing_y_dpsii(V));
+        printf("\t%.4f",da_wing_y_dphii());
+        printf("\t%.4f",da_wing_y_dpsii());
         printf("\t%.4f",da_wing_y_dthetai());
 
 
-        printf("\t%.4f",da_wing_z_dphii(V));
-        printf("\t%.4f",da_wing_z_dpsii(V));
-        printf("\t%.4f",da_wing_z_dthetai(V));
+        printf("\t%.4f",da_wing_z_dphii());
+        printf("\t%.4f",da_wing_z_dpsii());
+        printf("\t%.4f",da_wing_z_dthetai());
 
-        printf("\t%.4f",dalphai_dphii(V));
-        printf("\t%.4f",dalphai_dpsii(V));
+        printf("\t%.4f",dalphai_dphii());
+        printf("\t%.4f",dalphai_dpsii());
         printf("\t%.4f",dalphai_dthetai());
 
         printf("\t%.4f",dbetai_dphii());
-        printf("\t%.4f",dbetai_dpsii(V));
-        printf("\t%.4f",dbetai_dthetai(V));
+        printf("\t%.4f",dbetai_dpsii());
+        printf("\t%.4f",dbetai_dthetai());
 
-        printf("\t%.4f",dCd_dphii(V));
-        printf("\t%.4f",dCd_dpsii(V));
-        printf("\t%.4f",dCd_dthetai(V));
+        printf("\t%.4f",dCd_dphii());
+        printf("\t%.4f",dCd_dpsii());
+        printf("\t%.4f",dCd_dthetai());
         
-        printf("\t%.4f",dCl_dphii(V));
-        printf("\t%.4f",dCl_dpsii(V));
-        printf("\t%.4f",dCl_dthetai(V));
+        printf("\t%.4f",dCl_dphii());
+        printf("\t%.4f",dCl_dpsii());
+        printf("\t%.4f",dCl_dthetai());
 
         printf("\t%.4f",dVx_dphii());
-        printf("\t%.4f",dVx_dpsii(V));
-        printf("\t%.4f",dVx_dthetai(V));
+        printf("\t%.4f",dVx_dpsii());
+        printf("\t%.4f",dVx_dthetai());
 
-        printf("\t%.4f",dVxz_2_dphii(V));
-        printf("\t%.4f",dVxz_2_dpsii(V));
+        printf("\t%.4f",dVxz_2_dphii());
+        printf("\t%.4f",dVxz_2_dpsii());
         printf("\t%.4f",dVxz_2_dthetai());
 
-        printf("\t%.4f",dVy_dphii(V));
+        printf("\t%.4f",dVy_dphii());
         printf("\t%.4f",dVy_dthetai());
-        printf("\t%.4f",dVz_dphii(V));
+        printf("\t%.4f",dVz_dphii());
 
         printf("\t%.4f",dVz_dpsii());
-        printf("\t%.4f",dVz_dthetai(V));
-        printf("\t%.4f",Vxz_2_dalphai_dphii(V));
+        printf("\t%.4f",dVz_dthetai());
+        printf("\t%.4f",Vxz_2_dalphai_dphii());
 
-        printf("\t%.4f",Vxz_2_dalphai_dpsii(V));
-        printf("\t%.4f",Vxz_2_dCd_dphii(V));
-        printf("\t%.4f",Vxz_2_dCd_dpsii(V));
+        printf("\t%.4f",Vxz_2_dalphai_dpsii());
+        printf("\t%.4f",Vxz_2_dCd_dphii());
+        printf("\t%.4f",Vxz_2_dCd_dpsii());
 
 
-        printf("\t%.4f",Vxz_2_dCl_dphii(V));
-        printf("\t%.4f",Vxz_2_dCl_dpsii(V));
+        printf("\t%.4f",Vxz_2_dCl_dphii());
+        printf("\t%.4f",Vxz_2_dCl_dpsii());
 
         printf("\n");
 
