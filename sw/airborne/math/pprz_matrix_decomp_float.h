@@ -81,7 +81,7 @@ void pprz_qr_float(float **Q, float **R, float **in, int m, int n);
  * @param n number of columns of the input matrix
  * @return 0 (false) if convergence failed, 1 (true) if decomposition succed
  */
-int pprz_svd_float(float **a, float *w, float **v, int m, int n);
+extern int pprz_svd_float(float **a, float *w, float **v, int m, int n);
 
 /** SVD based linear solver
  *
