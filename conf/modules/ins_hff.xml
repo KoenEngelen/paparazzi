@@ -1,6 +1,6 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 
-<module name="ins_hff" dir="ins">
+<module name="ins_hff" dir="ins" task="estimation">
   <doc>
     <description>
       INS with float vertical and horizontal filters.
@@ -11,6 +11,10 @@
     <define name="INS_INT_IMU_ID" value="ABI_BROADCAST" description="The ABI sender id of the IMU to use"/>
     <define name="INS_INT_VEL_ID" value="ABI_BROADCAST" description="The ABI sender id of the VELOCITY_ESTIMATE (e.g. from opticflow"/>
   </doc>
+  <dep>
+    <depends>@imu,@gps|@position|@velocity</depends>
+    <provides>ins</provides>
+  </dep>
   <header>
     <file name="ins_int.h" dir="subsystems/ins"/>
   </header>
@@ -22,5 +26,8 @@
     <file name="vf_float.c" dir="subsystems/ins"/>
     <file name="hf_float.c" dir="subsystems/ins"/>
     <define name="USE_HFF"/>
+    <test firmware="rotorcraft">
+      <define name="AHRS_PROPAGATE_FREQUENCY" value="500"/>
+    </test>
   </makefile>
 </module>

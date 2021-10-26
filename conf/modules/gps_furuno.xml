@@ -1,6 +1,6 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 
-<module name="gps_furuno" dir="gps">
+<module name="gps_furuno" dir="gps" task="sensors">
   <doc>
     <description>
       Furuno GPS (UART)
@@ -9,7 +9,10 @@
     <configure name="FURUNO_GPS_PORT" value="UARTx" description="UART where the GPS is connected to (UART1, UART2, etc"/>
     <configure name="FURUNO_GPS_BAUD" value="B38400" description="UART baud rate"/>
   </doc>
-  <autoload name="gps"/>
+  <dep>
+    <depends>uart,gps</depends>
+    <provides>gps</provides>
+  </dep>
   <autoload name="gps_nps"/>
   <autoload name="gps_sim"/>
   <header>
@@ -46,6 +49,13 @@
       $(TARGET).CFLAGS += -DGPS_TYPE_H=\"subsystems/gps/gps_nmea.h\"
       endif
     </raw>
+    <test>
+      <define name="PRIMARY_GPS" value="GPS_NMEA"/>
+      <define name="FURUNO_GPS_PORT" value="uart2"/>
+      <define name="FURUNO_GPS_BAUD" value="115200"/>
+      <define name="USE_UART2"/>
+      <define name="NMEA_GPS_LINK" value="uart2"/>
+    </test>
   </makefile>
   <makefile target="fbw">
     <define name="USE_GPS"/>

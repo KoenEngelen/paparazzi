@@ -26,6 +26,7 @@ let my_id = "ground"
 let gps_mode_3D = 3
 let no_md5_check = ref false
 let replay_old_log = ref false
+let log_name_arg = ref ""
 
 
 open Printf
@@ -121,8 +122,8 @@ let logger = fun () ->
     printf "Creating '%s'\n" logs_path; flush stdout;
     Unix.mkdir logs_path 0o755
   end;
-  let log_name = sprintf "%s.log" basename
-  and data_name = sprintf "%s.data" basename in
+  let log_name = if (!log_name_arg = "") then sprintf "%s.log" basename else sprintf "%s__%s.log" !log_name_arg basename in
+  let data_name = if (!log_name_arg = "") then sprintf "%s.data" basename else sprintf "%s__%s.log" !log_name_arg basename in 
   let f = open_out (logs_path // log_name) in
   (* version string with whitespace/newline at the end stripped *)
   output_string f ("<!-- logged with runtime paparazzi_version " ^  Env.get_paparazzi_version () ^ " -->\n");
@@ -327,9 +328,16 @@ let send_wind = fun a ->
 let send_telemetry_status = fun a ->
   let id = a.id in
   let tl_payload = fun link_id datalink_status link_status ->
+    let time_since_last_msg = if link_id = "no_id" then
+            U.gettimeofday () -. a.last_msg_date
+        else
+            let tslm = U.gettimeofday () -. a.last_msg_date in
+            let tsllm = U.gettimeofday () -. link_status.last_link_status_date +. (float_of_int link_status.rx_lost_time) in
+            if tslm > tsllm then tslm else tsllm (* greatest time between last message and last message from this link *)
+    in
     [ "ac_id", PprzLink.String id;
       "link_id", PprzLink.String link_id;
-      "time_since_last_msg", PprzLink.Float (U.gettimeofday () -. a.last_msg_date); (* don't use rx_lost_time from LINK_REPORT so it also works in simulation *)
+      "time_since_last_msg", PprzLink.Float (time_since_last_msg); (* don't use rx_lost_time from LINK_REPORT so it also works in simulation *)
       "rx_bytes", PprzLink.Int64 (Int64.of_int link_status.rx_bytes);
       "rx_msgs", PprzLink.Int64 (Int64.of_int link_status.rx_msgs);
       "rx_bytes_rate", PprzLink.Float link_status.rx_bytes_rate;
@@ -771,8 +779,7 @@ let send_config = fun http _asker args ->
     let fp = prefix ("var" // "aircrafts" // ac_name // "flight_plan.xml")
     and af = prefix ("conf" // ExtXml.attrib conf "airframe")
     and rc = prefix ("conf" // ExtXml.attrib conf "radio")
-    and settings = if not _is_replayed then prefix ("var" // "aircrafts" // ac_name //
-                                                       "settings.xml") else "file://replay" in
+    and settings = prefix ("var" // "aircrafts" // ac_name // "settings.xml") in
     let col = try Xml.attrib conf "gui_color" with _ -> new_color () in
     let ac_name = try Xml.attrib conf "name" with _ -> "" in
     [ "ac_id", PprzLink.String real_id;
@@ -874,6 +881,7 @@ let link_report = fun logging _sender vs ->
   try
     let ac = Hashtbl.find aircrafts ac_id in
     let link_status = {
+      last_link_status_date = U.gettimeofday ();
       Aircraft_server.rx_lost_time = PprzLink.int_assoc "rx_lost_time" vs;
       rx_bytes = PprzLink.int_assoc "rx_bytes" vs;
       rx_msgs = PprzLink.int_assoc "rx_msgs" vs;
@@ -916,6 +924,7 @@ let () =
       "-n", Arg.Clear logging, "Disable log";
       "-timestamp", Arg.Set timestamp, "Bind on timestampped messages";
       "-no_md5_check", Arg.Set no_md5_check, "Disable safety matching of live and current configurations";
+      "-log_name", Arg.Set_string log_name_arg, "Name for output log (Time stamp will be";
       "-replay_old_log", Arg.Set replay_old_log, "Enable aircraft registering on PPRZ_MODE messages"] in
 
   Arg.parse

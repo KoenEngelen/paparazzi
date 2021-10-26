@@ -9,6 +9,10 @@
     <waypoint alt="260.0" name="WAIT1" x="118.0" y="84.9"/>
     <waypoint alt="240.0" name="WAIT2" x="-34.4" y="143.5"/>
   </waypoints>
+  <modules>
+    <module name="traffic_info"/>
+    <module name="formation_flight"/>
+  </modules>
   <blocks>
     <block name="init formation">
       <!-- formation_init() is already called -->
@@ -36,7 +40,7 @@
     <block name="land"> <!-- basic landing function out of formation -->
       <call_once fun="stop_formation()"/>
       <exception cond="(GROUND_ALT+10> GetPosAlt())" deroute="stop"/>
-      <circle radius="50" until="225 > GetPosAlt()" wp="IAF"/>
+      <circle radius="50" until="225 @GT GetPosAlt()" wp="IAF"/>
       <go alt="215" wp="AF"/>
       <go from="AF" hmode="route" vmode="glide" wp="RWAY"/>
     </block>

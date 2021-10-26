@@ -107,6 +107,10 @@
 #define AIRSPEED_SDP3X_ID 3
 #endif
 
+#ifndef AIRSPEED_ETS_ID
+#define AIRSPEED_ETS_ID 4
+#endif
+
 /*
  * IDs of Incidence angles (message 24)
  */
@@ -181,6 +185,10 @@
 #define AGL_LIDAR_TFMINI_I2C_ID 14
 #endif
 
+#ifndef AGL_LIDAR_MATEKSYS_3901_L0X_ID
+#define AGL_LIDAR_MATEKSYS_3901_L0X_ID 15
+#endif
+
 /*
  * IDs of magnetometer sensors (including IMUs with mag)
  */
@@ -195,6 +203,14 @@
 
 #ifndef MAG_IST8310_SENDER_ID
 #define MAG_IST8310_SENDER_ID 4
+#endif
+
+#ifndef MAG_RM3100_SENDER_ID
+#define MAG_RM3100_SENDER_ID 5
+#endif
+
+#ifndef MAG_DATALINK_SENDER_ID
+#define MAG_DATALINK_SENDER_ID 6
 #endif
 
 #ifndef IMU_MAG_PITOT_ID
@@ -355,8 +371,20 @@
 #define FLOW_OPTICFLOW_ID 1
 #endif
 
+#ifndef FLOW_OPTICFLOW_CAM1_ID
+#define FLOW_OPTICFLOW_CAM1_ID 1
+#endif
+
+#ifndef FLOW_OPTICFLOW_CAM2_ID
+#define FLOW_OPTICFLOW_CAM2_ID 2
+#endif
+
 #ifndef FLOW_OPTICFLOW_PMW3901_ID
-#define FLOW_OPTICFLOW_PMW3901_ID 2
+#define FLOW_OPTICFLOW_PMW3901_ID 3
+#endif
+
+#ifndef FLOW_OPTICFLOW_MATEKSYS_3901_L0X_ID
+#define FLOW_OPTICFLOW_MATEKSYS_3901_L0X_ID 4
 #endif
 
 /*
@@ -374,12 +402,20 @@
 #define VEL_OPTICFLOW_ID 3
 #endif
 
+#ifndef VEL_OPTICFLOW_CAM1_ID
+#define VEL_OPTICFLOW_CAM1_ID 3
+#endif
+
+#ifndef VEL_OPTICFLOW_CAM2_ID
+#define VEL_OPTICFLOW_CAM2_ID 4
+#endif
+
 #ifndef VEL_STEREOCAM_ID
-#define VEL_STEREOCAM_ID 4
+#define VEL_STEREOCAM_ID 5
 #endif
 
 #ifndef VEL_OPTICFLOW_PMW3901_ID
-#define VEL_OPTICFLOW_PMW3901_ID 5
+#define VEL_OPTICFLOW_PMW3901_ID 6
 #endif
 
 /*

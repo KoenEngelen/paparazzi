@@ -1,6 +1,6 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 
-<module name="ins" dir="ins">
+<module name="ins_hff_extended" dir="ins" task="estimation">
   <doc>
     <description>
       extended INS with vertical filter using sonar.
@@ -26,6 +26,10 @@
       </dl_settings>
     </dl_settings>
   </settings>
+  <dep>
+    <depends>@imu,@gps|@position|@velocity</depends>
+    <provides>ins</provides>
+  </dep>
 
   <header>
     <file name="ins_int.h" dir="subsystems/ins"/>
@@ -39,5 +43,8 @@
     <define name="USE_VFF_EXTENDED"/>
     <file name="hf_float.c" dir="subsystems/ins"/>
     <define name="USE_HFF"/>
+    <test firmware="rotorcraft">
+      <define name="AHRS_PROPAGATE_FREQUENCY" value="500"/>
+    </test>
   </makefile>
 </module>

@@ -66,7 +66,7 @@
     <block name="test yaw">
       <go wp="p1"/>
       <for from="1" to="16" var="i">
-        <heading alt="WaypointAlt(WP_p1)" course="90 * $i" until="stage_time > 3"/>
+        <heading alt="WaypointAlt(WP_p1)" course="90 * $i" until="stage_time @GT 3"/>
       </for>
       <deroute block="Standby"/>
     </block>

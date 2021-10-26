@@ -1,6 +1,6 @@
 <!DOCTYPE module SYSTEM "module.dtd">
 
-<module name="ins_mekf_wind" dir="ins">
+<module name="ins_mekf_wind" dir="ins" task="estimation">
   <doc>
     <description>
       MEKF-Wind INS estimator.
@@ -59,6 +59,10 @@
       </dl_settings>
     </dl_settings>
   </settings>
+  <dep>
+    <depends>@imu,@gps,@airspeed</depends>
+    <provides>ahrs,ins</provides>
+  </dep>
   <header>
     <file name="ins_mekf_wind_wrapper.h"/>
   </header>
@@ -77,6 +81,10 @@
     <define name="EIGEN_NO_AUTOMATIC_RESIZING"/>
     <define name="USE_AHRS_ALIGNER"/>
     <define name="INS_TYPE_H" value="modules/ins/ins_mekf_wind_wrapper.h" type="string"/>
+    <test firmware="fixedwing">
+      <define name="INS_TYPE_H" value="modules/ins/ins_mekf_wind_wrapper.h" type="string"/>
+      <include name="../ext/eigen"/>
+    </test>
   </makefile>
   <makefile target="ap" firmware="fixedwing">
     <define name="EIGEN_NO_DEBUG"/>
