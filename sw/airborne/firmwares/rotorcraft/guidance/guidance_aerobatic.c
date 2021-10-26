@@ -44,23 +44,25 @@ float debug_value;
 Declarations
 */
  
-// void test_SVD(void);
-// void test_a_L_wing(void);
+void test_SVD(void);
+void test_a_L_wing(void);
+void print_matrix(float **ptr,int m, int n);
+void print_row(float *ptr,int m);
 
-// float a_D_wing_x(const float V[3]);
-// float a_D_wing_z(const float V[3], float phi);
-// float a_L_wing_x(const float V[3]);
-// float a_L_wing_z(const float V[3], float phi);
-// float a_wing_x(const float V[3]);
-// float a_wing_z(const float V[3], float phi);
-// float AoA(const float V[3]);
-// float AoD(const float V[3])
-// float AoS(const float V[3])
-// float Cd(float alpha);
-// float Cl(float alpha);
-// float dCd(float alpha);
-// float dCl(float alpha);
-// float Vxz_2(const float V[3]);
+float a_D_wing_x(const float V[3]);
+float a_D_wing_z(const float V[3], float phi);
+float a_L_wing_x(const float V[3]);
+float a_L_wing_z(const float V[3], float phi);
+float a_wing_x(const float V[3]);
+float a_wing_z(const float V[3], float phi);
+float AoA(const float V[3]);
+float AoD(const float V[3]);
+float AoS(const float V[3]);
+float Cd(float alpha);
+float Cl(float alpha);
+float dCd(float alpha);
+float dCl(float alpha);
+float Vxz_2(const float V[3]);
 float da_wing_x_dphii(const float V[3]);
 float da_wing_x_dpsii(const float V[3]);
 float da_wing_x_dthetai(const float V[3]);
@@ -70,35 +72,35 @@ float da_wing_y_dthetai(void);
 float da_wing_z_dphii(const float V[3]);
 float da_wing_z_dpsii(const float V[3]);
 float da_wing_z_dthetai(const float V[3]);
-// float dalphai_dphii(const float V[3]);
-// float dalphai_dpsii(const float V[3]);
-// float dalphai_dthetai(void);
-// float dbetai_dphii(void);
-// float dbetai_dpsii(const float V[3]);
-// float dbetai_dthetai(const float V[3]);
-// float dCd_dphii(const float V[3]);
-// float dCd_dpsii(const float V[3]);
-// float dCd_dthetai(const float V[3]);
-// float dCl_dphii(const float V[3]);
-// float dCl_dpsii(const float V[3]);
-// float dCl_dthetai(const float V[3]);
-// float dVx_dphii(void);
-// float dVx_dpsii(const float V[3]);
-// float dVx_dthetai(const float V[3]);
-// float dVxz_2_dphii(const float V[3]);
-// float dVxz_2_dpsii(const float V[3]);
-// float dVxz_2_dthetai(void);
-// float dVy_dphii(const float V[3]);
-// float dVy_dthetai(void);
-// float dVz_dphii(const float V[3]);
-// float dVz_dpsii(void);
-// float dVz_dthetai(const float V[3]);
-// float Vxz_2_dalphai_dphii(const float V[3]);
-// float Vxz_2_dalphai_dpsii(const float V[3]);
-// float Vxz_2_dCd_dphii(const float V[3]);
-// float Vxz_2_dCd_dpsii(const float V[3]);
-// float Vxz_2_dCl_dphii(const float V[3]);
-// float Vxz_2_dCl_dpsii(const float V[3]);
+float dalphai_dphii(const float V[3]);
+float dalphai_dpsii(const float V[3]);
+float dalphai_dthetai(void);
+float dbetai_dphii(void);
+float dbetai_dpsii(const float V[3]);
+float dbetai_dthetai(const float V[3]);
+float dCd_dphii(const float V[3]);
+float dCd_dpsii(const float V[3]);
+float dCd_dthetai(const float V[3]);
+float dCl_dphii(const float V[3]);
+float dCl_dpsii(const float V[3]);
+float dCl_dthetai(const float V[3]);
+float dVx_dphii(void);
+float dVx_dpsii(const float V[3]);
+float dVx_dthetai(const float V[3]);
+float dVxz_2_dphii(const float V[3]);
+float dVxz_2_dpsii(const float V[3]);
+float dVxz_2_dthetai(void);
+float dVy_dphii(const float V[3]);
+float dVy_dthetai(void);
+float dVz_dphii(const float V[3]);
+float dVz_dpsii(void);
+float dVz_dthetai(const float V[3]);
+float Vxz_2_dalphai_dphii(const float V[3]);
+float Vxz_2_dalphai_dpsii(const float V[3]);
+float Vxz_2_dCd_dphii(const float V[3]);
+float Vxz_2_dCd_dpsii(const float V[3]);
+float Vxz_2_dCl_dphii(const float V[3]);
+float Vxz_2_dCl_dpsii(const float V[3]);
 
 static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev)
 {
@@ -166,11 +168,6 @@ void test_SVD(){
     float v[n][n];
     MAKE_MATRIX_PTR(ptrV, v, n);
 
-    float X[n][1];
-    MAKE_MATRIX_PTR(ptrX, X, n);
-
-    float B[m][1];
-    MAKE_MATRIX_PTR(ptrB, B, m);
 
     // float * ptrV1[n];
     // for (int i = 0; i < n; i++) { ptrV1[i] = &v[i][i];}
@@ -186,28 +183,28 @@ void test_SVD(){
     print_row(ptrW,n);
 
     if (m > n){
-      *(ptrA[0]+0) =  da_wing_x_dphii(Velocity); 
-      *(ptrA[0]+1) =  da_wing_y_dphii(Velocity); 
-      *(ptrA[0]+2) =  da_wing_z_dphii(Velocity); 
-      *(ptrA[1]+0) =  da_wing_x_dthetai(Velocity); 
+      *(ptrA[0]+0) =  da_wing_x_dphii(V); 
+      *(ptrA[0]+1) =  da_wing_y_dphii(V); 
+      *(ptrA[0]+2) =  da_wing_z_dphii(V); 
+      *(ptrA[1]+0) =  da_wing_x_dthetai(V); 
       *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-      *(ptrA[1]+2) =  da_wing_z_dthetai(Velocity); 
-      *(ptrA[2]+0) =  da_wing_x_dpsii(Velocity); 
-      *(ptrA[2]+1) =  da_wing_y_dpsii(Velocity); 
-      *(ptrA[2]+2) =  da_wing_z_dpsii(Velocity); 
+      *(ptrA[1]+2) =  da_wing_z_dthetai(V); 
+      *(ptrA[2]+0) =  da_wing_x_dpsii(V); 
+      *(ptrA[2]+1) =  da_wing_y_dpsii(V); 
+      *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
       *(ptrA[3]+0) =  0.0f; 
       *(ptrA[3]+1) =  0.0f; 
       *(ptrA[3]+2) = -1.0f; 
     } else {
-      *(ptrA[0]+0) =  da_wing_x_dphii(Velocity); 
-      *(ptrA[1]+0) =  da_wing_y_dphii(Velocity); 
-      *(ptrA[2]+0) =  da_wing_z_dphii(Velocity); 
-      *(ptrA[0]+1) =  da_wing_x_dthetai(Velocity); 
+      *(ptrA[0]+0) =  da_wing_x_dphii(V); 
+      *(ptrA[1]+0) =  da_wing_y_dphii(V); 
+      *(ptrA[2]+0) =  da_wing_z_dphii(V); 
+      *(ptrA[0]+1) =  da_wing_x_dthetai(V); 
       *(ptrA[1]+1) =  da_wing_y_dthetai(); 
-      *(ptrA[2]+1) =  da_wing_z_dthetai(Velocity); 
-      *(ptrA[0]+2) =  da_wing_x_dpsii(Velocity); 
-      *(ptrA[1]+2) =  da_wing_y_dpsii(Velocity); 
-      *(ptrA[2]+2) =  da_wing_z_dpsii(Velocity); 
+      *(ptrA[2]+1) =  da_wing_z_dthetai(V); 
+      *(ptrA[0]+2) =  da_wing_x_dpsii(V); 
+      *(ptrA[1]+2) =  da_wing_y_dpsii(V); 
+      *(ptrA[2]+2) =  da_wing_z_dpsii(V); 
       *(ptrA[0]+3) =  0.0f; 
       *(ptrA[1]+3) =  0.0f; 
       *(ptrA[2]+3) = -1.0f; 
