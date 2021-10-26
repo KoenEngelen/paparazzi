@@ -145,23 +145,35 @@ void print_row(float *ptr,int m){
     printf("\n\n");
 }
 
-#define m 3 //rows
-#define n 4 //columns
-
-float A[m][n];
-float U[m][n];
-float V[n][n];
-float ptrW[n];
-
 void test_SVD(){
-    float Velocity[3];
-    Velocity[0] = -2.5f;
-    Velocity[1] =  0.5f;
-    Velocity[2] =  3.0f;
 
+    int m = 3; //rows
+    int n = 4; //columns
+
+    float V[3];
+    V[0] = -2.5f;
+    V[1] =  0.5f;
+    V[2] =  3.0f;
+
+    float A[m][n];
     MAKE_MATRIX_PTR(ptrA, A, m);
+
+    float U[m][n];
     MAKE_MATRIX_PTR(ptrU, U, m);
-    MAKE_MATRIX_PTR(ptrV, V, n);
+
+    float ptrW[n];
+
+    float v[n][n];
+    MAKE_MATRIX_PTR(ptrV, v, n);
+
+    float X[n][1];
+    MAKE_MATRIX_PTR(ptrX, X, n);
+
+    float B[m][1];
+    MAKE_MATRIX_PTR(ptrB, B, m);
+
+    // float * ptrV1[n];
+    // for (int i = 0; i < n; i++) { ptrV1[i] = &v[i][i];}
     
     printf("\n\nInitialize Check\n\n");
     printf("\tInitial Matrix A:\n");

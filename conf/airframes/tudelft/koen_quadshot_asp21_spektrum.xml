@@ -337,7 +337,7 @@
 <!--    <load name="airspeed_ets.xml">
       <define name="AIRSPEED_ETS_SYNC_SEND"/>
     </load>-->
-    <load name="sys_mon"/>
+
     <module name="logger_spi_link"/>
 
 <!--    <load name="AOA_adc.xml">
@@ -432,8 +432,6 @@
     </module>
 
     <module name="sys_id_chirp"/>
-
-    <module name="sys_mon"/>
 
   </firmware>
 </airframe>
