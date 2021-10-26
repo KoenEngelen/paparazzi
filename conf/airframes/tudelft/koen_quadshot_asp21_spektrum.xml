@@ -360,7 +360,7 @@
     <module name="radio_control" type="sbus">
       <!--<configure name="RADIO_CONTROL_PPM_PIN" value="UART1_RX"/> -->
       <configure name="SBUS_PORT" value="UART5"/>
-      <define name="RADIO_KILL_SWITCH" value="RADIO_AUX1"/>
+      <define name="RADIO_KILL_SWITCH" value="RADIO_GAIN1"/>
       <define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="FALSE"/>
     </module>
 

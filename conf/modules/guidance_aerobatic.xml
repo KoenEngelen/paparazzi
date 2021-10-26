@@ -21,7 +21,7 @@
 
 
   <makefile target="ap|nps" firmware="rotorcraft">
-    <file name="pprz_matrix_decomp_float.c" dir="math"/>
+    <!-- <file name="pprz_matrix_decomp_float.c" dir="math"/> -->
     <file name="guidance_aerobatic.c" dir="$(SRC_FIRMWARE)/guidance"/>
     <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
   </makefile>
