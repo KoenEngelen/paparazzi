@@ -42,7 +42,10 @@ float debug_value;
 /*
 Declarations
 */
- 
+
+struct FloatVect3 V_inf;
+struct FloatQuat q;
+
 float V[3]={0.1f,2.0f,1.0f};
 float phi = 0;
 float alpha = 0;
@@ -124,7 +127,20 @@ void test_SVD(void);
    debug_value = debug_value + 0.00195;
    if (debug_value > 60){
      debug_value = 0;
-   }
+   }  
+
+  q.qi =  stateGetNedToBodyQuat_f()->qi;
+  q.qx = -stateGetNedToBodyQuat_f()->qx;
+  q.qy = -stateGetNedToBodyQuat_f()->qy;
+  q.qz = -stateGetNedToBodyQuat_f()->qz;
+
+  float_quat_vmult(&V_inf, &q, stateGetSpeedNed_f());
+   V[0] = - V_inf.x;
+   V[1] = - V_inf.y;
+   V[2] = - V_inf.z;
+
+   printf("V: %f \t %f \t %f\n",V[0],V[1],V[2]);   
+
    test_SVD();  //ERROR: This function does not work in periodic function
  }
 
