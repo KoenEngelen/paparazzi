@@ -95,7 +95,6 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.angle       = (int32_t)1000 * aoa_adc.angle;
     high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
 
-    spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
   else if(high_speed_logger_spi_link_ready && write_extension){
     // copy the counter into the SPI datablock
@@ -124,6 +123,10 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.angle       = (int32_t)1000 * aoa_adc.angle;
     high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
 
+    
+  }
+
+  if (autopilot.in_flight){
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
 }

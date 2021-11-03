@@ -1,0 +1,117 @@
+
+--- a/conf/airframes/tudelft/koen_quadshot_asp21_spektrum.xml
++++ b/conf/airframes/tudelft/koen_quadshot_asp21_spektrum.xml
+@@ -62,10 +62,10 @@
+   </command_laws>
+ 
+   <section name="SIMULATOR" prefix="NPS_">
+-    <define name="ACTUATOR_NAMES" value="ele_left, ele_right, mot_A1, mot_A2, mot_B1, mot_B2" type="string[]"/>
++    <define name="ACTUATOR_NAMES" value="mot_A1, mot_A2, mot_B1, mot_B2" type="string[]"/>
++
+     <define name="JSBSIM_MODEL" value="quadshot" type="string"/>
+     <define name="SENSORS_PARAMS" value="nps_sensors_params_default.h" type="string"/>
+-    <define name="NO_MOTOR_MIXING" value="TRUE"/>
+   </section>
+ 
+ 
+@@ -75,11 +75,12 @@
+     <define name="TRIM_YAW" value="0"/>
+     <define name="NB_MOTOR" value="4"/>
+     <define name="SCALE" value="256"/>
++    <!--                                  A1    A2    B1    B2  -->
+     <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
+     <define name="ROLL_COEF"   value="{  256, -256,  256, -256 }"/>
+     <define name="YAW_COEF"    value="{ -256,  256,  128, -128 }"/>
+     <define name="THRUST_COEF" value="{  256,  256,  256,  256 }"/>
+-<!--    <define name="PITCH_COEF"  value="{ 0, 0, 0, 0 }"/>
++    <!--    <define name="PITCH_COEF"  value="{ 0, 0, 0, 0 }"/>
+     <define name="ROLL_COEF"   value="{ 0, 0, 0, 0 }"/>
+     <define name="YAW_COEF"    value="{ 0, 0, 0, 0 }"/>
+     <define name="THRUST_COEF" value="{ 0, 0, 0, 0 }"/>-->
+@@ -310,13 +311,14 @@
+     <define name="THRESHOLD_GROUND_DETECT" value="25.0"/>
+     <define name="KILL_ON_GROUND_DETECT" value="TRUE"/>
+     <define name="FAILSAFE_GROUND_DETECT" value="TRUE"/>
+-    <define name="HYBRID_NAVIGATION" value="TRUE"/>
++    <!-- <define name="HYBRID_NAVIGATION" value="TRUE"/> -->
++    <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
+     <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
+     <define name="ADAPTIVE_INDI" value="FALSE"/>
+   </section>
+ 
+   <modules main_freq="512">
+-    <load name="gps_ubx_ucenter.xml"/>
++    <module name="gps" type="ubx_ucenter"/>
+ 
+     <!-- The the led_safety_status module will make the Quadshot LEDs blink in certain patterns when there are safety violations-->
+     <load name="led_safety_status.xml">
+@@ -335,7 +337,7 @@
+ <!--    <load name="airspeed_ets.xml">
+       <define name="AIRSPEED_ETS_SYNC_SEND"/>
+     </load>-->
+-
++    <load name="sys_mon"/>
+     <module name="logger_spi_link"/>
+ 
+ <!--    <load name="AOA_adc.xml">
+@@ -356,6 +358,7 @@
+     <target name="ap" board="lisa_m_2.0">
+ 
+     <module name="radio_control" type="sbus">
++      <!--<configure name="RADIO_CONTROL_PPM_PIN" value="UART1_RX"/> -->
+       <configure name="SBUS_PORT" value="UART5"/>
+       <define name="RADIO_KILL_SWITCH" value="RADIO_AUX1"/>
+       <define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="FALSE"/>
+@@ -380,10 +383,11 @@
+       <module name="udp"/>
+       <module name="radio_control" type="datalink"/>
+       <module name="logger_file">
+-        <define name="FILE_LOGGER_PATH" value="/home/Documents"/>
++        <define name="FILE_LOGGER_PATH" value="/home/koen/Documents"/>
+       </module>
+ 
+ 
++
+       <define name="MODE_STARTUP"  value="AP_MODE_NAV"/>
+ 
+       <!--Switch advanced INDI scheduling functions on or off-->
+@@ -400,16 +404,13 @@
+ <!--    <module name="telemetry"     type="transparent"/> -->
+     <module name="imu"           type="aspirin_v2.1"/>
+     <module name="gps"           type="ublox"/>
+-<!--     <module name="stabilization" type="int_quat"/> -->
+-    <module name="stabilization" type="indi_simple"/>
+-    <module name="guidance"      type="hybrid"/>
+ 
+-    <module name="ahrs"          type="int_cmpl_quat">
+-      <configure name="USE_MAGNETOMETER" value="1"/>
+-      <define name="AHRS_USE_GPS_HEADING" value="0"/>
+-    </module>
+ 
+-    <module name="ins"/>
++    <!-- <module name="stabilization" type="int_quat"/> -->
++    <module name="stabilization" type="indi_simple"/>
++    <module name="guidance"      type="aerobatic"/>
++
++    <module name="ins_ekf2"/>
+  
+     <module name="airspeed_ms45xx_i2c">
+       <define name="MS45XX_I2C_DEV" value="i2c1" />
+@@ -419,9 +420,6 @@
+       <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
+     </module>
+ 
+-
+-
+-
+     <module name="AOA_adc">  
+       <configure name="ADC_AOA" value="ADC_2"/>
+       <define name="AOA_OFFSET" value="-0.135000005364"/>   
+@@ -435,5 +433,7 @@
+ 
+     <module name="sys_id_chirp"/>
+ 
++    <module name="sys_mon"/>
++
+   </firmware>
+ </airframe>

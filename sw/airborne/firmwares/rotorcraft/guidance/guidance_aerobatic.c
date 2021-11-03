@@ -43,12 +43,41 @@ float debug_value;
 Declarations
 */
 
+// struct ctrl_eff_struct {
+//   // Input Acceleration
+//   struct EcefCoor_f *acc;
+//   // Output Euler
+//   struct FloatEuler cmdeul;
+//   // Output Thrust
+//   float cmdT;
+// } ctrl_eff;
+
+struct ctrl_lin_struct {
+  // Input Position
+  struct EcefCoor_f *pos; //get from stat.h: stateGetPositionEcef_f(void)
+  // Input Velocity
+  struct EcefCoor_f *vel; //get from stat.h: stateGetSpeedEcef_f(void)
+  // Input Acceleration
+  struct EcefCoor_f *acc; //get from stat.h: stateGetAccelEcef_f(void)
+  // Output Acceleration
+  struct EcefCoor_f cmdacc;
+} ctrl_lin;
+
+struct trajectory {
+  float t;
+  struct EcefCoor_f pos;
+  struct EcefCoor_f vel;
+  struct EcefCoor_f acc;
+} traj;
+
 struct FloatVect3 V_inf;
 struct FloatQuat q;
 
 float V[3]={0.1f,2.0f,1.0f};
 float phi = 0;
 float alpha = 0;
+
+float t = 0.0;
 
 void test_SVD(void);
 // void test_a_L_wing(void);
@@ -122,12 +151,22 @@ void test_SVD(void);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
 
+
+// Initialize function
+void guidance_aerobatic_enter(void) {
+  t = 0.0;  
+}
+
+
 // Periodic function
- void guidance_aerobatic_run(void) {
-   debug_value = debug_value + 0.00195;
-   if (debug_value > 60){
-     debug_value = 0;
-   }  
+void guidance_aerobatic_run(void) {
+    t = t + 0.001953125;
+  if (t > 360000){
+    t = 0;
+  }
+
+  UpdateTrajectory(t);
+  LinAccCon();
 
   q.qi =  stateGetNedToBodyQuat_f()->qi;
   q.qx = -stateGetNedToBodyQuat_f()->qx;
@@ -202,7 +241,40 @@ float ptrW[COLS_GUIDANCE];
 float Vsvd[COLS_GUIDANCE][COLS_GUIDANCE];
 
 
-void test_SVD(){
+void UpdateTrajectory(float t){
+  traj.t = t;
+  traj.pos.x = 1.;
+  traj.pos.y = 0.;
+  traj.pos.z = 8.;
+
+  traj.vel.x = 0.;
+  traj.vel.y = 0.;
+  traj.vel.z = 0.;
+
+  traj.acc.x = 0.;
+  traj.acc.y = 0.;
+  traj.acc.z = 0.;
+}
+
+void LinAccCon(void){
+  float PGain = 1.0f;
+  float VGain = 1.0f;
+
+  ctrl_lin.pos = stateGetPositionEcef_f();
+  ctrl_lin.vel = stateGetSpeedEcef_f();
+  ctrl_lin.acc = stateGetAccelEcef_f();
+
+  ctrl_lin.cmdacc.x = ctrl_lin.acc->x;
+  ctrl_lin.cmdacc.y = ctrl_lin.acc->y;
+  ctrl_lin.cmdacc.z = ctrl_lin.acc->z;
+  // ctrl_lin.cmdacc.x = PGain * (ctrl_lin->pos->x-traj.pos->x) + VGain * (ctrl_lin->vel->x-traj.vel->x) + traj->acc->x;
+  // ctrl_lin.cmdacc.y = PGain * (ctrl_lin->pos->y-traj.pos->y) + VGain * (ctrl_lin->vel->y-traj.vel->y) + traj->acc->y;
+  // ctrl_lin.cmdacc.z = PGain * (ctrl_lin->pos->z-traj.pos->z) + VGain * (ctrl_lin->vel->z-traj.vel->z) + traj->acc->z;
+  
+  printf('\nAcc: %f \t %f \t %f \t[m/s^2]');
+}
+
+void test_SVD(void){
     //temporary Velocity Vector for debugging purposes
     V[0] = -2.5f;
     V[1] =  0.5f;
