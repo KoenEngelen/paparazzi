@@ -33,6 +33,7 @@
 #include "math/pprz_matrix_decomp_float.c"
 #include "math/pprz_simple_matrix.h"
 #include "subsystems/datalink/telemetry.h"
+// #include 
 
 float guidance_aerobatic_indi_gain = 0.5;
 float debug_value;
@@ -45,7 +46,7 @@ Declarations
 
 // struct ctrl_eff_struct {
 //   // Input Acceleration
-//   struct EcefCoor_f *acc;
+//   struct NedCoor_f *acc;
 //   // Output Euler
 //   struct FloatEuler cmdeul;
 //   // Output Thrust
@@ -54,20 +55,20 @@ Declarations
 
 struct ctrl_lin_struct {
   // Input Position
-  struct EcefCoor_f *pos; //get from stat.h: stateGetPositionEcef_f(void)
+  struct NedCoor_f *pos; //get from stat.h: stateGetPositionNed_f(void)
   // Input Velocity
-  struct EcefCoor_f *vel; //get from stat.h: stateGetSpeedEcef_f(void)
+  struct NedCoor_f *vel; //get from stat.h: stateGetSpeedNed_f(void)
   // Input Acceleration
-  struct EcefCoor_f *acc; //get from stat.h: stateGetAccelEcef_f(void)
+  struct NedCoor_f *acc; //get from stat.h: stateGetAccelNed_f(void)
   // Output Acceleration
-  struct EcefCoor_f cmdacc;
+  struct NedCoor_f cmdacc;
 } ctrl_lin;
 
 struct trajectory {
   float t;
-  struct EcefCoor_f pos;
-  struct EcefCoor_f vel;
-  struct EcefCoor_f acc;
+  struct NedCoor_f pos;
+  struct NedCoor_f vel;
+  struct NedCoor_f acc;
 } traj;
 
 struct FloatVect3 V_inf;
@@ -167,6 +168,7 @@ void guidance_aerobatic_run(void) {
 
   UpdateTrajectory(t);
   LinAccCon();
+  // printf("state_accel: %f" , stateGetSpeedNed_f()->x);
 
   q.qi =  stateGetNedToBodyQuat_f()->qi;
   q.qx = -stateGetNedToBodyQuat_f()->qx;
@@ -177,22 +179,69 @@ void guidance_aerobatic_run(void) {
    V[0] = - V_inf.x;
    V[1] = - V_inf.y;
    V[2] = - V_inf.z;
+     
 
-   printf("V: %f \t %f \t %f\n",V[0],V[1],V[2]);   
+  printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
 
-   test_SVD();  //ERROR: This function does not work in periodic function
+  test_SVD(); 
+
+
+  // stabilization_attitude_set_rpy_setpoint_i(&(ctrl.cmd));
+  // stabilization_attitude_run(in_flight);
+
  }
 
-//Print_matix_function
-// void print_matrix(float **ptr,int m, int n){
-//     for (int r = 0; r < m; r++) {
-//       for (int c = 0; c < n; c++) {
-//         printf("\t%.4f\t",ptr[r][c]);
-//       }
-//       printf("\n");
-//     }
-//     printf("\n");
-// }
+// Print_matix_function
+void print_matrix(float **ptr,int m, int n){
+    for (int r = 0; r < m; r++) {
+      for (int c = 0; c < n; c++) {
+        printf("\t%.4f\t",ptr[r][c]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+}
+
+
+// Print_matix_function
+void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l){
+    for (int r = 0; r < m; r++) {
+      
+      printf("|");
+      for (int c = 0; c < n; c++) {
+        printf("\t%.2f\t",ptrA[r][c]);
+      }
+      printf("|");
+
+      if(r == 1){
+        printf("\t*\t");
+      }else{
+        printf("\t\t");
+      }
+
+      printf("|");
+      printf("\t%.2f\t",ptrX[r][0]);
+      printf("|");
+
+      if(r == 1){
+        printf("\t=\t");
+      }else{
+        printf("\t\t");
+      }
+      
+      printf("|");
+      printf("\t%.2f\t",ptrB[r][0]);
+      printf("|");
+
+      printf("\n");
+    }
+    printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t|");
+    printf("\t%.2f\t",ptrX[3][0]);
+    printf("|");
+
+
+    printf("\n");
+}
 
 // void print_ptrarray(float **ptr,int m, int n){
 //     for (int r = 0; r < m; r++) {
@@ -224,12 +273,12 @@ void guidance_aerobatic_run(void) {
 //     printf("\n");
 // }
 
-// void print_row(float *ptr,int m){
-//     for (int r = 0; r < m; r++) {
-//         printf("\t%.4f\t",ptr[r]);
-//     }
-//     printf("\n\n");
-// }
+void print_row(float *ptr,int m){
+    for (int r = 0; r < m; r++) {
+        printf("\t%.4f\t",ptr[r]);
+    }
+    printf("\n\n");
+}
 
 #define ROWS_GUIDANCE 3 //rows
 #define COLS_GUIDANCE 4 //columns
@@ -239,6 +288,9 @@ float Asvd[ROWS_GUIDANCE][COLS_GUIDANCE]={0};
 float Usvd[ROWS_GUIDANCE][COLS_GUIDANCE];
 float ptrW[COLS_GUIDANCE];
 float Vsvd[COLS_GUIDANCE][COLS_GUIDANCE];
+
+float Bsvd[ROWS_GUIDANCE][1]={0};
+float Xsvd[COLS_GUIDANCE][1]={0};
 
 
 void UpdateTrajectory(float t){
@@ -260,18 +312,19 @@ void LinAccCon(void){
   float PGain = 1.0f;
   float VGain = 1.0f;
 
-  ctrl_lin.pos = stateGetPositionEcef_f();
-  ctrl_lin.vel = stateGetSpeedEcef_f();
-  ctrl_lin.acc = stateGetAccelEcef_f();
+  ctrl_lin.pos = stateGetPositionNed_f();
+  ctrl_lin.vel = stateGetSpeedNed_f();
+  ctrl_lin.acc = stateGetAccelNed_f();
 
-  ctrl_lin.cmdacc.x = ctrl_lin.acc->x;
-  ctrl_lin.cmdacc.y = ctrl_lin.acc->y;
-  ctrl_lin.cmdacc.z = ctrl_lin.acc->z;
-  // ctrl_lin.cmdacc.x = PGain * (ctrl_lin->pos->x-traj.pos->x) + VGain * (ctrl_lin->vel->x-traj.vel->x) + traj->acc->x;
-  // ctrl_lin.cmdacc.y = PGain * (ctrl_lin->pos->y-traj.pos->y) + VGain * (ctrl_lin->vel->y-traj.vel->y) + traj->acc->y;
-  // ctrl_lin.cmdacc.z = PGain * (ctrl_lin->pos->z-traj.pos->z) + VGain * (ctrl_lin->vel->z-traj.vel->z) + traj->acc->z;
+  printf("\nPos: %f \t %f \t %f",ctrl_lin.pos->x,ctrl_lin.pos->y,ctrl_lin.pos->z);
+  printf("\nVel: %f \t %f \t %f",ctrl_lin.vel->x,ctrl_lin.vel->y,ctrl_lin.vel->z);
+  printf("\nAcc: %f \t %f \t %f",ctrl_lin.acc->x,ctrl_lin.acc->y,ctrl_lin.acc->z);
+
+  ctrl_lin.cmdacc.x = PGain * (ctrl_lin.pos->x-traj.pos.x) + VGain * (ctrl_lin.vel->x-traj.vel.x) + traj.acc.x;
+  ctrl_lin.cmdacc.y = PGain * (ctrl_lin.pos->y-traj.pos.y) + VGain * (ctrl_lin.vel->y-traj.vel.y) + traj.acc.y;
+  ctrl_lin.cmdacc.z = PGain * (ctrl_lin.pos->z-traj.pos.z) + VGain * (ctrl_lin.vel->z-traj.vel.z) + traj.acc.z;
   
-  printf('\nAcc: %f \t %f \t %f \t[m/s^2]');
+  printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
 }
 
 void test_SVD(void){
@@ -280,14 +333,17 @@ void test_SVD(void){
     V[1] =  0.5f;
     V[2] =  3.0f;
 
-    float* ptrA[ROWS_GUIDANCE];
-    for (int r = 0; r < ROWS_GUIDANCE; r++){
-      ptrA[r] = &Asvd[r][0];  
-    }
+    // float* ptrA[ROWS_GUIDANCE];
+    // for (int r = 0; r < ROWS_GUIDANCE; r++){
+    //   ptrA[r] = &Asvd[r][0];  
+    // }
     //Create pointers to float arrays
-    // MAKE_MATRIX_PTR(ptrA, Asvd, ROWS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrA, Asvd, ROWS_GUIDANCE);
     MAKE_MATRIX_PTR(ptrU, Usvd, ROWS_GUIDANCE);
     MAKE_MATRIX_PTR(ptrV, Vsvd, COLS_GUIDANCE);
+
+    MAKE_MATRIX_PTR(ptrB, Bsvd, ROWS_GUIDANCE);
+    MAKE_MATRIX_PTR(ptrX, Xsvd, COLS_GUIDANCE);
     
     // Print matrices from pointers
     // printf("\n\nInitialize Check\n\n");
@@ -357,9 +413,28 @@ void test_SVD(void){
     // print_adrarray(Asvd,ROWS_GUIDANCE,COLS_GUIDANCE);
 
     //Store Status to see if SVD succeeded
-    // int status = 0;
+    int status = 0;
     // status = 
-    pprz_svd_float(ptrU, ptrW, ptrV, ROWS_GUIDANCE, COLS_GUIDANCE);
+    status = pprz_svd_float(ptrU, ptrW, ptrV, ROWS_GUIDANCE, COLS_GUIDANCE);
+    if (status != 1) {
+      printf("\nSVD failed!\n\n");
+    } else {
+      printf("\tMatrix U:\n");
+      print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+      printf("\tDiagonal W:\n");
+      print_row(ptrW,COLS_GUIDANCE);
+      printf("\tMatrix V:\n");
+      print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
+      printf("\n");
+      printf("\n\nSVD succeeded!\n\n");
+    }
+
+
+
+
+    pprz_svd_solve_float(ptrX, ptrU, ptrW, ptrV, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
+
+    print_eq(ptrA, ptrX, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
     // //Fail and Succeed prints:
     // if (status != 1) {
     //   printf("\nSVD failed!\n\n");
