@@ -195,7 +195,7 @@ void guidance_aerobatic_run(void) {
 void print_matrix(float **ptr,int m, int n){
     for (int r = 0; r < m; r++) {
       for (int c = 0; c < n; c++) {
-        printf("\t%.e\t",ptr[r][c]);
+        printf("\t%e\t",ptr[r][c]);
       }
       printf("\n");
     }
@@ -207,7 +207,7 @@ void print_matrix_matlab(float **ptr,int m, int n){
     printf("\n[");
     for (int r = 0; r < m; r++) {
       for (int c = 0; c < n; c++) {
-        printf("\t%.e",ptr[r][c]);
+        printf("\t%e",ptr[r][c]);
         if (c<(n-1)){
           printf(",");
         }
@@ -310,8 +310,8 @@ void print_row_matlab(float *ptr,int m){
     printf("];\n\n");
 }
 
-#define ROWS_GUIDANCE 3 //rows
-#define COLS_GUIDANCE 4 //columns
+#define ROWS_GUIDANCE 4 //rows
+#define COLS_GUIDANCE 3 //columns
 
 
 float Asvd[ROWS_GUIDANCE][COLS_GUIDANCE]={0};
@@ -462,8 +462,18 @@ void test_SVD(void){
     p_INV_svd(ptrPinv, ptrU, ptrV, ptrW,ROWS_GUIDANCE,COLS_GUIDANCE);
 
     pprz_svd_solve_float(ptrX, ptrU, ptrW, ptrV, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
+    
+    // print_eq(ptrPinv, ptrX, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
 
-    print_eq(ptrPinv, ptrX, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
+    printf("\tMatrix dx:\n");
+    print_matrix_matlab(ptrX,COLS_GUIDANCE,1);
+
+
+    printf("\tMatrix du:\n");
+    print_matrix_matlab(ptrB,ROWS_GUIDANCE,1);
+
+    printf("\tMatrix G_inv:\n");
+    print_matrix_matlab(ptrPinv,COLS_GUIDANCE,ROWS_GUIDANCE);
 
     printf("\n\tMatrix G_inv Matlab:\n\n\t-1.344539e-05 \t 5.882353e03 \t 8.468939e-13 \n\t 1.428571e+03 \t 5.882353e-05 \t 1.256251e-14 \n\t 3.361304e-06 \t 2.352941e+04 \t 2.612699e-12 \n\t-7.142857e-02 \t 8.818017e-09 \t-1.000000e+00\n\n");
     // //Fail and Succeed prints:
