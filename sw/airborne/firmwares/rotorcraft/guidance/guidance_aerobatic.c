@@ -33,6 +33,7 @@
 #include "math/pprz_matrix_decomp_float.c"
 #include "math/pprz_simple_matrix.h"
 #include "subsystems/datalink/telemetry.h"
+#include "firmwares/rotorcraft/stabilization.h"
 // #include 
 
 float guidance_aerobatic_indi_gain = 0.5;
@@ -73,6 +74,8 @@ struct trajectory {
 
 struct FloatVect3 V_inf;
 struct FloatQuat q;
+
+float thrust_in = 0;
 
 float V[3]={0.1f,2.0f,1.0f};
 float phi = 0;
@@ -147,6 +150,9 @@ float Vxz_2_dCl_dpsii(void);
 // Initialize function
  void guidance_aerobatic_init(void) {
   debug_value = 0.0;
+
+  get_dv();
+  get_G();
   
   // test_SVD(); //This function works in init
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
@@ -337,7 +343,7 @@ void print_row_matlab(float *ptr,int m){
 #define ROWS_GUIDANCE 3 //rows
 #define COLS_GUIDANCE 4 //columns
 
-float Weight[COLS_GUIDANCE] = {0};
+float Weight[COLS_GUIDANCE] = {1, 1 , 1 , 1};
 
 float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
 
@@ -408,6 +414,7 @@ void LinAccCon(void){
 }
 
 
+
 void get_increment(){
   float WGt[COLS_GUIDANCE][ROWS_GUIDANCE] = {0};
   float GWGt[ROWS_GUIDANCE][ROWS_GUIDANCE] = {0}; 
@@ -463,6 +470,7 @@ void get_increment(){
     sum = 0;
   }
 
+
   // get: VWiUv = V * (W_inverse * U * dv) = V * WiUv
   sum = 0;
   for (int i = 0; i < ROWS_GUIDANCE; i++){
@@ -481,6 +489,19 @@ void get_increment(){
     du[i] = sum;
     sum = 0;
   } 
+
+  float du_min =  1.-thrust_in; // min = 0    (defined by thrust_in = CMD_Thrust / 9600 * 20)
+  float du_max = 19.-thrust_in; // max = 20
+  printf("\ndu_min:\t%e\n",du_min);
+  printf("\ndu_max:\t%e\n",du_max);
+  printf("\ndu[3]:\t%e\n",du[3]);
+  
+  if (du[3] < du_min){
+    du[3] = du_min;
+  }else if (du[3] > du_max){
+    du[3] = du_max;
+  }
+
 }
 
 
@@ -517,15 +538,18 @@ void get_G(void){
 }
 
 void get_dv(void){
-  dv[0] =  0.1;
-  dv[1] =  0.2;
-  dv[2] = -3.5;
+  dv[0] =  0.0;
+  dv[1] =  0.0;
+  dv[2] = -0.1;
 }
 
 void SVDw(void){
-  get_dv();
-  get_G();
+  thrust_in = stabilization_cmd[COMMAND_THRUST]*20./9600.;
+  // get_dv();
+  // get_G();
   get_increment();
+  printf("\ndu:\t%e\t%e\t%e\t%e\n",du[0],du[1],du[2],du[3]);
+  printf("\nT:\t%e\n",thrust_in);
 
 }
 
