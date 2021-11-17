@@ -33,6 +33,8 @@ extern "C" {
 
 #include "std.h"
 
+
+
 /** Cholesky decomposition
  *
  * http://rosettacode.org/wiki/Cholesky_decomposition#C
@@ -56,6 +58,8 @@ void pprz_cholesky_float(float **out, float **in, int n);
  * @param n number of columns of the input matrix
  */
 void pprz_qr_float(float **Q, float **R, float **in, int m, int n);
+
+int min(int num1, int num2);
 
 /** SVD decomposition
  *

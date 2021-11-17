@@ -17,7 +17,8 @@
     <file name="guidance_aerobatic.h"/>
   </header>
   <init fun="guidance_aerobatic_init()"/>
-  <periodic fun="guidance_aerobatic_run()" freq="512" autorun="TRUE"/>
+  <!-- <init fun="guidance_aerobatic_enter()"/> -->
+  <!-- <periodic fun="guidance_aerobatic_run()" freq="512" autorun="TRUE"/> -->
 
 
   <makefile target="ap|nps" firmware="rotorcraft">
