@@ -183,7 +183,7 @@ void guidance_aerobatic_run(void) {
 
   printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
 
-  test_SVD(); 
+  SVDw(); 
 
 
   // stabilization_attitude_set_rpy_setpoint_i(&(ctrl.cmd));
@@ -292,6 +292,30 @@ void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l){
 //     printf("\n");
 // }
 
+void print_2darr(int row, int col, float* Data_00){
+
+  printf("[");
+  // print 2D array
+  for (int i = 0; i < row; i++){
+      for (int j = 0; j < col; j++) {
+          float* MatData_val = Data_00 + (i * col + j);
+          if (j==col-1){
+            printf("\t%e", *MatData_val);
+          }else{      
+            printf("\t%e,", *MatData_val);
+          }
+
+      }
+      if (i==row-1){
+        printf("]\n");
+      }else{      
+        printf(";\n");
+      }
+      
+  }
+  printf("\n");
+}
+
 void print_row(float *ptr,int m){
     for (int r = 0; r < m; r++) {
         printf("\t%e\t",ptr[r]);
@@ -310,19 +334,36 @@ void print_row_matlab(float *ptr,int m){
     printf("];\n\n");
 }
 
-#define ROWS_GUIDANCE 4 //rows
-#define COLS_GUIDANCE 3 //columns
+#define ROWS_GUIDANCE 3 //rows
+#define COLS_GUIDANCE 4 //columns
+
+float Weight[COLS_GUIDANCE] = {0};
+
+float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
+
+float dv[ROWS_GUIDANCE] = {0};
+float du[COLS_GUIDANCE] = {0};
+
+// float Usvd[ROWS_GUIDANCE][ROWS_GUIDANCE] = {0};
+// float Wsvd[ROWS_GUIDANCE][ROWS_GUIDANCE] = {0};
+// float Vsvd[ROWS_GUIDANCE][ROWS_GUIDANCE] = {0};
 
 
-float Asvd[ROWS_GUIDANCE][COLS_GUIDANCE]={0};
-float Usvd[ROWS_GUIDANCE][COLS_GUIDANCE];
-float ptrW[COLS_GUIDANCE];
-float Vsvd[COLS_GUIDANCE][COLS_GUIDANCE];
 
-float Bsvd[ROWS_GUIDANCE][1]={0};
-float Xsvd[COLS_GUIDANCE][1]={0};
 
-float p_inv[COLS_GUIDANCE][ROWS_GUIDANCE] = {0};
+// float Asvd[ROWS_GUIDANCE][COLS_GUIDANCE]={0};
+// float Usvd[ROWS_GUIDANCE][COLS_GUIDANCE];
+// float ptrW[COLS_GUIDANCE];
+// float Vsvd[COLS_GUIDANCE][COLS_GUIDANCE];
+
+// float Bsvd[ROWS_GUIDANCE][1]={0};
+// float Xsvd[COLS_GUIDANCE][1]={0};
+
+
+// float pinv_W[COLS_GUIDANCE][COLS_GUIDANCE] = {0};
+
+// float p_inv[COLS_GUIDANCE][ROWS_GUIDANCE] = {0};
+// float g1g2_pseudo_inv[COLS_GUIDANCE][ROWS_GUIDANCE] = {0};
 
 
 
@@ -359,175 +400,381 @@ void LinAccCon(void){
   ctrl_lin.cmdacc.y = PGain * (ctrl_lin.pos->y-traj.pos.y) + VGain * (ctrl_lin.vel->y-traj.vel.y) + traj.acc.y;
   ctrl_lin.cmdacc.z = PGain * (ctrl_lin.pos->z-traj.pos.z) + VGain * (ctrl_lin.vel->z-traj.vel.z) + traj.acc.z;
 
-  Bsvd[0][0] =  ctrl_lin.cmdacc.x;
-  Bsvd[1][0] =  ctrl_lin.cmdacc.y;
-  Bsvd[2][0] =  ctrl_lin.cmdacc.z;
+  // Bsvd[0][0] =  ctrl_lin.cmdacc.x;
+  // Bsvd[1][0] =  ctrl_lin.cmdacc.y;
+  // Bsvd[2][0] =  ctrl_lin.cmdacc.z;
 
   printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
 }
 
-void test_SVD(void){
-    //temporary Velocity Vector for debugging purposes
-    // V[0] = -2.5f;
-    // V[1] =  0.5f;
-    // V[2] =  3.0f;
 
-    // float* ptrA[ROWS_GUIDANCE];
-    // for (int r = 0; r < ROWS_GUIDANCE; r++){
-    //   ptrA[r] = &Asvd[r][0];  
-    // }
-    //Create pointers to float arrays
-    MAKE_MATRIX_PTR(ptrA, Asvd, ROWS_GUIDANCE);
-    MAKE_MATRIX_PTR(ptrU, Usvd, ROWS_GUIDANCE);
-    MAKE_MATRIX_PTR(ptrV, Vsvd, COLS_GUIDANCE);
+void get_increment(){
+  float WGt[COLS_GUIDANCE][ROWS_GUIDANCE] = {0};
+  float GWGt[ROWS_GUIDANCE][ROWS_GUIDANCE] = {0}; 
+  float WiUv[ROWS_GUIDANCE] = {0};
+  float VWiUv[ROWS_GUIDANCE] = {0};
 
-    MAKE_MATRIX_PTR(ptrB, Bsvd, ROWS_GUIDANCE);
-    MAKE_MATRIX_PTR(ptrX, Xsvd, COLS_GUIDANCE);
+  float sum = 0;
 
-    MAKE_MATRIX_PTR(ptrPinv, p_inv, COLS_GUIDANCE);
-    
-    // Assign Values to A matrix
-    if (ROWS_GUIDANCE > COLS_GUIDANCE){
-      Asvd[0][0] =  da_wing_x_dphii(); 
-      Asvd[0][1] =  da_wing_y_dphii(); 
-      Asvd[0][2] =  da_wing_z_dphii(); 
-      Asvd[1][0] =  da_wing_x_dthetai(); 
-      Asvd[1][1] =  da_wing_y_dthetai(); 
-      Asvd[1][2] =  da_wing_z_dthetai(); 
-      Asvd[2][0] =  da_wing_x_dpsii(); 
-      Asvd[2][1] =  da_wing_y_dpsii(); 
-      Asvd[2][2] =  da_wing_z_dpsii(); 
-      Asvd[3][0] =  0.0f; 
-      Asvd[3][1] =  0.0f; 
-      Asvd[3][2] = -1.0f; 
-    } else {
-      Asvd[0][0] =  da_wing_x_dphii(); 
-      Asvd[1][0] =  da_wing_y_dphii(); 
-      Asvd[2][0] =  da_wing_z_dphii(); 
-      Asvd[0][1] =  da_wing_x_dthetai(); 
-      Asvd[1][1] =  da_wing_y_dthetai(); 
-      Asvd[2][1] =  da_wing_z_dthetai(); 
-      Asvd[0][2] =  da_wing_x_dpsii(); 
-      Asvd[1][2] =  da_wing_y_dpsii(); 
-      Asvd[2][2] =  da_wing_z_dpsii(); 
-      Asvd[0][3] =  0.0f; 
-      Asvd[1][3] =  0.0f; 
-      Asvd[2][3] = -1.0f; 
+
+  // tol used for zero division avoidance
+  int max = (ROWS_GUIDANCE < COLS_GUIDANCE) ? COLS_GUIDANCE : ROWS_GUIDANCE;
+  float tol = max * FLT_EPSILON;
+
+  // get: WGt = Weight * G_transposed
+  int i,j;
+  for (i=0; i<COLS_GUIDANCE; i++){
+    for (j=0; j<ROWS_GUIDANCE; j++){
+      WGt[i][j] = Weight[i] * G[j][i];
     }
+  }
 
-    //Copy data from A to U
-    for (int r = 0; r < ROWS_GUIDANCE; r++) {
-      for (int c = 0; c < COLS_GUIDANCE; c++) {
-        ptrU[r][c] = Asvd[r][c];
+  // get: GWGt = G * Weight * G_transposed
+  sum = 0;
+  for (int i = 0; i < ROWS_GUIDANCE; i++){
+    for (int j = 0; j < ROWS_GUIDANCE; j++){
+      for (int k = 0; k < COLS_GUIDANCE; k++){
+        sum =  sum + G[i][k] * WGt[k][j];
       }
+      GWGt[i][j] = sum;
+      sum = 0;
+    }
+  }
+
+  // get pseudoinverse of G * Weight * G_transposed = GWGt
+  float _svd_W[ROWS_GUIDANCE] = {0};
+  float _svd_V[ROWS_GUIDANCE][ROWS_GUIDANCE] = {0};
+  MAKE_MATRIX_PTR(svd_U, GWGt, ROWS_GUIDANCE);
+  MAKE_MATRIX_PTR(svd_V, _svd_V, ROWS_GUIDANCE);
+  pprz_svd_float(svd_U,_svd_W, svd_V, ROWS_GUIDANCE, ROWS_GUIDANCE); 
+
+  // get: WiUv =  W_inverse * U * dv
+  sum = 0;
+  for (int i = 0; i < ROWS_GUIDANCE; i++){
+    for (int j = 0; j < ROWS_GUIDANCE; j++){
+      sum = sum + svd_U[j][i]  * dv[j];  // <-- trasnpose of U
     }
 
-      printf("\n\tMatrix G:\n");
-      print_matrix_matlab(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
-
-    // printf("\n\nMatrix Check\n\n");
-    // printf("\tMatrix ptrA:\n");
-    // print_matrix(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
-    // printf("\tMatrix A:\n");
-    // print_array(Asvd[0],ROWS_GUIDANCE,COLS_GUIDANCE);
-    // printf("\tMatrix U (copy of A):\n");
-    // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
-
-    // printf("\tMatrix ptrA pointers:\n");
-    // print_ptrarray(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
-
-
-
-    // printf("\tMatrix adress A:\n");
-    // print_adrarray(Asvd,ROWS_GUIDANCE,COLS_GUIDANCE);
-
-    //Store Status to see if SVD succeeded
-    int status = 0;
-    // status = 
-    status = pprz_svd_float(ptrU, ptrW, ptrV, ROWS_GUIDANCE, COLS_GUIDANCE);
-    if (status != 1) {
-      printf("\nSVD failed!\n\n");
-    } else {
-      printf("\tMatrix U:\n");
-      print_matrix_matlab(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
-      printf("\tDiagonal W:\n");
-      print_row_matlab(ptrW,COLS_GUIDANCE);
-      printf("\tMatrix V:\n");
-      print_matrix_matlab(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
-      printf("\n");
-      printf("\n\nSVD succeeded!\n\n");
+    if (_svd_W[i] > tol){
+      WiUv[i] = sum / _svd_W[i];
+    }else{
+      WiUv[i] = 0;
     }
+    sum = 0;
+  }
 
-
-    p_INV_svd(ptrPinv, ptrU, ptrV, ptrW,ROWS_GUIDANCE,COLS_GUIDANCE);
-
-    pprz_svd_solve_float(ptrX, ptrU, ptrW, ptrV, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
-    
-    // print_eq(ptrPinv, ptrX, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
-
-    printf("\tMatrix dx:\n");
-    print_matrix_matlab(ptrX,COLS_GUIDANCE,1);
-
-
-    printf("\tMatrix du:\n");
-    print_matrix_matlab(ptrB,ROWS_GUIDANCE,1);
-
-    printf("\tMatrix G_inv:\n");
-    print_matrix_matlab(ptrPinv,COLS_GUIDANCE,ROWS_GUIDANCE);
-
-    printf("\n\tMatrix G_inv Matlab:\n\n\t-1.344539e-05 \t 5.882353e03 \t 8.468939e-13 \n\t 1.428571e+03 \t 5.882353e-05 \t 1.256251e-14 \n\t 3.361304e-06 \t 2.352941e+04 \t 2.612699e-12 \n\t-7.142857e-02 \t 8.818017e-09 \t-1.000000e+00\n\n");
-    // //Fail and Succeed prints:
-    // if (status != 1) {
-    //   printf("\nSVD failed!\n\n");
-    // } else {
-    //   // printf("\tMatrix U:\n");
-    //   // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
-    //   // printf("\tDiagonal W:\n");
-    //   // print_row(ptrW,COLS_GUIDANCE);
-    //   // printf("\tMatrix V:\n");
-    //   // print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
-    //   // printf("\n");
-    //   printf("\n\nSVD succeeded!\n\n");
-    // }
+  // get: VWiUv = V * (W_inverse * U * dv) = V * WiUv
+  sum = 0;
+  for (int i = 0; i < ROWS_GUIDANCE; i++){
+    for (int j = 0; j < ROWS_GUIDANCE; j++){
+      sum = sum + svd_V[i][j] * WiUv[j];
+    }
+    VWiUv[i] = sum;
+    sum = 0;
+  }
+  // get: du = (Weight * G_transposed) * (V * (W_inverse * U * dv)) = WGt * VWiUv
+  sum = 0;
+  for (int i = 0; i < COLS_GUIDANCE; i++){
+    for (int j = 0; j < ROWS_GUIDANCE; j++){
+      sum = sum + WGt[i][j] * VWiUv[j];
+    }
+    du[i] = sum;
+    sum = 0;
+  } 
 }
 
-/**
-* Function that calculates the pseudo-inverse of (G1+G2) with SVD matrices
-*/
-void p_INV_svd(float **pseudo_inverse, float **U, float **V, float *W, int row, int col){
 
-    // pinv(g1g2) = V x pinv(W) x U_T
-    float pinv_W[COLS_GUIDANCE][COLS_GUIDANCE] = {0};
-    MAKE_MATRIX_PTR(ptrWinv, pinv_W, COLS_GUIDANCE);
-    // Calculate psuedo inverse of Singular value mat (W)
-    // Made use of diagonal matrix properties: V*inv(diag(W)) = v11/w_1 v12/w_2 ...
-    for (int i = 0; i < col; i++){
-        for (int j = 0; j < col; j++){
-            // Zero rows are excluded if singular value is to small 
-            if (W[j] > 1e-10){
-                pinv_W[i][j] = V[i][j]/W[j];
-            }else{
-                pinv_W[i][j] = 0.0;
-            }
-        }
-    }
-    printf("\n\tMatrix V'/ W :\n" );
-    print_matrix(ptrWinv,COLS_GUIDANCE,COLS_GUIDANCE);
 
-    // Multiply V_pinv(W) x U_T
-    float sum = 0;
-    for (int i = 0; i < col; i++){
-        for (int j = 0; j < row; j++){
-            for (int k = 0; k < col; k++){
-                sum = sum + pinv_W[i][k]  * U[j][k];
-            }
-            pseudo_inverse[i][j] = sum;
-            sum = 0;
-        }
 
-    }
+void get_G(void){
+  if (ROWS_GUIDANCE > COLS_GUIDANCE){
+    G[0][0] =  da_wing_x_dphii(); 
+    G[0][1] =  da_wing_y_dphii(); 
+    G[0][2] =  da_wing_z_dphii(); 
+    G[1][0] =  da_wing_x_dthetai(); 
+    G[1][1] =  da_wing_y_dthetai(); 
+    G[1][2] =  da_wing_z_dthetai(); 
+    G[2][0] =  da_wing_x_dpsii(); 
+    G[2][1] =  da_wing_y_dpsii(); 
+    G[2][2] =  da_wing_z_dpsii(); 
+    G[3][0] =  0.0f; 
+    G[3][1] =  0.0f; 
+    G[3][2] = -1.0f; 
+  } else {
+    G[0][0] =  da_wing_x_dphii(); 
+    G[1][0] =  da_wing_y_dphii(); 
+    G[2][0] =  da_wing_z_dphii(); 
+    G[0][1] =  da_wing_x_dthetai(); 
+    G[1][1] =  da_wing_y_dthetai(); 
+    G[2][1] =  da_wing_z_dthetai(); 
+    G[0][2] =  da_wing_x_dpsii(); 
+    G[1][2] =  da_wing_y_dpsii(); 
+    G[2][2] =  da_wing_z_dpsii(); 
+    G[0][3] =  0.0f; 
+    G[1][3] =  0.0f; 
+    G[2][3] = -1.0f; 
+}
+}
 
-}; 
+void get_dv(void){
+  dv[0] =  0.1;
+  dv[1] =  0.2;
+  dv[2] = -3.5;
+}
+
+void SVDw(void){
+  get_dv();
+  get_G();
+  get_increment();
+
+}
+
+// void test_SVD(void){
+
+//     // get_increment()
+//     // // WuGt = Wu * G_transpose
+//     // get_WuGt();
+//     // // GWuGt  = G * WuGt
+//     // MAT_MUL_norm(ROWS_GUIDANCE,COLS_GUIDANCE,ROWS_GUIDANCE,GWuGt,G,WuGt,1);
+    
+//     // Usvd = deepcopy(GWuGt)
+
+//     // pprz_svd_float(Usvd, Wsvd, Vsvd, ROWS_GUIDANCE, ROWS_GUIDANCE);
+
+//     // Gwinv = WuGt * (Vsvd * Wsvd^-1 * Usvd_transpose)
+
+//     // du = Gwinv * dv
+
+
+
+//     //temporary Velocity Vector for debugging purposes
+//     // V[0] = -2.5f;
+//     // V[1] =  0.5f;
+//     // V[2] =  3.0f;
+
+
+
+
+
+//     // float* ptrA[ROWS_GUIDANCE];
+//     // for (int r = 0; r < ROWS_GUIDANCE; r++){
+//     //   ptrA[r] = &Asvd[r][0];  
+//     // }
+//     //Create pointers to float arrays
+//     MAKE_MATRIX_PTR(ptrA, Asvd, ROWS_GUIDANCE);
+//     MAKE_MATRIX_PTR(ptrU, Usvd, ROWS_GUIDANCE);
+//     MAKE_MATRIX_PTR(ptrV, Vsvd, COLS_GUIDANCE);
+
+//     // MAKE_MATRIX_PTR(ptrB, Bsvd, ROWS_GUIDANCE);
+//     // MAKE_MATRIX_PTR(ptrX, Xsvd, COLS_GUIDANCE);
+
+//     // MAKE_MATRIX_PTR(ptrPinv, p_inv, COLS_GUIDANCE);
+    
+//     // Assign Values to A matrix
+//     if (ROWS_GUIDANCE > COLS_GUIDANCE){
+//       Asvd[0][0] =  da_wing_x_dphii(); 
+//       Asvd[0][1] =  da_wing_y_dphii(); 
+//       Asvd[0][2] =  da_wing_z_dphii(); 
+//       Asvd[1][0] =  da_wing_x_dthetai(); 
+//       Asvd[1][1] =  da_wing_y_dthetai(); 
+//       Asvd[1][2] =  da_wing_z_dthetai(); 
+//       Asvd[2][0] =  da_wing_x_dpsii(); 
+//       Asvd[2][1] =  da_wing_y_dpsii(); 
+//       Asvd[2][2] =  da_wing_z_dpsii(); 
+//       Asvd[3][0] =  0.0f; 
+//       Asvd[3][1] =  0.0f; 
+//       Asvd[3][2] = -1.0f; 
+//     } else {
+//       Asvd[0][0] =  da_wing_x_dphii(); 
+//       Asvd[1][0] =  da_wing_y_dphii(); 
+//       Asvd[2][0] =  da_wing_z_dphii(); 
+//       Asvd[0][1] =  da_wing_x_dthetai(); 
+//       Asvd[1][1] =  da_wing_y_dthetai(); 
+//       Asvd[2][1] =  da_wing_z_dthetai(); 
+//       Asvd[0][2] =  da_wing_x_dpsii(); 
+//       Asvd[1][2] =  da_wing_y_dpsii(); 
+//       Asvd[2][2] =  da_wing_z_dpsii(); 
+//       Asvd[0][3] =  0.0f; 
+//       Asvd[1][3] =  0.0f; 
+//       Asvd[2][3] = -1.0f; 
+
+
+//       // Asvd[0][0] =  1.283958e-07; 
+//       // Asvd[1][0] = -1.359647e-04; 
+//       // Asvd[2][0] = -1.150371e-07; 
+//       // Asvd[0][1] = -2.523273e-03; 
+//       // Asvd[1][1] =  0.000000e+00; 
+//       // Asvd[2][1] =  2.084210e-05; 
+//       // Asvd[0][2] =  1.127815e-06; 
+//       // Asvd[1][2] = -1.568814e-04; 
+//       // Asvd[2][2] =  5.719662e-08; 
+//       // Asvd[0][3] = 	0.000000e+00; 
+//       // Asvd[1][3] = 	0.000000e+00; 
+//       // Asvd[2][3] = -1.000000e+00;
+
+//     }
+
+//     //Copy data from A to U
+//     for (int r = 0; r < ROWS_GUIDANCE; r++) {
+//       for (int c = 0; c < COLS_GUIDANCE; c++) {
+//         ptrU[r][c] = Asvd[r][c];
+//       }
+//     }
+
+//       printf("\n\tV:\n\n[\t%e,\t%e,\t%e];\n",V[0],V[1],V[2]);
+
+//       printf("\n\tMatrix G:\n");
+//       print_matrix_matlab(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+
+//     // printf("\n\nMatrix Check\n\n");
+//     // printf("\tMatrix ptrA:\n");
+//     // print_matrix(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
+//     // printf("\tMatrix A:\n");
+//     // print_array(Asvd[0],ROWS_GUIDANCE,COLS_GUIDANCE);
+//     // printf("\tMatrix U (copy of A):\n");
+//     // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+
+//     // printf("\tMatrix ptrA pointers:\n");
+//     // print_ptrarray(ptrA,ROWS_GUIDANCE,COLS_GUIDANCE);
+
+
+
+//     // printf("\tMatrix adress A:\n");
+//     // print_adrarray(Asvd,ROWS_GUIDANCE,COLS_GUIDANCE);
+
+//     //Store Status to see if SVD succeeded
+//     int status = 0;
+//     // status = 
+//     status = pprz_svd_float(ptrU, ptrW, ptrV, ROWS_GUIDANCE, COLS_GUIDANCE);
+//     if (status != 1) {
+//       printf("\nSVD failed!\n\n");
+//     } else {
+//       printf("\tMatrix U:\n");
+//       print_matrix_matlab(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+//       printf("\tDiagonal W:\n");
+//       print_row_matlab(ptrW,COLS_GUIDANCE);
+//       printf("\tMatrix V:\n");
+//       print_matrix_matlab(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
+//       printf("\n");
+//       printf("\n\nSVD succeeded!\n\n");
+//     }
+
+
+//     // p_INV_svd(ptrPinv, ptrU, ptrV, ptrW,ROWS_GUIDANCE,COLS_GUIDANCE);
+//     p_INV_svd(COLS_GUIDANCE,ROWS_GUIDANCE);
+
+//     // pprz_svd_solve_float(ptrX, ptrU, ptrW, ptrV, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
+    
+//     // print_eq(ptrPinv, ptrX, ptrB, ROWS_GUIDANCE, COLS_GUIDANCE, 1);
+
+//     // printf("\tMatrix dx:\n");
+//     // print_matrix_matlab(ptrX,COLS_GUIDANCE,1);
+
+
+//     // printf("\tMatrix du:\n");
+//     // print_matrix_matlab(ptrB,ROWS_GUIDANCE,1);
+
+//     printf("\tMatrix G_inv:\n");
+//     print_2darr(COLS_GUIDANCE,ROWS_GUIDANCE,g1g2_pseudo_inv);
+
+//     // printf("\n\tMatrix G_inv Matlab:\n\n\t-1.344539e-05 \t 5.882353e03 \t 8.468939e-13 \n\t 1.428571e+03 \t 5.882353e-05 \t 1.256251e-14 \n\t 3.361304e-06 \t 2.352941e+04 \t 2.612699e-12 \n\t-7.142857e-02 \t 8.818017e-09 \t-1.000000e+00\n\n");
+//     // //Fail and Succeed prints:
+//     // if (status != 1) {
+//     //   printf("\nSVD failed!\n\n");
+//     // } else {
+//     //   // printf("\tMatrix U:\n");
+//     //   // print_matrix(ptrU,ROWS_GUIDANCE,COLS_GUIDANCE);
+//     //   // printf("\tDiagonal W:\n");
+//     //   // print_row(ptrW,COLS_GUIDANCE);
+//     //   // printf("\tMatrix V:\n");
+//     //   // print_matrix(ptrV,COLS_GUIDANCE,COLS_GUIDANCE);
+//     //   // printf("\n");
+//     //   printf("\n\nSVD succeeded!\n\n");
+//     // }
+// }
+
+// /**
+//  * Function that calculates the pseudo-inverse of (G1+G2) with SVD matrices
+//  */
+// void p_INV_svd(int row, int col){
+
+//     // pinv(g1g2) = V x pinv(W) x U_T
+
+//     // used max matrix size for tol
+//     int max = (row < col ) ? col : row;
+
+//     // tol used to for zero division avoidance
+//     float tol = max * FLT_EPSILON;
+
+//     // Calculate psuedo inverse of Singular value mat (W)
+//     // Made use of diagonal matrix properties: V*inv(diag(W)) = v11/w_1 v12/w_2 ...
+//     for (int i = 0; i < row; i++){
+//         for (int j = 0; j < row; j++){
+//             // Zero rows are excluded if singular value is to small
+//             // if (ptrW[j] > tol && ptrW[j] > 0 || ptrW[j] < -tol && ptrW[j] < 0){ 
+//             if (ptrW[j] > tol){
+//               pinv_W[i][j] = Vsvd[i][j]/ptrW[j];
+//             }else{
+//               pinv_W[i][j] = 0;
+//             }
+//         }
+//     }
+
+//     // Multiply V_pinv(W) x U_T
+//     float sum = 0;
+//     for (int i = 0; i < row; i++){
+//         for (int j = 0; j < col; j++){
+//             for (int k = 0; k < row; k++){
+//                 sum = sum + pinv_W[i][k]  * Usvd[j][k];
+//             }
+//             g1g2_pseudo_inv[i][j] = sum;
+//             printf("%e\t",g1g2_pseudo_inv[i][j]);
+//             sum = 0;
+//         }
+//       printf("\n");
+
+//     }
+
+
+// };
+
+// /**
+// * Function that calculates the pseudo-inverse of (G1+G2) with SVD matrices
+// */
+// void p_INV_svd_old(float **pseudo_inverse, float **U, float **V, float *W, int row, int col){
+
+//     // pinv(g1g2) = V x pinv(W) x U_T
+//     float pinv_W[COLS_GUIDANCE][COLS_GUIDANCE] = {0};
+//     MAKE_MATRIX_PTR(ptrWinv, pinv_W, COLS_GUIDANCE);
+//     // Calculate psuedo inverse of Singular value mat (W)
+//     // Made use of diagonal matrix properties: V*inv(diag(W)) = v11/w_1 v12/w_2 ...
+//     for (int i = 0; i < col; i++){
+//         for (int j = 0; j < col; j++){
+//             // Zero rows are excluded if singular value is to small 
+//             if (W[j] > 1e-10){
+//                 pinv_W[i][j] = V[i][j]/W[j];
+//             }else{
+//                 pinv_W[i][j] = 0.0;
+//             }
+//         }
+//     }
+//     printf("\n\tMatrix V'/ W :\n" );
+//     print_matrix(ptrWinv,COLS_GUIDANCE,COLS_GUIDANCE);
+
+//     // Multiply V_pinv(W) x U_T
+//     float sum = 0;
+//     for (int i = 0; i < col; i++){
+//         for (int j = 0; j < row; j++){
+//             for (int k = 0; k < col; k++){
+//                 sum = sum + pinv_W[i][k]  * U[j][k];
+//             }
+//             pseudo_inverse[i][j] = sum;
+//             sum = 0;
+//         }
+
+//     }
+
+// }; 
 
 
 
