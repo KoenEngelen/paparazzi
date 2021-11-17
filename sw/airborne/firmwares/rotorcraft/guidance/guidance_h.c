@@ -614,7 +614,13 @@ void guidance_h_from_nav(bool in_flight)
     FLOAT_ANGLE_NORMALIZE(guidance_h.sp.heading);
 #endif
 
+#if GUIDANCE_AEROBATIC
+    printf("\n\nRUNNING AEROBATIC\n\n");
+    guidance_aerobatic_run();
+#endif
+
 #if GUIDANCE_INDI
+    printf("\n\nRUNNING INDI\n\n");
     guidance_indi_run(&guidance_h.sp.heading);
 #else
     /* compute x,y earth commands */
