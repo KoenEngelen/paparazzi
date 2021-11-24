@@ -196,6 +196,7 @@ void guidance_h_init(void)
   gh_ref_init();
 
 #if GUIDANCE_H_MODE_MODULE_SETTING == GUIDANCE_H_MODE_MODULE
+  printf("\nrunning guidance_h_module_init\n");
   guidance_h_module_init();
 #endif
 
@@ -271,6 +272,7 @@ void guidance_h_mode_changed(uint8_t new_mode)
 
 #if GUIDANCE_H_MODE_MODULE_SETTING == GUIDANCE_H_MODE_MODULE
     case GUIDANCE_H_MODE_MODULE:
+      printf("\nrunning guidance_h_module_enter\n");
       guidance_h_module_enter();
       break;
 #endif
@@ -338,6 +340,7 @@ void guidance_h_read_rc(bool  in_flight)
 
 #if GUIDANCE_H_MODE_MODULE_SETTING == GUIDANCE_H_MODE_MODULE
     case GUIDANCE_H_MODE_MODULE:
+      printf("\nrunning guidance_h_module_read_rc\n");
       guidance_h_module_read_rc();
       break;
 #endif
@@ -360,25 +363,30 @@ void guidance_h_read_rc(bool  in_flight)
 
 void guidance_h_run(bool  in_flight)
 {
+  printf("\n\n\tMODE: %d\n", guidance_h.mode);
   switch (guidance_h.mode) {
-
     case GUIDANCE_H_MODE_RC_DIRECT:
+      printf("\n\t\tGUIDANCE H MODE: RC DIRECT \n");
       stabilization_none_run(in_flight);
       break;
 
 #if USE_STABILIZATION_RATE
     case GUIDANCE_H_MODE_RATE:
+      printf("\n\t\tGUIDANCE H MODE: USE STABILIZATION RATE (RATE) \n");
       stabilization_rate_run(in_flight);
       break;
 #endif
 
     case GUIDANCE_H_MODE_FORWARD:
+      printf("\n\t\tGUIDANCE H MODE: FORWARD \n");
       if (transition_percentage < (100 << INT32_PERCENTAGE_FRAC)) {
         transition_run(true);
       }
       /* Falls through. */
     case GUIDANCE_H_MODE_CARE_FREE:
+      printf("\n\t\tGUIDANCE H MODE: CARE FREE \n");
     case GUIDANCE_H_MODE_ATTITUDE:
+      printf("\n\t\tGUIDANCE H MODE: ATTITUDE \n");
       if ((!(guidance_h.mode == GUIDANCE_H_MODE_FORWARD)) && transition_percentage > 0) {
         transition_run(false);
       }
@@ -392,26 +400,31 @@ void guidance_h_run(bool  in_flight)
       break;
 
     case GUIDANCE_H_MODE_HOVER:
+      printf("\n\t\tGUIDANCE H MODE: HOVER \n");
       /* set psi command from RC */
       guidance_h.sp.heading = guidance_h.rc_sp.psi;
       /* fall trough to GUIDED to update ref, run traj and set final attitude setpoint */
 
       /* Falls through. */
     case GUIDANCE_H_MODE_GUIDED:
+      printf("\n\t\tGUIDANCE H MODE: GUIDED \n");
       guidance_h_guided_run(in_flight);
       break;
 
     case GUIDANCE_H_MODE_NAV:
+      printf("\n\t\tGUIDANCE H MODE: NAV %f\n",stateGetSpeedNed_f()->z);
       guidance_h_from_nav(in_flight);
       break;
 
 #if GUIDANCE_H_MODE_MODULE_SETTING == GUIDANCE_H_MODE_MODULE
     case GUIDANCE_H_MODE_MODULE:
+      printf("\n\t\tGUIDANCE H MODE: MODULE \n");
       guidance_h_module_run(in_flight);
       break;
 #endif
 
     case GUIDANCE_H_MODE_FLIP:
+      printf("\n\t\tGUIDANCE H MODE: FLIP\n");
       guidance_flip_run();
       break;
 
@@ -578,6 +591,7 @@ void guidance_h_nav_enter(void)
 
 void guidance_h_from_nav(bool in_flight)
 {
+    // printf("\n\tRUNNING guidance_h_from_nav\n");
   if (!in_flight) {
     guidance_h_nav_enter();
   }
@@ -593,6 +607,7 @@ void guidance_h_from_nav(bool in_flight)
     sp_cmd_i.psi = nav_heading;
     stabilization_attitude_set_rpy_setpoint_i(&sp_cmd_i);
     stabilization_attitude_run(in_flight);
+    printf("\n\t\tRUNNING STABILIZATION ATTITUDE\n");
 
 #if HYBRID_NAVIGATION
     //make sure the heading is right before leaving horizontal_mode attitude
@@ -612,11 +627,6 @@ void guidance_h_from_nav(bool in_flight)
     /* set psi command */
     guidance_h.sp.heading = ANGLE_FLOAT_OF_BFP(nav_heading);
     FLOAT_ANGLE_NORMALIZE(guidance_h.sp.heading);
-#endif
-
-#if GUIDANCE_AEROBATIC
-    printf("\n\nRUNNING AEROBATIC\n\n");
-    guidance_aerobatic_run();
 #endif
 
 #if GUIDANCE_INDI

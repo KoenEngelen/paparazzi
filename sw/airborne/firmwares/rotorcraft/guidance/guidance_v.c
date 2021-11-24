@@ -298,6 +298,7 @@ void guidance_v_thrust_adapt(bool in_flight)
 
 void guidance_v_run(bool in_flight)
 {
+  // printf("\n\t\tRUNNING guidance_v_run\n");
   guidance_v_thrust_adapt(in_flight);
 
   /* reset flag indicating if desired zd was updated */
@@ -472,17 +473,21 @@ void run_hover_loop(bool in_flight)
 
 void guidance_v_from_nav(bool in_flight)
 {
+  // printf("\n\tRUNNING guidance_v_from_nav\n");
   if (vertical_mode == VERTICAL_MODE_ALT) {
+    // printf("\n\t\tRUNNING VERTICAL_MODE_ALT\n");
     guidance_v_z_sp = -nav_flight_altitude;
     guidance_v_zd_sp = 0;
     gv_update_ref_from_z_sp(guidance_v_z_sp);
     run_hover_loop(in_flight);
   } else if (vertical_mode == VERTICAL_MODE_CLIMB) {
+    // printf("\n\t\tRUNNING VERTICAL_MODE_CLIMB\n");
     guidance_v_z_sp = stateGetPositionNed_i()->z;
     guidance_v_zd_sp = -nav_climb;
     gv_update_ref_from_zd_sp(guidance_v_zd_sp, stateGetPositionNed_i()->z);
     run_hover_loop(in_flight);
   } else if (vertical_mode == VERTICAL_MODE_MANUAL) {
+    // printf("\n\t\tRUNNING VERTICAL_MODE_MANUAL\n");
     guidance_v_z_sp = stateGetPositionNed_i()->z;
     guidance_v_zd_sp = stateGetSpeedNed_i()->z;
     GuidanceVSetRef(guidance_v_z_sp, guidance_v_zd_sp, 0);
@@ -490,6 +495,7 @@ void guidance_v_from_nav(bool in_flight)
     guidance_v_delta_t = nav_throttle;
   }
 #if HYBRID_NAVIGATION
+  // printf("\n\t\t\tRUNNING guidance_hybrid_vertical\n");
   guidance_hybrid_vertical();
 #else
 #if !NO_RC_THRUST_LIMIT

@@ -111,6 +111,7 @@ void autopilot_static_init(void)
 void autopilot_static_periodic(void)
 {
 
+  // printf("\n\n\tAUTOPILOT MODE: %d\n\n", autopilot.mode);
   RunOnceEvery(NAV_PRESCALER, compute_dist2_to_home());
 
   if (autopilot_in_flight() && autopilot.mode == AP_MODE_NAV) {
@@ -175,7 +176,7 @@ void autopilot_static_periodic(void)
  */
 void autopilot_static_SetModeHandler(float mode)
 {
-  if (mode == AP_MODE_KILL || mode == AP_MODE_FAILSAFE || mode == AP_MODE_HOME) {
+  if (mode == AP_MODE_KILL || mode == AP_MODE_FAILSAFE || mode == AP_MODE_HOME || mode == AP_MODE_HOME) {
     // safety modes are always accessible via settings
     autopilot_static_set_mode(mode);
   } else {
@@ -191,7 +192,6 @@ void autopilot_static_SetModeHandler(float mode)
 
 void autopilot_static_set_mode(uint8_t new_autopilot_mode)
 {
-
   /* force startup mode (default is kill) as long as AHRS is not aligned */
   if (!ap_ahrs_is_aligned()) {
     new_autopilot_mode = MODE_STARTUP;

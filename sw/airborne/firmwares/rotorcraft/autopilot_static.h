@@ -52,6 +52,7 @@
 #define AP_MODE_MODULE            17
 #define AP_MODE_FLIP              18
 #define AP_MODE_GUIDED            19
+#define AP_MODE_AEROBATIC         20
 
 
 /** Default RC mode.

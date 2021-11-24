@@ -34,6 +34,7 @@
 #include "math/pprz_simple_matrix.h"
 #include "subsystems/datalink/telemetry.h"
 #include "firmwares/rotorcraft/stabilization.h"
+#include "subsystems/abi.h"
 // #include 
 
 float guidance_aerobatic_indi_gain = 0.5;
@@ -41,18 +42,6 @@ float debug_value;
 
 #define PPRZ_MSG_ID_AEROBATIC_INDI 158
 
-/*
-Declarations
-*/
-
-// struct ctrl_eff_struct {
-//   // Input Acceleration
-//   struct NedCoor_f *acc;
-//   // Output Euler
-//   struct FloatEuler cmdeul;
-//   // Output Thrust
-//   float cmdT;
-// } ctrl_eff;
 
 struct ctrl_lin_struct {
   // Input Position
@@ -84,85 +73,143 @@ float alpha = 0;
 
 float t = 0.0;
 
-extern void guidance_aerobatic_run(void);
-extern void guidance_aerobatic_enter(void);
+//Declare all functions
+  extern void guidance_module_h_init(void);
+  extern void guidance_module_h_enter(void);
+  extern void guidance_module_h_read_rc(void);
+  extern void guidance_module_h_run(bool in_flight);
+  extern void guidance_module_v_init(void);
+  extern void guidance_module_v_enter(void);
+  extern void guidance_module_v_run(bool in_flight);
 
-void test_SVD(void);
-void test_a_L_wing(void);
-float a_D_wing_x(void);
-float a_D_wing_z(void);
-float a_L_wing_x(void);
-float a_L_wing_z(void);
-float a_wing_x(void);
-float a_wing_z(void);
-float AoA(void);
-float AoD(void);
-float AoS(void);
-float Cd(void);
-float Cl(void);
-float dCd(void);
-float dCl(void);
-float Vxz_2(void);
-float da_wing_x_dphii(void);
-float da_wing_x_dpsii(void);
-float da_wing_x_dthetai(void);
-float da_wing_y_dphii(void);
-float da_wing_y_dpsii(void);
-float da_wing_y_dthetai(void);
-float da_wing_z_dphii(void);
-float da_wing_z_dpsii(void);
-float da_wing_z_dthetai(void);
-float dalphai_dphii(void);
-float dalphai_dpsii(void);
-float dalphai_dthetai(void);
-float dbetai_dphii(void);
-float dbetai_dpsii(void);
-float dbetai_dthetai(void);
-float dCd_dphii(void);
-float dCd_dpsii(void);
-float dCd_dthetai(void);
-float dCl_dphii(void);
-float dCl_dpsii(void);
-float dCl_dthetai(void);
-float dVx_dphii(void);
-float dVx_dpsii(void);
-float dVx_dthetai(void);
-float dVxz_2_dphii(void);
-float dVxz_2_dpsii(void);
-float dVxz_2_dthetai(void);
-float dVy_dphii(void);
-float dVy_dthetai(void);
-float dVz_dphii(void);
-float dVz_dpsii(void);
-float dVz_dthetai(void);
-float Vxz_2_dalphai_dphii(void);
-float Vxz_2_dalphai_dpsii(void);
-float Vxz_2_dCd_dphii(void);
-float Vxz_2_dCd_dpsii(void);
-float Vxz_2_dCl_dphii(void);
-float Vxz_2_dCl_dpsii(void);
+  void guidance_aerobatic_init(void);
+  void guidance_aerobatic_enter(void);
+  void guidance_aerobatic_read_rc(void);
+  void guidance_aerobatic_run(void);
 
-void print_matrix(float **ptr,int m, int n);
-void print_matrix_matlab(float **ptr,int m, int n);
-// void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l);
-void print_2darr(int row, int col, float* Data_00);
-void print_row(float *ptr,int m);
-void print_row_matlab(float *ptr,int m);
+  void test_SVD(void);
+  void add_increment(void);
+  void test_a_L_wing(void);
+  float a_D_wing_x(void);
+  float a_D_wing_z(void);
+  float a_L_wing_x(void);
+  float a_L_wing_z(void);
+  float a_wing_x(void);
+  float a_wing_z(void);
+  float AoA(void);
+  float AoD(void);
+  float AoS(void);
+  float Cd(void);
+  float Cl(void);
+  float dCd(void);
+  float dCl(void);
+  float Vxz_2(void);
+  float da_wing_x_dphii(void);
+  float da_wing_x_dpsii(void);
+  float da_wing_x_dthetai(void);
+  float da_wing_y_dphii(void);
+  float da_wing_y_dpsii(void);
+  float da_wing_y_dthetai(void);
+  float da_wing_z_dphii(void);
+  float da_wing_z_dpsii(void);
+  float da_wing_z_dthetai(void);
+  float dalphai_dphii(void);
+  float dalphai_dpsii(void);
+  float dalphai_dthetai(void);
+  float dbetai_dphii(void);
+  float dbetai_dpsii(void);
+  float dbetai_dthetai(void);
+  float dCd_dphii(void);
+  float dCd_dpsii(void);
+  float dCd_dthetai(void);
+  float dCl_dphii(void);
+  float dCl_dpsii(void);
+  float dCl_dthetai(void);
+  float dVx_dphii(void);
+  float dVx_dpsii(void);
+  float dVx_dthetai(void);
+  float dVxz_2_dphii(void);
+  float dVxz_2_dpsii(void);
+  float dVxz_2_dthetai(void);
+  float dVy_dphii(void);
+  float dVy_dthetai(void);
+  float dVz_dphii(void);
+  float dVz_dpsii(void);
+  float dVz_dthetai(void);
+  float Vxz_2_dalphai_dphii(void);
+  float Vxz_2_dalphai_dpsii(void);
+  float Vxz_2_dCd_dphii(void);
+  float Vxz_2_dCd_dpsii(void);
+  float Vxz_2_dCl_dphii(void);
+  float Vxz_2_dCl_dpsii(void);
 
-void UpdateTrajectory(float t);
-void LinAccCon(void);
-void get_increment(void);
-void SVDw(void);
-void get_dv(void);
-void get_G(void);
-// void print_matrix(float** ptr,int m, int n);
-// void print_row(float* ptr,int m);
+  void print_matrix(float **ptr,int m, int n);
+  void print_matrix_matlab(float **ptr,int m, int n);
+  // void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l);
+  void print_2darr(int row, int col, float* Data_00);
+  void print_row(float *ptr,int m);
+  void print_row_matlab(float *ptr,int m);
 
+  void UpdateTrajectory(float t);
+  void LinAccCon(void);
+  void get_increment(void);
+  void SVDw(void);
+  void get_dv(void);
+  void get_G(void);
+  // void print_matrix(float** ptr,int m, int n);
+  // void print_row(float* ptr,int m);
+//
+
+//Guidance Module
+  void guidance_h_module_init(void)
+  {
+    guidance_aerobatic_init();
+  }
+
+  void guidance_h_module_enter(void)
+  {
+    guidance_aerobatic_enter();
+  }
+
+  void guidance_h_module_read_rc(void)
+  {
+    // // -MAX_PPRZ to MAX_PPRZ
+    // ctrl_windtunnel.rc_throttle = radio_control.values[RADIO_THROTTLE];
+    // ctrl_windtunnel.rc_roll = radio_control.values[RADIO_ROLL];
+    // ctrl_windtunnel.rc_pitch = radio_control.values[RADIO_PITCH];
+    // ctrl_windtunnel.rc_yaw = radio_control.values[RADIO_YAW];
+  }
+
+  void guidance_h_module_run(UNUSED bool in_flight)
+  {
+    // Call full inner-/outerloop / horizontal-/vertical controller:
+    guidance_aerobatic_run();
+  }
+
+  void guidance_v_module_init(void)
+  {
+    // initialization of your custom vertical controller goes here
+  }
+
+  // Implement own Vertical loops
+  void guidance_v_module_enter(void)
+  {
+    // your code that should be executed when entering this vertical mode goes here
+  }
+
+  void guidance_v_module_run(UNUSED bool in_flight)
+  {
+    // your vertical controller goes here
+  }
+//
+
+//Messages
  static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev){
    pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
                          &debug_value, 
                          &guidance_aerobatic_indi_gain);
  }
+//
 
 // Initialize function
  void guidance_aerobatic_init(void) {
@@ -174,24 +221,27 @@ void get_G(void);
   // test_SVD(); //This function works in init
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
+//
 
 // Enter function
-void guidance_aerobatic_enter(void) {
-  t = 0.0;  
-}
+  void guidance_aerobatic_enter(void) {
+    t = 0.0;  
+  }
+//
 
 // Periodic function
-void guidance_aerobatic_run(void) {
-    t = t + 0.001953125;
+ void guidance_aerobatic_run() {
+  printf("\naerobatic running\n");
+  t = t + 0.001953125;
   if (t > 360000){
     t = 0;
   }
 
   UpdateTrajectory(t);
   LinAccCon();
-  // printf("state_accel: %f" , stateGetSpeedNed_f()->x);
+  // // printf("state_accel: %f" , stateGetSpeedNed_f()->x);
 
-  q.qi =  stateGetNedToBodyQuat_f()->qi;
+  q.qi = stateGetNedToBodyQuat_f()->qi;
   q.qx = -stateGetNedToBodyQuat_f()->qx;
   q.qy = -stateGetNedToBodyQuat_f()->qy;
   q.qz = -stateGetNedToBodyQuat_f()->qz;
@@ -201,134 +251,140 @@ void guidance_aerobatic_run(void) {
   V_drone.z = stateGetSpeedNed_f()->z;
 
   float_quat_vmult(&V_inf, &q, &V_drone);
-   V[0] = - V_inf.x;
-   V[1] = - V_inf.y;
-   V[2] = - V_inf.z;
-     
 
-  printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
+  V[0] = - V_inf.x;
+  V[1] = - V_inf.y;
+  V[2] = - V_inf.z;   
+  
+  thrust_in = stabilization_cmd[COMMAND_THRUST]*20./9600.;
+  if (thrust_in < 1){
+    thrust_in = 1;
+  }
+
+  // printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
 
   SVDw(); 
   //  stabilization_cmd[COMMAND_THRUST] = 0;
-}
-
-  // stabilization_attitude_set_rpy_setpoint_i(&(ctrl.cmd));
-  // stabilization_attitude_run(in_flight);
- 
-
-// Print_matix_function
-void print_matrix(float **ptr,int m, int n){
-    for (int r = 0; r < m; r++) {
-      for (int c = 0; c < n; c++) {
-        printf("\t%e\t",ptr[r][c]);
-      }
-      printf("\n");
-    }
-    printf("\n");
-}
-
-// Print_matix_function
-void print_matrix_matlab(float **ptr,int m, int n){
-    printf("\n[");
-    for (int r = 0; r < m; r++) {
-      for (int c = 0; c < n; c++) {
-        printf("\t%e",ptr[r][c]);
-        if (c<(n-1)){
-          printf(",");
-        }
-      }
-      if (r<(m-1)){
-        printf(";\n");
-      }else{
-        printf("];\n\n");
-      }
-    }
-}
-
-
-// Print_equation_function
-  // void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l){
-  //     for (int r = 0; r < m; r++) {
-        
-  //       printf("|");
-  //       for (int c = 0; c < n; c++) {
-  //         printf("\t%e\t",ptrA[r][c]);
-  //       }
-  //       printf("|");
-
-  //       if(r == 1){
-  //         printf("\t*\t");
-  //       }else{
-  //         printf("\t\t");
-  //       }
-
-  //       printf("|");
-  //       printf("\t%e\t",ptrX[r][0]);
-  //       printf("|");
-
-  //       if(r == 1){
-  //         printf("\t=\t");
-  //       }else{
-  //         printf("\t\t");
-  //       }
-        
-  //       printf("|");
-  //       printf("\t%e\t",ptrB[r][0]);
-  //       printf("|");
-
-  //       printf("\n");
-  //     }
-  //     printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|");
-  //     printf("\t%e\t",ptrX[3][0]);
-  //     printf("|");
-
-
-  //     printf("\n");
-  // }
+ }
 //
 
+  
+ 
+// Print Functions
+  // // Print_matix_function
+  // void print_matrix(float **ptr,int m, int n){
+  //     for (int r = 0; r < m; r++) {
+  //       for (int c = 0; c < n; c++) {
+  //         // printf("\t%e\t",ptr[r][c]);
+  //       }
+  //       // printf("\n");
+  //     }
+  //     // printf("\n");
+  // }
 
-void print_2darr(int row, int col, float* Data_00){
+  // // Print_matix_function
+  // void print_matrix_matlab(float **ptr,int m, int n){
+  //     // printf("\n[");
+  //     for (int r = 0; r < m; r++) {
+  //       for (int c = 0; c < n; c++) {
+  //         // printf("\t%e",ptr[r][c]);
+  //         if (c<(n-1)){
+  //           // printf(",");
+  //         }
+  //       }
+  //       if (r<(m-1)){
+  //         // printf(";\n");
+  //       }else{
+  //         // printf("];\n\n");
+  //       }
+  //     }
+  // }
 
-  printf("[");
-  // print 2D array
-  for (int i = 0; i < row; i++){
-      for (int j = 0; j < col; j++) {
-          float* MatData_val = Data_00 + (i * col + j);
-          if (j==col-1){
-            printf("\t%e", *MatData_val);
-          }else{      
-            printf("\t%e,", *MatData_val);
-          }
 
-      }
-      if (i==row-1){
-        printf("]\n");
-      }else{      
-        printf(";\n");
-      }
-      
-  }
-  printf("\n");
-}
+  // // Print_equation_function
+  //   // void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l){
+  //   //     for (int r = 0; r < m; r++) {
+          
+  //   //       // printf("|");
+  //   //       for (int c = 0; c < n; c++) {
+  //   //         // printf("\t%e\t",ptrA[r][c]);
+  //   //       }
+  //   //       // printf("|");
 
-void print_row(float *ptr,int m){
-    for (int r = 0; r < m; r++) {
-        printf("\t%e\t",ptr[r]);
-    }
-    printf("\n\n");
-}
+  //   //       if(r == 1){
+  //   //         // printf("\t*\t");
+  //   //       }else{
+  //   //         // printf("\t\t");
+  //   //       }
 
-void print_row_matlab(float *ptr,int m){
-    printf("\n[");
-    for (int r = 0; r < m; r++) {
-        printf("\t%e",ptr[r]);
-        if(r!=m-1){
-          printf(",");
-        }
-    }
-    printf("];\n\n");
-}
+  //   //       // printf("|");
+  //   //       // printf("\t%e\t",ptrX[r][0]);
+  //   //       // printf("|");
+
+  //   //       if(r == 1){
+  //   //         // printf("\t=\t");
+  //   //       }else{
+  //   //         // printf("\t\t");
+  //   //       }
+          
+  //   //       // printf("|");
+  //   //       // printf("\t%e\t",ptrB[r][0]);
+  //   //       // printf("|");
+
+  //   //       // printf("\n");
+  //   //     }
+  //   //     // printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|");
+  //   //     // printf("\t%e\t",ptrX[3][0]);
+  //   //     // printf("|");
+
+
+  //   //     // printf("\n");
+  //   // }
+  // //
+
+
+  // void print_2darr(int row, int col, float* Data_00){
+
+  //   // printf("[");
+  //   // print 2D array
+  //   for (int i = 0; i < row; i++){
+  //       for (int j = 0; j < col; j++) {
+  //           float* MatData_val = Data_00 + (i * col + j);
+  //           if (j==col-1){
+  //             // printf("\t%e", *MatData_val);
+  //           }else{      
+  //             // printf("\t%e,", *MatData_val);
+  //           }
+
+  //       }
+  //       if (i==row-1){
+  //         // printf("]\n");
+  //       }else{      
+  //         // printf(";\n");
+  //       }
+        
+  //   }
+  //   // printf("\n");
+  // }
+
+  // void print_row(float *ptr,int m){
+  //     for (int r = 0; r < m; r++) {
+  //         // printf("\t%e\t",ptr[r]);
+  //     }
+  //     // printf("\n\n");
+  // }
+
+  // void print_row_matlab(float *ptr,int m){
+  //     // printf("\n[");
+  //     for (int r = 0; r < m; r++) {
+  //         // printf("\t%e",ptr[r]);
+  //         if(r!=m-1){
+  //           // printf(",");
+  //         }
+  //     }
+  //     // printf("];\n\n");
+  // }
+//
 
 #define ROWS_GUIDANCE 3 //rows
 #define COLS_GUIDANCE 4 //columns
@@ -342,9 +398,9 @@ float du[COLS_GUIDANCE] = {0};
 
 void UpdateTrajectory(float t){
   traj.t = t;
-  traj.pos.x = 1.;
-  traj.pos.y = 0.;
-  traj.pos.z = 8.;
+  traj.pos.x = 2.;
+  traj.pos.y = 2.;
+  traj.pos.z = -10.;
 
   traj.vel.x = 0.;
   traj.vel.y = 0.;
@@ -364,15 +420,21 @@ void LinAccCon(void){
   ctrl_lin.vel = stateGetSpeedNed_f();
   ctrl_lin.acc = stateGetAccelNed_f();
 
-  printf("\nPos: %f \t %f \t %f",ctrl_lin.pos->x,ctrl_lin.pos->y,ctrl_lin.pos->z);
-  printf("\nVel: %f \t %f \t %f",ctrl_lin.vel->x,ctrl_lin.vel->y,ctrl_lin.vel->z);
-  printf("\nAcc: %f \t %f \t %f",ctrl_lin.acc->x,ctrl_lin.acc->y,ctrl_lin.acc->z);
+  // printf("\nPos: %f \t %f \t %f",ctrl_lin.pos->x,ctrl_lin.pos->y,ctrl_lin.pos->z);
+  // printf("\nVel: %f \t %f \t %f",ctrl_lin.vel->x,ctrl_lin.vel->y,ctrl_lin.vel->z);
+  // printf("\nAcc: %f \t %f \t %f",ctrl_lin.acc->x,ctrl_lin.acc->y,ctrl_lin.acc->z);
 
   ctrl_lin.cmdacc.x = PGain * (ctrl_lin.pos->x-traj.pos.x) + VGain * (ctrl_lin.vel->x-traj.vel.x) + traj.acc.x;
   ctrl_lin.cmdacc.y = PGain * (ctrl_lin.pos->y-traj.pos.y) + VGain * (ctrl_lin.vel->y-traj.vel.y) + traj.acc.y;
   ctrl_lin.cmdacc.z = PGain * (ctrl_lin.pos->z-traj.pos.z) + VGain * (ctrl_lin.vel->z-traj.vel.z) + traj.acc.z;
 
-  printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
+
+  float_quat_vmult(&dv, &q, &ctrl_lin.cmdacc);
+  dv[0] = -ctrl_lin.cmdacc.x ;
+  dv[1] = -ctrl_lin.cmdacc.y ;
+  dv[2] = -ctrl_lin.cmdacc.z ;
+
+  // printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
 }
 
 void get_increment(void){
@@ -452,9 +514,9 @@ void get_increment(void){
 
   float du_min =  1.-thrust_in; // min = 0    (defined by thrust_in = CMD_Thrust / 9600 * 20)
   float du_max = 19.-thrust_in; // max = 20
-  printf("\ndu_min:\t%e\n",du_min);
-  printf("\ndu_max:\t%e\n",du_max);
-  printf("\ndu[3]:\t%e\n",du[3]);
+  // printf("\ndu_min:\t%e\n",du_min);
+  // printf("\ndu_max:\t%e\n",du_max);
+  // printf("\ndu[3]:\t%e\n",du[3]);
   
   if (du[3] < du_min){
     du[3] = du_min;
@@ -464,15 +526,12 @@ void get_increment(void){
 
 }
 
-
-
-
 void get_G(void){
   if (ROWS_GUIDANCE > COLS_GUIDANCE){
     G[0][0] =  da_wing_x_dphii(); 
-    G[0][1] =  da_wing_y_dphii(); 
+    G[0][1] =  da_wing_y_dphii() + thrust_in; 
     G[0][2] =  da_wing_z_dphii(); 
-    G[1][0] =  da_wing_x_dthetai(); 
+    G[1][0] =  da_wing_x_dthetai() - thrust_in; 
     G[1][1] =  da_wing_y_dthetai(); 
     G[1][2] =  da_wing_z_dthetai(); 
     G[2][0] =  da_wing_x_dpsii(); 
@@ -483,9 +542,9 @@ void get_G(void){
     G[3][2] = -1.0f; 
   } else {
     G[0][0] =  da_wing_x_dphii(); 
-    G[1][0] =  da_wing_y_dphii(); 
+    G[1][0] =  da_wing_y_dphii()+ thrust_in; 
     G[2][0] =  da_wing_z_dphii(); 
-    G[0][1] =  da_wing_x_dthetai(); 
+    G[0][1] =  da_wing_x_dthetai() - thrust_in; 
     G[1][1] =  da_wing_y_dthetai(); 
     G[2][1] =  da_wing_z_dthetai(); 
     G[0][2] =  da_wing_x_dpsii(); 
@@ -498,19 +557,75 @@ void get_G(void){
 }
 
 void get_dv(void){
-  dv[0] =  0.0;
-  dv[1] =  0.0;
-  dv[2] = -0.1;
+  // dv[0] =  0.0;
+  // dv[1] =  0.0;
+  // dv[2] = -1;
+  LinAccCon();
+
+  printf("\n\nref pos: \t%f\t%f\t%f", ctrl_lin.pos->x, ctrl_lin.pos->y, ctrl_lin.pos->z);
+  printf("\ndes pos: \t%f\t%f\t%f\n", traj.pos.x, traj.pos.y, traj.pos.z);
+}
+
+void add_increment(void){
+  AbiSendMsgTHRUST(THRUST_INCREMENT_ID, du[3]);
+  thrust_in = (thrust_in + du[3]) * 9600./20.;
+  if (thrust_in > 9600){
+    thrust_in = 9600;
+  } 
+  if (thrust_in < 0 ){
+    thrust_in = 0;
+  }
+  stabilization_cmd[COMMAND_THRUST] = thrust_in;
+
+  struct FloatEulers rpy;
+  struct Int32Eulers rpyi;
+  struct FloatQuat dq;
+  struct FloatQuat q_res = {0};
+
+  float magdu;
+  magdu = sqrt(du[0]*du[0]+du[1]*du[1]+du[2]*du[2]);
+
+  dq.qi = cos(magdu);
+  dq.qx = sin(magdu)*du[0]/magdu;
+  dq.qy = sin(magdu)*du[1]/magdu;
+  dq.qz = sin(magdu)*du[2]/magdu;
+  float_quat_comp(&q_res, &q, &dq);
+  printf("\n\nQ:  \t%f\t%f\t%f\t%f" , q.qi      , q.qx      , q.qy      , q.qz    );
+  printf("\ndQ:  \t%f\t%f\t%f\t%f", dq.qi     , dq.qx     , dq.qy     , dq.qz   );
+  printf("\nQres:\t%f\t%f\t%f\t%f\n", q_res.qi  , q_res.qx  , q_res.qy  , q_res.qz);
+
+
+
+
+  float_eulers_of_quat(&rpy, &q_res);
+  // guidance_euler_cmd.theta
+  // guidance_euler_cmd.phi
+  // guidance_euler_cmd.psi
+  printf("\nrpy:\t%f\t%f\t%f", rpy.phi  , rpy.theta  , rpy.psi);
+
+  rpyi.phi = (int)rpy.phi;
+  rpyi.theta = (int)rpy.theta;
+  rpyi.psi = (int)rpy.psi;
+
+  printf("\nrpyi:\t%d\t%d\t%d\n", rpyi.phi  , rpyi.theta  , rpyi.psi);
+
+  QUAT_BFP_OF_REAL(stab_att_sp_quat, q_res);
+  // stabilization_attitude_set_rpy_setpoint_i(&rpyi);
+  stabilization_attitude_run(true);
+
 }
 
 void SVDw(void){
-  thrust_in = stabilization_cmd[COMMAND_THRUST]*20./9600.;
-  // get_dv();
-  // get_G();
+  get_dv();
+  get_G();
   get_increment();
-  printf("\ndu:\t%e\t%e\t%e\t%e\n",du[0],du[1],du[2],du[3]);
-  printf("\nT:\t%e\n",thrust_in);
-
+  printf("\ndv:\t%f\t%f\t%f",dv[0],dv[1],dv[2]);
+  printf("\ndu:\t%f\t%f\t%f\t%f",du[0],du[1],du[2],du[3]);
+  printf("\nT: %f", thrust_in);
+  // printf("\nT:\t%e\n",thrust_in);
+  add_increment();
+  
+  printf("\nThrust Command: %f", thrust_in);
 }
 
 
@@ -4167,7 +4282,7 @@ float Vxz_2_dCl_dpsii(void)
 
 void test_a_L_wing(void)
 {
- printf("\nRunning test_a_L_wing func in guidance_aerobatic\n\n");
+ // printf("\nRunning test_a_L_wing func in guidance_aerobatic\n\n");
  int Vinf;
  int theta;
  int psi;
@@ -4178,15 +4293,15 @@ void test_a_L_wing(void)
  theta = 4;
  psi = 60;
 
- printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\t");
+ // printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\t");
 
- printf("da_wing_x_dphii\tda_wing_x_dpsii\tda_wing_x_dthetai\tda_wing_y_dphii\tda_wing_y_dpsii\tda_wing_y_dthetai\tda_wing_z_dphii\tda_wing_z_dpsii\tda_wing_z_dthetai\t");
+ // printf("da_wing_x_dphii\tda_wing_x_dpsii\tda_wing_x_dthetai\tda_wing_y_dphii\tda_wing_y_dpsii\tda_wing_y_dthetai\tda_wing_z_dphii\tda_wing_z_dpsii\tda_wing_z_dthetai\t");
 
- printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
+ // printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
 
- printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
+ // printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
 
- printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
+ // printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
 
  for (Vinf=0;Vinf<10;Vinf++)
  {
@@ -4200,97 +4315,97 @@ void test_a_L_wing(void)
 
 
       
-        printf("%i"  ,Vinf );
+        // printf("%i"  ,Vinf );
         
-        printf("\t%.4f",phi  );
+        // printf("\t%.4f",phi  );
         
-        printf("\t%i"  ,theta);
-        printf("\t%i"  ,psi  );
+        // printf("\t%i"  ,theta);
+        // printf("\t%i"  ,psi  );
         
-        printf("\t%.4f",V[0]  );
-        printf("\t%.4f",V[1]  );
-        printf("\t%.4f",V[2]  );
+        // printf("\t%.4f",V[0]  );
+        // printf("\t%.4f",V[1]  );
+        // printf("\t%.4f",V[2]  );
 
-        printf("\t%.4f",a_wing_x());
-        printf("\t%.4f",a_wing_z());
+        // printf("\t%.4f",a_wing_x());
+        // printf("\t%.4f",a_wing_z());
 
-        printf("\t%.4f",a_L_wing_x());
-        printf("\t%.4f",a_L_wing_z());
+        // printf("\t%.4f",a_L_wing_x());
+        // printf("\t%.4f",a_L_wing_z());
 
-        printf("\t%.4f",a_D_wing_x());
-        printf("\t%.4f",a_D_wing_z());
+        // printf("\t%.4f",a_D_wing_x());
+        // printf("\t%.4f",a_D_wing_z());
 
-        printf("\t%.4f",AoA());
-        printf("\t%.4f",AoS());
-        printf("\t%.4f",AoD());
+        // printf("\t%.4f",AoA());
+        // printf("\t%.4f",AoS());
+        // printf("\t%.4f",AoD());
 
-        printf("\t%.4f",Cl());
-        printf("\t%.4f",Cd());
-        printf("\t%.4f",dCl());
-        printf("\t%.4f",dCd());
+        // printf("\t%.4f",Cl());
+        // printf("\t%.4f",Cd());
+        // printf("\t%.4f",dCl());
+        // printf("\t%.4f",dCd());
 
-        printf("\t%.4f",Vxz_2());
+        // printf("\t%.4f",Vxz_2());
 
-        printf("\t%.4f",da_wing_x_dphii());
-        printf("\t%.4f",da_wing_x_dpsii());
-        printf("\t%.4f",da_wing_x_dthetai());
-
-
-        printf("\t%.4f",da_wing_y_dphii());
-        printf("\t%.4f",da_wing_y_dpsii());
-        printf("\t%.4f",da_wing_y_dthetai());
+        // printf("\t%.4f",da_wing_x_dphii());
+        // printf("\t%.4f",da_wing_x_dpsii());
+        // printf("\t%.4f",da_wing_x_dthetai());
 
 
-        printf("\t%.4f",da_wing_z_dphii());
-        printf("\t%.4f",da_wing_z_dpsii());
-        printf("\t%.4f",da_wing_z_dthetai());
+        // printf("\t%.4f",da_wing_y_dphii());
+        // printf("\t%.4f",da_wing_y_dpsii());
+        // printf("\t%.4f",da_wing_y_dthetai());
 
-        printf("\t%.4f",dalphai_dphii());
-        printf("\t%.4f",dalphai_dpsii());
-        printf("\t%.4f",dalphai_dthetai());
 
-        printf("\t%.4f",dbetai_dphii());
-        printf("\t%.4f",dbetai_dpsii());
-        printf("\t%.4f",dbetai_dthetai());
+        // printf("\t%.4f",da_wing_z_dphii());
+        // printf("\t%.4f",da_wing_z_dpsii());
+        // printf("\t%.4f",da_wing_z_dthetai());
 
-        printf("\t%.4f",dCd_dphii());
-        printf("\t%.4f",dCd_dpsii());
-        printf("\t%.4f",dCd_dthetai());
+        // printf("\t%.4f",dalphai_dphii());
+        // printf("\t%.4f",dalphai_dpsii());
+        // printf("\t%.4f",dalphai_dthetai());
+
+        // printf("\t%.4f",dbetai_dphii());
+        // printf("\t%.4f",dbetai_dpsii());
+        // printf("\t%.4f",dbetai_dthetai());
+
+        // printf("\t%.4f",dCd_dphii());
+        // printf("\t%.4f",dCd_dpsii());
+        // printf("\t%.4f",dCd_dthetai());
         
-        printf("\t%.4f",dCl_dphii());
-        printf("\t%.4f",dCl_dpsii());
-        printf("\t%.4f",dCl_dthetai());
+        // printf("\t%.4f",dCl_dphii());
+        // printf("\t%.4f",dCl_dpsii());
+        // printf("\t%.4f",dCl_dthetai());
 
-        printf("\t%.4f",dVx_dphii());
-        printf("\t%.4f",dVx_dpsii());
-        printf("\t%.4f",dVx_dthetai());
+        // printf("\t%.4f",dVx_dphii());
+        // printf("\t%.4f",dVx_dpsii());
+        // printf("\t%.4f",dVx_dthetai());
 
-        printf("\t%.4f",dVxz_2_dphii());
-        printf("\t%.4f",dVxz_2_dpsii());
-        printf("\t%.4f",dVxz_2_dthetai());
+        // printf("\t%.4f",dVxz_2_dphii());
+        // printf("\t%.4f",dVxz_2_dpsii());
+        // printf("\t%.4f",dVxz_2_dthetai());
 
-        printf("\t%.4f",dVy_dphii());
-        printf("\t%.4f",dVy_dthetai());
-        printf("\t%.4f",dVz_dphii());
+        // printf("\t%.4f",dVy_dphii());
+        // printf("\t%.4f",dVy_dthetai());
+        // printf("\t%.4f",dVz_dphii());
 
-        printf("\t%.4f",dVz_dpsii());
-        printf("\t%.4f",dVz_dthetai());
-        printf("\t%.4f",Vxz_2_dalphai_dphii());
+        // printf("\t%.4f",dVz_dpsii());
+        // printf("\t%.4f",dVz_dthetai());
+        // printf("\t%.4f",Vxz_2_dalphai_dphii());
 
-        printf("\t%.4f",Vxz_2_dalphai_dpsii());
-        printf("\t%.4f",Vxz_2_dCd_dphii());
-        printf("\t%.4f",Vxz_2_dCd_dpsii());
+        // printf("\t%.4f",Vxz_2_dalphai_dpsii());
+        // printf("\t%.4f",Vxz_2_dCd_dphii());
+        // printf("\t%.4f",Vxz_2_dCd_dpsii());
 
 
-        printf("\t%.4f",Vxz_2_dCl_dphii());
-        printf("\t%.4f",Vxz_2_dCl_dpsii());
+        // printf("\t%.4f",Vxz_2_dCl_dphii());
+        // printf("\t%.4f",Vxz_2_dCl_dpsii());
 
-        printf("\n");
+        // printf("\n");
 
 
       }
     }
 
  }
- printf("\n");
+ // printf("\n");
 }
