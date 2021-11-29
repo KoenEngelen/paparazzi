@@ -86,6 +86,31 @@
   struct FloatVect3 dv;
   float du[COLS_GUIDANCE] = {0};
 
+  #ifdef GUIDANCE_INDI_SPECIFIC_FORCE_GAIN
+  float thrust_in_specific_force_gain = GUIDANCE_INDI_SPECIFIC_FORCE_GAIN;
+  #else
+  float thrust_in_specific_force_gain = -500;
+  #endif
+
+  #ifndef GUIDANCE_INDI_FILTER_CUTOFF
+  #ifdef STABILIZATION_INDI_FILT_CUTOFF
+  #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
+  #else
+  #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+  #endif
+  #endif
+
+  #define GUIDANCE_INDI_THRUST_DYNAMICS -500.0
+
+  float thrust_act = 0;
+  Butterworth2LowPass filt_accel_ned[3];
+  Butterworth2LowPass roll_filt;
+  Butterworth2LowPass pitch_filt;
+  Butterworth2LowPass thrust_filt;
+
+  float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
+
+
 //
 
 //Declare all functions
@@ -630,7 +655,9 @@
 
   void add_increment(void){
     AbiSendMsgTHRUST(THRUST_INCREMENT_ID, du[3]);
-    thrust_in = (thrust_in + du[3]) * 9600./20.;
+    guidance_indi_filter_thrust();
+    // printf("thrust filt: %f", thrust_filt.o[0]);
+    thrust_in = thrust_filt.o[0] + du[3];
     if (thrust_in > 9600){
       thrust_in = 9600;
     } 
@@ -695,29 +722,7 @@
 
 // Filters
 
-  #ifdef GUIDANCE_INDI_SPECIFIC_FORCE_GAIN
-  float thrust_in_specific_force_gain = GUIDANCE_INDI_SPECIFIC_FORCE_GAIN;
-  #else
-  float thrust_in_specific_force_gain = -500;
-  #endif
-
-  #ifndef GUIDANCE_INDI_FILTER_CUTOFF
-  #ifdef STABILIZATION_INDI_FILT_CUTOFF
-  #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
-  #else
-  #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
-  #endif
-  #endif
-
-  #define GUIDANCE_INDI_THRUST_DYNAMICS -500.0
-
-  float thrust_act = 0;
-  Butterworth2LowPass filt_accel_ned[3];
-  Butterworth2LowPass roll_filt;
-  Butterworth2LowPass pitch_filt;
-  Butterworth2LowPass thrust_filt;
-
-  float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
+  
   /**
   * Filter the thrust, such that it corresponds to the filtered acceleration
   */
@@ -738,7 +743,7 @@
   void guidance_indi_filter_thrust(void){
     // Actuator dynamics
     thrust_act = thrust_act + GUIDANCE_INDI_THRUST_DYNAMICS * (thrust_in - thrust_act);
-
+    // printf('thrust act: %f',thrust_act);
     // same filter as for the acceleration
     update_butterworth_2_low_pass(&thrust_filt, thrust_act);
   }
