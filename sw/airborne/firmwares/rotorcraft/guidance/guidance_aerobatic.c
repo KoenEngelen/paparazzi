@@ -35,6 +35,7 @@
   #include "math/pprz_simple_matrix.h"
   #include "subsystems/datalink/telemetry.h"
   #include "firmwares/rotorcraft/stabilization.h"
+  #include "filters/low_pass_filter.h"
   #include "subsystems/abi.h"
   // #include 
 
@@ -53,7 +54,7 @@
     // Input Acceleration
     struct NedCoor_f *acc; //get from stat.h: stateGetAccelNed_f(void)
     // Output Acceleration
-    struct NedCoor_f cmdacc;
+    struct FloatVect3 cmdacc;
   } ctrl_lin;
 
   struct trajectory {
@@ -82,24 +83,36 @@
 
   float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
 
-  float dv[ROWS_GUIDANCE] = {0};
+  struct FloatVect3 dv;
   float du[COLS_GUIDANCE] = {0};
 
 //
 
 //Declare all functions
-  extern void guidance_module_h_init(void);
-  extern void guidance_module_h_enter(void);
-  extern void guidance_module_h_read_rc(void);
-  extern void guidance_module_h_run(bool in_flight);
-  extern void guidance_module_v_init(void);
-  extern void guidance_module_v_enter(void);
-  extern void guidance_module_v_run(bool in_flight);
+  extern void guidance_h_module_init(void);
+  extern void guidance_h_module_enter(void);
+  extern void guidance_h_module_read_rc(void);
+  extern void guidance_h_module_run(bool in_flight);
+  extern void guidance_v_module_init(void);
+  extern void guidance_v_module_enter(void);
+  extern void guidance_v_module_run(bool in_flight);
+
+  // void guidance_h_module_init(void);
+  // void guidance_h_module_enter(void);
+  // void guidance_h_module_read_rc(void);
+  // void guidance_h_module_run(bool in_flight);
+
+
 
   void guidance_aerobatic_init(void);
   void guidance_aerobatic_enter(void);
   void guidance_aerobatic_read_rc(void);
   void guidance_aerobatic_run(void);
+
+
+  void filter_init(void);
+  static void guidance_indi_filter_thrust(void);
+  void guidance_indi_propagate_filters(struct FloatEulers *eulers);
 
   void test_SVD(void);
   void add_increment(void);
@@ -239,7 +252,8 @@
 
 // Enter function
   void guidance_aerobatic_enter(void) {
-    t = 0.0;  
+    t = 0.0;
+    filter_init();
   }
 //
 
@@ -259,6 +273,11 @@
   q.qx = -stateGetNedToBodyQuat_f()->qx;
   q.qy = -stateGetNedToBodyQuat_f()->qy;
   q.qz = -stateGetNedToBodyQuat_f()->qz;
+
+  struct FloatEulers eulers_yxz;
+  struct FloatQuat * statequat = stateGetNedToBodyQuat_f();
+  float_eulers_of_quat_yxz(&eulers_yxz, statequat);
+  guidance_indi_propagate_filters(&eulers_yxz);
   
   V_drone.x = stateGetSpeedNed_f()->x;
   V_drone.y = stateGetSpeedNed_f()->y;
@@ -401,9 +420,11 @@
 // Controller functions
   void UpdateTrajectory(float t){
     traj.t = t;
-    traj.pos.x = 2.;
-    traj.pos.y = 2.;
-    traj.pos.z = -10.;
+
+
+    traj.pos.x = 100.;
+    traj.pos.y = 200.;
+    traj.pos.z = -50.;
 
     traj.vel.x = 0.;
     traj.vel.y = 0.;
@@ -412,6 +433,18 @@
     traj.acc.x = 0.;
     traj.acc.y = 0.;
     traj.acc.z = 0.;
+
+    // if (t<20){
+    //   traj.pos.x = 10.0*(1-(1- (t-5)/15)*(1- (t-5)/15))*sin(t*2*M_PI/20.);
+    //   traj.pos.y = 10.0*(1-(1- (t-5)/15)*(1- (t-5)/15))*cos(t*2*M_PI/20.);
+    //   traj.pos.z = -40.0*(1-(1- t/20)*(1-t/20));
+    // }else{
+    //   traj.pos.x = 10.0*sin(t*2*M_PI/20.);
+    //   traj.pos.y = 10.0*cos(t*2*M_PI/20.);
+    //   traj.pos.z = -40.0;
+
+    // }
+
   }
 
 
@@ -433,9 +466,27 @@
 
 
     float_quat_vmult(&dv, &q, &ctrl_lin.cmdacc);
-    dv[0] = -ctrl_lin.cmdacc.x ;
-    dv[1] = -ctrl_lin.cmdacc.y ;
-    dv[2] = -ctrl_lin.cmdacc.z ;
+    dv.x = -ctrl_lin.cmdacc.x ;
+    dv.y = -ctrl_lin.cmdacc.y ;
+    dv.z = -ctrl_lin.cmdacc.z ;
+
+    if (dv.x > 0.1){
+      dv.x = 0.1;
+    } else if (dv.x < -0.1){
+      dv.x = -0.1;
+    }
+
+    if (dv.y > 0.1){
+      dv.y = 0.1;
+    } else if (dv.y < -0.1){
+      dv.y = -0.1;
+    }
+
+    if (dv.z > 2){
+      dv.z = 2;
+    } else if (dv.z < -2){
+      dv.z = -2;
+    }
 
     // printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
   }
@@ -482,9 +533,17 @@
 
     // get: WiUv =  W_inverse * U * dv
     sum = 0;
+    float tmp_dv;
     for (int i = 0; i < ROWS_GUIDANCE; i++){
       for (int j = 0; j < ROWS_GUIDANCE; j++){
-        sum = sum + svd_U[j][i]  * dv[j];  // <-- trasnpose of U
+        if (j == 0){
+            tmp_dv = dv.x;
+        } else if (j == 1){
+            tmp_dv = dv.y;
+        } else {
+            tmp_dv = dv.z;
+        }
+        sum = sum + svd_U[j][i]  * tmp_dv;  // <-- trasnpose of U
       }
 
       if (_svd_W[i] > tol){
@@ -560,9 +619,9 @@
   }
 
   void get_dv(void){
-    // dv[0] =  0.0;
-    // dv[1] =  0.0;
-    // dv[2] = -1;
+    // dv.x =  0.0;
+    // dv.y =  0.0;
+    // dv.z = -1;
     LinAccCon();
 
     printf("\n\nref pos: \t%f\t%f\t%f", ctrl_lin.pos->x, ctrl_lin.pos->y, ctrl_lin.pos->z);
@@ -584,6 +643,7 @@
     struct Int32Eulers rpyi;
     struct FloatQuat dq;
     struct FloatQuat q_res = {0};
+    struct Int32Quat q_i_res = {0};
 
     float magdu;
     magdu = sqrt(du[0]*du[0]+du[1]*du[1]+du[2]*du[2]);
@@ -612,9 +672,10 @@
 
     printf("\nrpyi:\t%d\t%d\t%d\n", rpyi.phi  , rpyi.theta  , rpyi.psi);
 
-    QUAT_BFP_OF_REAL(stab_att_sp_quat, q_res);
+    QUAT_BFP_OF_REAL(q_i_res, q_res);
+    // QUAT_BFP_OF_REAL(stab_att_sp_quat, q_res);
     // stabilization_attitude_set_rpy_setpoint_i(&rpyi);
-    stabilization_attitude_run(true);
+    stabilization_indi_attitude_run(q_i_res,true);
 
   }
 
@@ -622,7 +683,7 @@
     get_dv();
     get_G();
     get_increment();
-    printf("\ndv:\t%f\t%f\t%f",dv[0],dv[1],dv[2]);
+    printf("\ndv:\t%f\t%f\t%f",dv.x,dv.y,dv.z);
     printf("\ndu:\t%f\t%f\t%f\t%f",du[0],du[1],du[2],du[3]);
     printf("\nT: %f", thrust_in);
     // printf("\nT:\t%e\n",thrust_in);
@@ -630,6 +691,73 @@
     
     printf("\nThrust Command: %f", thrust_in);
   }
+//
+
+// Filters
+
+  #ifdef GUIDANCE_INDI_SPECIFIC_FORCE_GAIN
+  float thrust_in_specific_force_gain = GUIDANCE_INDI_SPECIFIC_FORCE_GAIN;
+  #else
+  float thrust_in_specific_force_gain = -500;
+  #endif
+
+  #ifndef GUIDANCE_INDI_FILTER_CUTOFF
+  #ifdef STABILIZATION_INDI_FILT_CUTOFF
+  #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
+  #else
+  #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+  #endif
+  #endif
+
+  #define GUIDANCE_INDI_THRUST_DYNAMICS -500.0
+
+  float thrust_act = 0;
+  Butterworth2LowPass filt_accel_ned[3];
+  Butterworth2LowPass roll_filt;
+  Butterworth2LowPass pitch_filt;
+  Butterworth2LowPass thrust_filt;
+
+  float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
+  /**
+  * Filter the thrust, such that it corresponds to the filtered acceleration
+  */
+  void filter_init(void){
+    thrust_in = stabilization_cmd[COMMAND_THRUST];
+    thrust_act = thrust_in;
+
+    float tau = 1.0 / (2.0 * M_PI * filter_cutoff);
+    float sample_time = 1.0 / PERIODIC_FREQUENCY;
+    for (int8_t i = 0; i < 3; i++) {
+      init_butterworth_2_low_pass(&filt_accel_ned[i], tau, sample_time, 0.0);
+    }
+    init_butterworth_2_low_pass(&roll_filt, tau, sample_time, stateGetNedToBodyEulers_f()->phi);
+    init_butterworth_2_low_pass(&pitch_filt, tau, sample_time, stateGetNedToBodyEulers_f()->theta);
+    init_butterworth_2_low_pass(&thrust_filt, tau, sample_time, thrust_in);
+  }
+
+  void guidance_indi_filter_thrust(void){
+    // Actuator dynamics
+    thrust_act = thrust_act + GUIDANCE_INDI_THRUST_DYNAMICS * (thrust_in - thrust_act);
+
+    // same filter as for the acceleration
+    update_butterworth_2_low_pass(&thrust_filt, thrust_act);
+  }
+
+  /**
+  * Low pass the accelerometer measurements to remove noise from vibrations.
+  * The roll and pitch also need to be filtered to synchronize them with the
+  * acceleration
+  */
+  void guidance_indi_propagate_filters(struct FloatEulers *eulers){
+    struct NedCoor_f *accel = stateGetAccelNed_f();
+    update_butterworth_2_low_pass(&filt_accel_ned[0], accel->x);
+    update_butterworth_2_low_pass(&filt_accel_ned[1], accel->y);
+    update_butterworth_2_low_pass(&filt_accel_ned[2], accel->z);
+
+    update_butterworth_2_low_pass(&roll_filt, eulers->phi);
+    update_butterworth_2_low_pass(&pitch_filt, eulers->theta);
+  }
+
 //
 
 // CELib (matlab functions)
