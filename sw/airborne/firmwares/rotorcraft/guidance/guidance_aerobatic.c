@@ -76,8 +76,6 @@
 
   float t = 0.0;
 
-  float scale_quat = pow(2.0,15);
-
   #define ROWS_GUIDANCE 3 //rows
   #define COLS_GUIDANCE 4 //columns
 
@@ -313,19 +311,19 @@
   q.qy = -stateGetNedToBodyQuat_f()->qy;
   q.qz = -stateGetNedToBodyQuat_f()->qz;
 
-  q.qi = filt_quat[0].o[0]/scale_quat;
-  q.qx = filt_quat[1].o[0]/scale_quat;
-  q.qy = filt_quat[2].o[0]/scale_quat;
-  q.qz = filt_quat[3].o[0]/scale_quat;
+  q.qi = filt_quat[0].o[0];
+  q.qx = filt_quat[1].o[0];
+  q.qy = filt_quat[2].o[0];
+  q.qz = filt_quat[3].o[0];
 
   struct FloatEulers eulers_yxz;
-  struct FloatQuat * statequat = &q;
+  struct FloatQuat * statequat = stateGetNedToBodyQuat_f();
   statequat->qi = q.qi;
   statequat->qx = q.qx;
   statequat->qy = q.qy;
   statequat->qz = q.qz;
-  // printf("\n\n%f\t%f\t%f\t%f\n\n",statequat->qi,statequat->qx,statequat->qy,statequat->qz);
-  // printf("\n\n%f\t%f\t%f\t%f\n\n",q.qi,q.qx,q.qy,q.qz);
+  printf("\n\n%f\t%f\t%f\t%f\n\n",statequat->qi,statequat->qx,statequat->qy,statequat->qz);
+  printf("\n\n%f\t%f\t%f\t%f\n\n",q.qi,q.qx,q.qy,q.qz);
   float_eulers_of_quat_yxz(&eulers_yxz, statequat);
 
   
@@ -836,17 +834,13 @@
     update_butterworth_2_low_pass(&filt_accel_ned[1], accel->y);
     update_butterworth_2_low_pass(&filt_accel_ned[2], accel->z);
 
-
-
-    struct Int32Quat *quat = stateGetNedToBodyQuat_i();
-    update_butterworth_2_low_pass(&filt_quat[0], stateGetNedToBodyQuat_f()->qi);
-    update_butterworth_2_low_pass(&filt_quat[1], stateGetNedToBodyQuat_f()->qx);
-    update_butterworth_2_low_pass(&filt_quat[2], stateGetNedToBodyQuat_f()->qy);
-    update_butterworth_2_low_pass(&filt_quat[3], stateGetNedToBodyQuat_f()->qz); 
-    // printf("\nquat\n%d\t%d\t%d\t%d\n\n",quat->qi,quat->qx,quat->qy,quat->qz);
-    // printf("\nquat\n%d\t%d\t%d\t%d\n\n",stateGetNedToBodyQuat_i()->qi,stateGetNedToBodyQuat_i()->qx,stateGetNedToBodyQuat_i()->qy,stateGetNedToBodyQuat_i()->qz);
-    printf("\nquaterion: %f\t%f\t%f\t%f\n",stateGetNedToBodyQuat_f()->qi,stateGetNedToBodyQuat_f()->qx,stateGetNedToBodyQuat_f()->qy,stateGetNedToBodyQuat_f()->qz);
-
+    struct FloatQuat *quat = stateGetNedToBodyQuat_f();
+    update_butterworth_2_low_pass(&filt_quat[0], quat->qi);
+    update_butterworth_2_low_pass(&filt_quat[1], quat->qx);
+    update_butterworth_2_low_pass(&filt_quat[2], quat->qy);
+    update_butterworth_2_low_pass(&filt_quat[3], quat->qz); 
+    printf("\nquat\n%f\t%f\t%f\t%f\n\n",quat->qi,quat->qx,quat->qy,quat->qz);
+    printf("\nquat\n%f\t%f\t%f\t%f\n\n",stateGetNedToBodyQuat_f()->qi,stateGetNedToBodyQuat_f()->qx,stateGetNedToBodyQuat_f()->qy,stateGetNedToBodyQuat_f()->qz);
 
 
     update_butterworth_2_low_pass(&roll_filt, eulers->phi);
