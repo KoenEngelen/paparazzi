@@ -317,14 +317,15 @@
   q.qz = filt_quat[3].o[0];
 
   struct FloatEulers eulers_yxz;
-  struct FloatQuat * statequat = stateGetNedToBodyQuat_f();
-  statequat->qi = q.qi;
-  statequat->qx = q.qx;
-  statequat->qy = q.qy;
-  statequat->qz = q.qz;
-  printf("\n\n%f\t%f\t%f\t%f\n\n",statequat->qi,statequat->qx,statequat->qy,statequat->qz);
-  printf("\n\n%f\t%f\t%f\t%f\n\n",q.qi,q.qx,q.qy,q.qz);
-  float_eulers_of_quat_yxz(&eulers_yxz, statequat);
+  struct FloatQuat  * statequat = stateGetNedToBodyQuat_f();
+  // struct FloatQuat * statequat = &q;
+  // statequat.qi = q.qi;
+  // statequat.qx = q.qx;
+  // statequat.qy = q.qy;
+  // statequat.qz = q.qz;
+  // printf("\n\n%f\t%f\t%f\t%f\n\n",statequat->qi,statequat->qx,statequat->qy,statequat->qz);
+  // printf("\n\n%f\t%f\t%f\t%f\n\n",q.qi,q.qx,q.qy,q.qz);
+  float_eulers_of_quat_yxz(&eulers_yxz, &q);
 
   
 
@@ -834,12 +835,13 @@
     update_butterworth_2_low_pass(&filt_accel_ned[1], accel->y);
     update_butterworth_2_low_pass(&filt_accel_ned[2], accel->z);
 
-    struct FloatQuat *quat = stateGetNedToBodyQuat_f();
-    update_butterworth_2_low_pass(&filt_quat[0], quat->qi);
-    update_butterworth_2_low_pass(&filt_quat[1], quat->qx);
-    update_butterworth_2_low_pass(&filt_quat[2], quat->qy);
-    update_butterworth_2_low_pass(&filt_quat[3], quat->qz); 
-    printf("\nquat\n%f\t%f\t%f\t%f\n\n",quat->qi,quat->qx,quat->qy,quat->qz);
+    // struct FloatQuat *quat = stateGetNedToBodyQuat_f();
+    // update_butterworth_2_low_pass(&filt_quat[0], quat->qi);
+    // update_butterworth_2_low_pass(&filt_quat[1], quat->qx);
+    // update_butterworth_2_low_pass(&filt_quat[2], quat->qy);
+    // update_butterworth_2_low_pass(&filt_quat[3], quat->qz);
+
+    // printf("\nquat\n%f\t%f\t%f\t%f\n\n",quat->qi,quat->qx,quat->qy,quat->qz);
     printf("\nquat\n%f\t%f\t%f\t%f\n\n",stateGetNedToBodyQuat_f()->qi,stateGetNedToBodyQuat_f()->qx,stateGetNedToBodyQuat_f()->qy,stateGetNedToBodyQuat_f()->qz);
 
 
