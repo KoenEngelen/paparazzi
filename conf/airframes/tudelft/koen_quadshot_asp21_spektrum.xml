@@ -412,12 +412,12 @@
     <module name="guidance"      type="aerobatic"/>
 
     <module name="ahrs"          type="int_cmpl_quat">
-      <configure name="USE_MAGNETOMETER" value="1"/>
+      <configure name="USE_MAGNETOMETER" value="0"/>
       <define name="AHRS_USE_GPS_HEADING" value="0"/>
     </module> 
 
-    <module name="ins"/>
-    <!-- <module name="ins_ekf2"/> -->
+    <!-- <module name="ins"/> -->
+    <module name="ins"  type="ekf2"/>
  
     <module name="airspeed_ms45xx_i2c">
       <define name="MS45XX_I2C_DEV" value="i2c1" />

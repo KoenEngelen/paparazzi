@@ -76,6 +76,8 @@
 
   float t = 0.0;
 
+  float scale_quat = pow(2.0,15);
+
   #define ROWS_GUIDANCE 3 //rows
   #define COLS_GUIDANCE 4 //columns
 
@@ -100,10 +102,11 @@
   #endif
   #endif
 
-  #define GUIDANCE_INDI_THRUST_DYNAMICS -500.0
+  #define GUIDANCE_INDI_THRUST_DYNAMICS 0.1
 
   float thrust_act = 0;
   Butterworth2LowPass filt_accel_ned[3];
+  Butterworth2LowPass filt_quat[4];
   Butterworth2LowPass roll_filt;
   Butterworth2LowPass pitch_filt;
   Butterworth2LowPass thrust_filt;
@@ -269,6 +272,10 @@
 
   get_dv();
   get_G();
+
+  t = 0.0;
+  filter_init();
+  // printf("thrust filt: %f", thrust_filt.o[0]);
   
   // test_SVD(); //This function works in init
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
@@ -277,14 +284,21 @@
 
 // Enter function
   void guidance_aerobatic_enter(void) {
-    t = 0.0;
+    t = -5.0;
     filter_init();
+    thrust_in = stabilization_cmd[COMMAND_THRUST];
+    thrust_act = thrust_in;
+    printf("pos_est_x\tpos_est_y\tpos_est_z\tpos_ref_x\tpos_ref_y\tpos_ref_z\tvel_est_x\tvel_est_y\tvel_est_z\tvel_ref_x\tvel_ref_y\tvel_ref_z\tacc_est_x\tacc_est_y\tacc_est_z\tacc_ref_x\tacc_ref_y\tacc_ref_z\t");
+
+    printf("qi\tqx\tqy\tqz\t");
+    printf("V_b_x\tV_b_y\tV_b_z\t");
+    printf("G00\tG01\tG02\tG03\tG10\tG11\tG12\tG13\tG20\tG21\tG22\tG23\tdv_x\tdv_y\tdv_z\tdu_phi\tdu_theta\tdu_psi\tdu_T\n");
   }
 //
 
 // Periodic function
  void guidance_aerobatic_run() {
-  printf("\naerobatic running\n");
+  // printf("\naerobatic running\n");
   t = t + 0.001953125;
   if (t > 360000){
     t = 0;
@@ -299,25 +313,41 @@
   q.qy = -stateGetNedToBodyQuat_f()->qy;
   q.qz = -stateGetNedToBodyQuat_f()->qz;
 
+  q.qi = filt_quat[0].o[0]/scale_quat;
+  q.qx = filt_quat[1].o[0]/scale_quat;
+  q.qy = filt_quat[2].o[0]/scale_quat;
+  q.qz = filt_quat[3].o[0]/scale_quat;
+
   struct FloatEulers eulers_yxz;
-  struct FloatQuat * statequat = stateGetNedToBodyQuat_f();
+  struct FloatQuat * statequat = &q;
+  statequat->qi = q.qi;
+  statequat->qx = q.qx;
+  statequat->qy = q.qy;
+  statequat->qz = q.qz;
+  // printf("\n\n%f\t%f\t%f\t%f\n\n",statequat->qi,statequat->qx,statequat->qy,statequat->qz);
+  // printf("\n\n%f\t%f\t%f\t%f\n\n",q.qi,q.qx,q.qy,q.qz);
   float_eulers_of_quat_yxz(&eulers_yxz, statequat);
-  guidance_indi_propagate_filters(&eulers_yxz);
+
   
+
+  guidance_indi_propagate_filters(&eulers_yxz);
+  guidance_indi_filter_thrust();
+  // printf("\n\nthrust filt: %f", thrust_filt.o[0]);
+  // printf("\n\tfilt.a: \t%f\t%f", thrust_filt.a[0], thrust_filt.a[1]);
+  // printf("\n\tfilt.b: \t%f\t%f", thrust_filt.b[0], thrust_filt.b[1]);
+  // printf("\n\tfilt.i: \t%f\t%f", thrust_filt.i[0], thrust_filt.i[1]);
+  // printf("\n\tfilt.o: \t%f\t%f\n\n", thrust_filt.o[0], thrust_filt.o[1]);
   V_drone.x = stateGetSpeedNed_f()->x;
   V_drone.y = stateGetSpeedNed_f()->y;
   V_drone.z = stateGetSpeedNed_f()->z;
 
+  q.qi = -q.qi;
   float_quat_vmult(&V_inf, &q, &V_drone);
+  q.qi = -q.qi;
 
   V[0] = - V_inf.x;
   V[1] = - V_inf.y;
   V[2] = - V_inf.z;   
-  
-  thrust_in = stabilization_cmd[COMMAND_THRUST]*20./9600.;
-  if (thrust_in < 1){
-    thrust_in = 1;
-  }
 
   // printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
 
@@ -447,8 +477,8 @@
     traj.t = t;
 
 
-    traj.pos.x = 100.;
-    traj.pos.y = 200.;
+    traj.pos.x = 00.;
+    traj.pos.y = 00.;
     traj.pos.z = -50.;
 
     traj.vel.x = 0.;
@@ -459,6 +489,15 @@
     traj.acc.y = 0.;
     traj.acc.z = 0.;
 
+    if (t <= 20 && t >= 0){    
+      traj.pos.y = 7.5 * t - 47.7465 * sinf(0.15708*t);
+      traj.vel.y = 15.0 * (0.5*sinf(t/20.*M_PI - M_PI/2.) + 0.5);
+      traj.acc.y = 1.1781 * sinf((M_PI*t)/20.);
+    } else if (t > 20){
+      traj.pos.y = 7.5 * t;
+      traj.vel.y = 15. ;
+      traj.acc.y = 0.0 ;
+    }
     // if (t<20){
     //   traj.pos.x = 10.0*(1-(1- (t-5)/15)*(1- (t-5)/15))*sin(t*2*M_PI/20.);
     //   traj.pos.y = 10.0*(1-(1- (t-5)/15)*(1- (t-5)/15))*cos(t*2*M_PI/20.);
@@ -474,8 +513,8 @@
 
 
   void LinAccCon(void){
-    float PGain = 1.0f;
-    float VGain = 1.0f;
+    float PGain = -1.0f;
+    float VGain = -1.0f;
 
     ctrl_lin.pos = stateGetPositionNed_f();
     ctrl_lin.vel = stateGetSpeedNed_f();
@@ -491,27 +530,28 @@
 
 
     float_quat_vmult(&dv, &q, &ctrl_lin.cmdacc);
-    dv.x = -ctrl_lin.cmdacc.x ;
-    dv.y = -ctrl_lin.cmdacc.y ;
-    dv.z = -ctrl_lin.cmdacc.z ;
+    dv.x = -dv.x ;
+    dv.y = -dv.y ;
+    dv.z = -dv.z ;
 
-    if (dv.x > 0.1){
-      dv.x = 0.1;
-    } else if (dv.x < -0.1){
-      dv.x = -0.1;
-    }
 
-    if (dv.y > 0.1){
-      dv.y = 0.1;
-    } else if (dv.y < -0.1){
-      dv.y = -0.1;
-    }
+    // if (dv.x > 0.1){
+    //   dv.x = 0.1;
+    // } else if (dv.x < -0.1){
+    //   dv.x = -0.1;
+    // }
 
-    if (dv.z > 2){
-      dv.z = 2;
-    } else if (dv.z < -2){
-      dv.z = -2;
-    }
+    // if (dv.y > 0.1){
+    //   dv.y = 0.1;
+    // } else if (dv.y < -0.1){
+    //   dv.y = -0.1;
+    // }
+
+    // if (dv.z > 2){
+    //   dv.z = 2;
+    // } else if (dv.z < -2){
+    //   dv.z = -2;
+    // }
 
     // printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
   }
@@ -599,8 +639,10 @@
       sum = 0;
     } 
 
-    float du_min =  1.-thrust_in; // min = 0    (defined by thrust_in = CMD_Thrust / 9600 * 20)
-    float du_max = 19.-thrust_in; // max = 20
+    du[3] = du[3] * 480.;
+
+    float du_min =  960.-thrust_in; // min = 0    (defined by thrust_in = CMD_Thrust / 9600 * 20)
+    float du_max = 8640.-thrust_in; // max = 20
     // printf("\ndu_min:\t%e\n",du_min);
     // printf("\ndu_max:\t%e\n",du_max);
     // printf("\ndu[3]:\t%e\n",du[3]);
@@ -611,14 +653,15 @@
       du[3] = du_max;
     }
 
+
   }
 
   void get_G(void){
     if (ROWS_GUIDANCE > COLS_GUIDANCE){
       G[0][0] =  da_wing_x_dphii(); 
-      G[0][1] =  da_wing_y_dphii() + thrust_in; 
+      G[0][1] =  da_wing_y_dphii() + 20.0 * thrust_in/MAX_PPRZ; 
       G[0][2] =  da_wing_z_dphii(); 
-      G[1][0] =  da_wing_x_dthetai() - thrust_in; 
+      G[1][0] =  da_wing_x_dthetai() - 20.0 * thrust_in/MAX_PPRZ; 
       G[1][1] =  da_wing_y_dthetai(); 
       G[1][2] =  da_wing_z_dthetai(); 
       G[2][0] =  da_wing_x_dpsii(); 
@@ -626,12 +669,12 @@
       G[2][2] =  da_wing_z_dpsii(); 
       G[3][0] =  0.0f; 
       G[3][1] =  0.0f; 
-      G[3][2] = -1.0f; 
+      G[3][2] =  -20.0* thrust_in/MAX_PPRZ; 
     } else {
       G[0][0] =  da_wing_x_dphii(); 
-      G[1][0] =  da_wing_y_dphii()+ thrust_in; 
+      G[1][0] =  da_wing_y_dphii()+ 20.0 * thrust_in/MAX_PPRZ; 
       G[2][0] =  da_wing_z_dphii(); 
-      G[0][1] =  da_wing_x_dthetai() - thrust_in; 
+      G[0][1] =  da_wing_x_dthetai() - 20.0* thrust_in/MAX_PPRZ; 
       G[1][1] =  da_wing_y_dthetai(); 
       G[2][1] =  da_wing_z_dthetai(); 
       G[0][2] =  da_wing_x_dpsii(); 
@@ -639,7 +682,7 @@
       G[2][2] =  da_wing_z_dpsii(); 
       G[0][3] =  0.0f; 
       G[1][3] =  0.0f; 
-      G[2][3] = -1.0f; 
+      G[2][3] =  -20.0* thrust_in/MAX_PPRZ; 
     }
   }
 
@@ -649,13 +692,10 @@
     // dv.z = -1;
     LinAccCon();
 
-    printf("\n\nref pos: \t%f\t%f\t%f", ctrl_lin.pos->x, ctrl_lin.pos->y, ctrl_lin.pos->z);
-    printf("\ndes pos: \t%f\t%f\t%f\n", traj.pos.x, traj.pos.y, traj.pos.z);
   }
 
   void add_increment(void){
     AbiSendMsgTHRUST(THRUST_INCREMENT_ID, du[3]);
-    guidance_indi_filter_thrust();
     // printf("thrust filt: %f", thrust_filt.o[0]);
     thrust_in = thrust_filt.o[0] + du[3];
     if (thrust_in > 9600){
@@ -680,9 +720,9 @@
     dq.qy = sin(magdu)*du[1]/magdu;
     dq.qz = sin(magdu)*du[2]/magdu;
     float_quat_comp(&q_res, &q, &dq);
-    printf("\n\nQ:  \t%f\t%f\t%f\t%f" , q.qi      , q.qx      , q.qy      , q.qz    );
-    printf("\ndQ:  \t%f\t%f\t%f\t%f", dq.qi     , dq.qx     , dq.qy     , dq.qz   );
-    printf("\nQres:\t%f\t%f\t%f\t%f\n", q_res.qi  , q_res.qx  , q_res.qy  , q_res.qz);
+    // printf("\n\nQ:  \t%f\t%f\t%f\t%f" , q.qi      , q.qx      , q.qy      , q.qz    );
+    // printf("\ndQ:  \t%f\t%f\t%f\t%f", dq.qi     , dq.qx     , dq.qy     , dq.qz   );
+    // printf("\nQres:\t%f\t%f\t%f\t%f\n", q_res.qi  , q_res.qx  , q_res.qy  , q_res.qz);
 
 
 
@@ -691,13 +731,13 @@
     // guidance_euler_cmd.theta
     // guidance_euler_cmd.phi
     // guidance_euler_cmd.psi
-    printf("\nrpy:\t%f\t%f\t%f", rpy.phi  , rpy.theta  , rpy.psi);
+    // printf("\nrpy:\t%f\t%f\t%f", rpy.phi  , rpy.theta  , rpy.psi);
 
     rpyi.phi = (int)rpy.phi;
     rpyi.theta = (int)rpy.theta;
     rpyi.psi = (int)rpy.psi;
 
-    printf("\nrpyi:\t%d\t%d\t%d\n", rpyi.phi  , rpyi.theta  , rpyi.psi);
+    // printf("\nrpyi:\t%d\t%d\t%d\n", rpyi.phi  , rpyi.theta  , rpyi.psi);
 
     QUAT_BFP_OF_REAL(q_i_res, q_res);
     // QUAT_BFP_OF_REAL(stab_att_sp_quat, q_res);
@@ -710,13 +750,45 @@
     get_dv();
     get_G();
     get_increment();
-    printf("\ndv:\t%f\t%f\t%f",dv.x,dv.y,dv.z);
-    printf("\ndu:\t%f\t%f\t%f\t%f",du[0],du[1],du[2],du[3]);
-    printf("\nT: %f", thrust_in);
+    // printf("\ndv:\t%f\t%f\t%f",dv.x,dv.y,dv.z);
+    // printf("\ndu:\t%f\t%f\t%f\t%f",du[0],du[1],du[2],du[3]);
+    // printf("\nT: %f", thrust_in);
     // printf("\nT:\t%e\n",thrust_in);
     add_increment();
-    
-    printf("\nThrust Command: %f", thrust_in);
+
+
+
+
+
+    printf("%f\t%f\t%f", ctrl_lin.pos->x, ctrl_lin.pos->y, ctrl_lin.pos->z);
+    printf("\t%f\t%f\t%f", traj.pos.x, traj.pos.y, traj.pos.z);
+    printf("\t%f\t%f\t%f", ctrl_lin.vel->x, ctrl_lin.vel->y, ctrl_lin.vel->z);
+    printf("\t%f\t%f\t%f", traj.vel.x, traj.vel.y, traj.vel.z);
+    printf("\t%f\t%f\t%f", ctrl_lin.acc->x, ctrl_lin.acc->y, ctrl_lin.acc->z);
+    printf("\t%f\t%f\t%f", traj.acc.x, traj.acc.y, traj.acc.z);
+    // printf("\npos_est [  m  ]: \t%f\t%f\t%f", ctrl_lin.pos->x, ctrl_lin.pos->y, ctrl_lin.pos->z);
+    // printf("\npos_ref [  m  ]: \t%f\t%f\t%f", traj.pos.x, traj.pos.y, traj.pos.z);
+    // printf("\nvel_est [ m/s ]: \t%f\t%f\t%f", ctrl_lin.vel->x, ctrl_lin.vel->y, ctrl_lin.vel->z);
+    // printf("\nvel_ref [ m/s ]: \t%f\t%f\t%f", traj.vel.x, traj.vel.y, traj.vel.z);
+    // printf("\nacc_est [m/s^2]: \t%f\t%f\t%f", ctrl_lin.acc->x, ctrl_lin.acc->y, ctrl_lin.acc->z);
+    // printf("\nacc_ref [m/s^2]: \t%f\t%f\t%f", traj.acc.x, traj.acc.y, traj.acc.z);
+
+
+    printf("\t%f\t%f\t%f\t%f",q.qi,q.qx,q.qy,q.qz);
+    printf("\t%f\t%f\t%f",V[0],V[1],V[2]);
+
+    printf("\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
+    G[0][0],G[0][1],G[0][2],G[0][3],
+    G[1][0],G[1][1],G[1][2],G[1][3],
+    G[2][0],G[2][1],G[2][2],G[2][3]);
+    printf("\t%f\t%f\t%f", dv.x, dv.y, dv.z);
+    printf("\t%f\t%f\t%f\t%f\n", du[0], du[1], du[2], du[3]);
+    // printf("\nG: \t%f\t%f\t%f\t%f\n \t%f\t%f\t%f\t%f\n \t%f\t%f\t%f\t%f",
+    // G[0][0],G[0][1],G[0][2],G[0][3],
+    // G[1][0],G[1][1],G[1][2],G[1][3],
+    // G[2][0],G[2][1],G[2][2],G[2][3]);
+    // printf("\ndv [m/s^2]: \t%f\t%f\t%f", dv.x, dv.y, dv.z);
+    // printf("\ndu [ 3xrad | N ]: \t%f\t%f\t%f\t%f", du[0], du[1], du[2], du[3]);
   }
 //
 
@@ -735,6 +807,9 @@
     for (int8_t i = 0; i < 3; i++) {
       init_butterworth_2_low_pass(&filt_accel_ned[i], tau, sample_time, 0.0);
     }
+    for (int8_t i = 0; i < 4; i++) {
+      init_butterworth_2_low_pass(&filt_quat[i], tau, sample_time, 0.0);
+    }
     init_butterworth_2_low_pass(&roll_filt, tau, sample_time, stateGetNedToBodyEulers_f()->phi);
     init_butterworth_2_low_pass(&pitch_filt, tau, sample_time, stateGetNedToBodyEulers_f()->theta);
     init_butterworth_2_low_pass(&thrust_filt, tau, sample_time, thrust_in);
@@ -745,6 +820,8 @@
     thrust_act = thrust_act + GUIDANCE_INDI_THRUST_DYNAMICS * (thrust_in - thrust_act);
     // printf('thrust act: %f',thrust_act);
     // same filter as for the acceleration
+    
+    // printf("Thrust_act (input for filter): \t%f ",thrust_act);
     update_butterworth_2_low_pass(&thrust_filt, thrust_act);
   }
 
@@ -758,6 +835,19 @@
     update_butterworth_2_low_pass(&filt_accel_ned[0], accel->x);
     update_butterworth_2_low_pass(&filt_accel_ned[1], accel->y);
     update_butterworth_2_low_pass(&filt_accel_ned[2], accel->z);
+
+
+
+    struct Int32Quat *quat = stateGetNedToBodyQuat_i();
+    update_butterworth_2_low_pass(&filt_quat[0], stateGetNedToBodyQuat_f()->qi);
+    update_butterworth_2_low_pass(&filt_quat[1], stateGetNedToBodyQuat_f()->qx);
+    update_butterworth_2_low_pass(&filt_quat[2], stateGetNedToBodyQuat_f()->qy);
+    update_butterworth_2_low_pass(&filt_quat[3], stateGetNedToBodyQuat_f()->qz); 
+    // printf("\nquat\n%d\t%d\t%d\t%d\n\n",quat->qi,quat->qx,quat->qy,quat->qz);
+    // printf("\nquat\n%d\t%d\t%d\t%d\n\n",stateGetNedToBodyQuat_i()->qi,stateGetNedToBodyQuat_i()->qx,stateGetNedToBodyQuat_i()->qy,stateGetNedToBodyQuat_i()->qz);
+    printf("\nquaterion: %f\t%f\t%f\t%f\n",stateGetNedToBodyQuat_f()->qi,stateGetNedToBodyQuat_f()->qx,stateGetNedToBodyQuat_f()->qy,stateGetNedToBodyQuat_f()->qz);
+
+
 
     update_butterworth_2_low_pass(&roll_filt, eulers->phi);
     update_butterworth_2_low_pass(&pitch_filt, eulers->theta);

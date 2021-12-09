@@ -1,6 +1,6 @@
 <!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
 
-<flight_plan alt="4" ground_alt="0" lat0="51 59 27.6" lon0="4 22 42.0" max_dist_from_home="1000" name="Delft Basic" security_height="2">
+<flight_plan alt="50" ground_alt="0" lat0="51 59 27.6" lon0="4 22 42.0" max_dist_from_home="1000" name="Delft Basic" security_height="2">
   <header>
     #include "autopilot.h"
     #include "subsystems/datalink/datalink.h"
@@ -15,6 +15,7 @@
     <waypoint name="p2" x="-0.6" y="21.6"/>
     <waypoint name="p3" x="22.2" y="-26.5"/>
     <waypoint name="p4" x="4.9" y="-34.4"/>
+    <waypoint name="N" x="0.0" y="0.0"/>
     <waypoint name="CAM" x="14.2" y="-29.4"/>
     <waypoint name="TD" x="5.6" y="-10.9"/>
   </waypoints>
@@ -45,6 +46,9 @@
     </block>
     <block name="stay_p1">
       <stay wp="p1"/>
+    </block>
+    <block name="stay_N">
+      <stay wp="N"/>
     </block>
     <block name="go_p2">
       <go wp="p2"/>
