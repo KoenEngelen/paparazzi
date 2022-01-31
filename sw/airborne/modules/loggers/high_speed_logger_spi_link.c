@@ -126,9 +126,9 @@ void high_speed_logger_spi_link_periodic(void)
     
   }
 
-  if (autopilot.in_flight){
+  // if (autopilot.in_flight){
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
-  }
+  // }
 }
 
 static void high_speed_logger_spi_link_trans_cb(struct spi_transaction *trans __attribute__((unused)))

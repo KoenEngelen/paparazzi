@@ -229,7 +229,7 @@
   void print_row(float *ptr,int m);
   void print_row_matlab(float *ptr,int m);
 
-  void UpdateTrajectory(float t);
+  void UpdateTrajectory(void);
   void LinAccCon(void);
   void get_increment(void);
   void SVDw(void);
@@ -317,6 +317,9 @@
     traj.pos.y = 00.;
     traj.pos.z = -50.;
 
+    traj_sec.pos_end.x = traj.pos.x;
+    traj_sec.pos_end.y = traj.pos.y;
+    traj_sec.pos_end.z = traj.pos.z;
     traj_sec.type = 0;
     traj_sec.number = -1;
     traj_sec.t_beg = 0.0f;
@@ -345,7 +348,7 @@
 
   get_states(); // Filter Speed as well?
 
-  UpdateTrajectory(t);
+  UpdateTrajectory();
   LinAccCon();
 
   get_G();
@@ -432,8 +435,8 @@
     }
 
     if        (traj_sec.number % 19  == 0){
-      traj_sec.vel_max = 10.0f;
-      traj_sec.acc_max = 10.0f;
+      traj_sec.vel_max = 1.0f;
+      traj_sec.acc_max = 1.0f;
     } else if (traj_sec.number % 19  == 1){
       traj_sec.vel_max = 1.0f;
       traj_sec.acc_max = 5.0f;
@@ -494,13 +497,13 @@
   void CalcNewTrajectory(){
     traj_sec.number = traj_sec.number + 1;
     
-    traj_sec.pos_beg.x = traj.pos.x;
-    traj_sec.pos_beg.y = traj.pos.y;
-    traj_sec.pos_beg.z = traj.pos.z;
+    // traj_sec.pos_beg.x = traj.pos.x;
+    // traj_sec.pos_beg.y = traj.pos.y;
+    // traj_sec.pos_beg.z = traj.pos.z;
 
-    traj_sec.pos_end.x = traj_sec.pos_beg.x;
-    traj_sec.pos_end.y = traj_sec.pos_beg.y;
-    traj_sec.pos_end.z = traj_sec.pos_beg.z;
+    traj_sec.pos_beg.x = traj_sec.pos_end.x;
+    traj_sec.pos_beg.y = traj_sec.pos_end.y;
+    traj_sec.pos_beg.z = traj_sec.pos_end.z;
     
     TrajectoryScenario(); //get pos_end, v_max, a_max based on scenario
 
@@ -536,7 +539,7 @@
 
   }
 
-  void UpdateTrajectory(float t){
+  void UpdateTrajectory(){
     traj.t = t;
 
     traj.pos.x = 00.;
@@ -612,6 +615,18 @@
     traj.acc.y = traj_sec.dir.y * new_acc;
     traj.acc.z = traj_sec.dir.z * new_acc;
 
+    traj.pos.x = traj_sec.pos_end.x;
+    traj.pos.y = traj_sec.pos_end.y;
+    traj.pos.z = traj_sec.pos_end.z;
+    
+    traj.vel.x = 0.0f;
+    traj.vel.y = 0.0f;
+    traj.vel.z = 0.0f;
+
+    traj.acc.x = 0.0f;
+    traj.acc.y = 0.0f;
+    traj.acc.z = 0.0f;
+
     // printf("\nPos: %f \t %f \t %f",traj.pos.x,traj.pos.y,traj.pos.z);
     if(traj_sec.type == 1){
     printf("\nPos: %f \tVel: %f \tAcc: %f \ttime: %f \ttimeline: %f -> %f -> %f -> %f",new_pos,new_vel,new_acc,t,traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
@@ -623,7 +638,7 @@
 
 
 
-    if (t > (traj_sec.t_end + 5.0)){
+    if (t > (traj_sec.t_end + 10.0)){
       t=0;
       CalcNewTrajectory();
     }
@@ -653,9 +668,9 @@
 
 
   void LinAccCon(void){
-    float PGain = 1.0f;
-    float VGain = 1.0f;
-    // PGain = PGain * VGain;
+    float PGain = 0.5f;
+    float VGain = 2.0f;
+    PGain = PGain * VGain;
 
     ctrl_lin.pos.x = stateGetPositionNed_f()->x;
     ctrl_lin.pos.y = stateGetPositionNed_f()->y;
