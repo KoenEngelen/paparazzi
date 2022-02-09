@@ -9,16 +9,7 @@
     #include "firmwares/rotorcraft/guidance/guidance_h.h"
     #include "autopilot.h"
 
-    inline void setNav(void){
-      autopilot_static_set_mode(AP_MODE_NAV);
-      guidance_h_mode_changed(GUIDANCE_H_MODE_NAV);
-      
-    }
-    inline void setAerobatic(void){
-      autopilot_static_set_mode(AP_MODE_MODULE);
-      // guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
-      guidance_h_mode_changed(8);
-    }
+    
   </header>
   <waypoints>
     <waypoint name="HOME" x="0.0" y="0.0"/>
@@ -69,7 +60,7 @@
     </block>
     <block name="STOP AEROBATIC">
       <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
-      <call_once fun="setNav()"/>
+      <call_once fun="revertAerobatic()"/>
       <stay wp="STDBY"/>
     </block>
     <block name="go_p2">

@@ -64,9 +64,57 @@
     struct NedCoor_f acc;
   } traj;
 
+
+
+  struct AerobaticVariableSettings varset = {
+    .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
+    .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
+    .p_gain  = GUIDANCE_AEROBATIC_P_GAIN,
+    .d_gain  = GUIDANCE_AEROBATIC_D_GAIN,
+    .mode = GUIDANCE_AEROBATIC_MODE
+  };
+
+  struct GuidanceLogStruct aerolog = {
+    .t = 0.0f,
+    .mode = GUIDANCE_AEROBATIC_MODE,
+    .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
+    .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
+    .qi = 0,
+    .qx = 0,
+    .qy = 0,
+    .qz = 0,
+    .pos_x = 0.0f,
+    .pos_y = 0.0f,
+    .pos_z = 0.0f,
+    .vel_x = 0.0f,
+    .vel_y = 0.0f,
+    .vel_z = 0.0f,
+    .acc_x = 0.0f,
+    .acc_y = 0.0f,
+    .acc_z = 0.0f,
+    .ref_pos_x = 0.0f,
+    .ref_pos_y = 0.0f,
+    .ref_pos_z = 0.0f,
+    .ref_vel_x = 0.0f,
+    .ref_vel_y = 0.0f,
+    .ref_vel_z = 0.0f,
+    .ref_acc_x = 0.0f,
+    .ref_acc_y = 0.0f,
+    .ref_acc_z = 0.0f
+  };
+
   struct FloatVect3 V_inf;
   struct FloatVect3 V_drone;
   struct FloatQuat q;
+
+
+  struct FloatVect3 Yaw_proj;
+  struct FloatVect3 Yaw_ref;
+
+  struct FloatVect3 Yaw_b;
+  struct FloatVect3 Yaw_bE;
+
+  float d_yaw;
 
   struct NedCoor_f meas_acc; 
 
@@ -79,7 +127,7 @@
   float t = 0.0;
 
   #define ROWS_GUIDANCE 3 //rows
-  #define COLS_GUIDANCE 4 //columns
+  #define COLS_GUIDANCE 3 //columns
 
   float Weight[COLS_GUIDANCE] = {1, 1 , 1 , 1};
 
@@ -241,6 +289,7 @@
   // void print_row(float* ptr,int m);
 //
 
+
 //Guidance Module
   void guidance_h_module_init(void)
   {
@@ -287,8 +336,11 @@
 //Messages
  static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev){
    pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
-                         &debug_value, 
-                         &guidance_aerobatic_indi_gain);
+                         &varset.max_vel,
+                         &varset.max_acc,
+                         &varset.p_gain,
+                         &varset.d_gain,
+                         &varset.mode);
  }
 //
 
@@ -299,9 +351,10 @@
   // get_dv();
   // get_G();
 
-  t = 0.0;
+  t = -5.0;
+
   filter_init();
-  // //printf("thrust filt: %f", thrust_filt.o[0]);
+  // ////printf("thrust filt: %f", thrust_filt.o[0]);
   
   // test_SVD(); //This function works in init
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
@@ -311,15 +364,20 @@
 // Enter function
   void guidance_aerobatic_enter(void) {
     t = -5.0;
+    
+    varset.max_vel = 1.0;
+    varset.max_acc = 1.0;
 
-
-    traj.pos.x = 00.;
-    traj.pos.y = 00.;
-    traj.pos.z = -50.;
+    traj.pos.x = stateGetPositionNed_f()->x;
+    traj.pos.y = stateGetPositionNed_f()->y;
+    traj.pos.z = stateGetPositionNed_f()->z - 0.1;
 
     traj_sec.pos_end.x = traj.pos.x;
     traj_sec.pos_end.y = traj.pos.y;
     traj_sec.pos_end.z = traj.pos.z;
+    traj_sec.pos_beg.x = traj.pos.x;
+    traj_sec.pos_beg.y = traj.pos.y;
+    traj_sec.pos_beg.z = traj.pos.z;
     traj_sec.type = 0;
     traj_sec.number = -1;
     traj_sec.t_beg = 0.0f;
@@ -329,10 +387,10 @@
     // thrust_in = stabilization_cmd[COMMAND_THRUST];
     // thrust_act = thrust_in;
 
-    //printf("pos_est_x\tpos_est_y\tpos_est_z\tpos_ref_x\tpos_ref_y\tpos_ref_z\tvel_est_x\tvel_est_y\tvel_est_z\tvel_ref_x\tvel_ref_y\tvel_ref_z\tacc_est_x\tacc_est_y\tacc_est_z\tacc_ref_x\tacc_ref_y\tacc_ref_z\t");
-    //printf("qi\tqx\tqy\tqz\t");
-    //printf("V_b_x\tV_b_y\tV_b_z\t");
-    //printf("G00\tG01\tG02\tG03\tG10\tG11\tG12\tG13\tG20\tG21\tG22\tG23\tdv_x\tdv_y\tdv_z\tdu_phi\tdu_theta\tdu_psi\tdu_T\n");
+    ////printf("pos_est_x\tpos_est_y\tpos_est_z\tpos_ref_x\tpos_ref_y\tpos_ref_z\tvel_est_x\tvel_est_y\tvel_est_z\tvel_ref_x\tvel_ref_y\tvel_ref_z\tacc_est_x\tacc_est_y\tacc_est_z\tacc_ref_x\tacc_ref_y\tacc_ref_z\t");
+    ////printf("qi\tqx\tqy\tqz\t");
+    ////printf("V_b_x\tV_b_y\tV_b_z\t");
+    ////printf("G00\tG01\tG02\tG03\tG10\tG11\tG12\tG13\tG20\tG21\tG22\tG23\tdv_x\tdv_y\tdv_z\tdu_phi\tdu_theta\tdu_psi\tdu_T\n");
   }
 //
 
@@ -362,7 +420,7 @@
 // Controller functions
   void get_states(void){
 
-    //printf("\n\nget_states");
+    ////printf("\n\nget_states");
     q.qi = filt_quat[0].o[0];
     q.qx = filt_quat[1].o[0];
     q.qy = filt_quat[2].o[0];
@@ -376,13 +434,18 @@
     meas_acc.y = stateGetAccelNed_f()->y;
     meas_acc.z = stateGetAccelNed_f()->z;
 
+    aerolog.qi = q.qi;
+    aerolog.qx = q.qx;
+    aerolog.qy = q.qy;
+    aerolog.qz = q.qz;
+
     // meas_acc.x = filt_accel_ned[0].o[0];
     // meas_acc.y = filt_accel_ned[1].o[0];
     // meas_acc.z = filt_accel_ned[2].o[0];
 
-    // //printf("\n\npos_enu_i:\t%d\t%d\t%d\n", stateGetPositionEnu_i()->x,stateGetPositionEnu_i()->y,stateGetPositionEnu_i()->z);
+    // ////printf("\n\npos_enu_i:\t%d\t%d\t%d\n", stateGetPositionEnu_i()->x,stateGetPositionEnu_i()->y,stateGetPositionEnu_i()->z);
 
-    //printf("\n\nmeas_acc:\t%f\t%f\t%f\n", meas_acc.x,meas_acc.y,meas_acc.z);
+    ////printf("\n\nmeas_acc:\t%f\t%f\t%f\n", meas_acc.x,meas_acc.y,meas_acc.z);
   
     // // Test Quaternion
     // V_drone.x = 5.0;
@@ -394,6 +457,35 @@
     // q.qy = sqrtf(2.0)/2;
     // q.qz = 0.0;
 
+    Yaw_b.x = 0.0f;
+    Yaw_b.y = 1.0f;
+    Yaw_b.z = 0.0f;
+
+    
+    struct FloatQuat q_inv;
+    float_quat_invert(&q_inv, &q);
+    float_quat_vmult(&Yaw_bE, &q_inv, &Yaw_b);
+
+
+    float mag;
+    mag = sqrt(Yaw_bE.x*Yaw_bE.x+Yaw_bE.y*Yaw_bE.y);
+
+    Yaw_proj.x = Yaw_bE.x/mag;
+    Yaw_proj.y = Yaw_bE.y/mag;
+    Yaw_proj.z = 0.0f;
+
+
+    Yaw_ref.x = 1.0f/sqrt(2.0f);
+    Yaw_ref.y = 1.0f/sqrt(2.0f);
+    Yaw_ref.z = 0.0f;
+
+    d_yaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
+
+    if (d_yaw > 5.0f/M_PI){
+      d_yaw = 5.0f/M_PI;
+    } else if (d_yaw < -5.0f/M_PI){
+      d_yaw = -5.0f/M_PI;
+    }
 
     // q.qi = -q.qi;
     V_drone.x = -V_drone.x;
@@ -406,96 +498,46 @@
     // q.qi = -q.qi;
 
     // //Print Quaternion Check
-    // //printf("V_E: \t%f\t%f\t%f\t [m/s]\n",V_drone.x,V_drone.y,V_drone.z);
-    // //printf("qEb: \t%f\t%f\t%f\t%f\n",q.qi, q.qx, q.qy, q.qz);
-    // //printf("V_b: \t%f\t%f\t%f\t [m/s]\n\n",V_inf.x,V_inf.y,V_inf.z);
+    // ////printf("V_E: \t%f\t%f\t%f\t [m/s]\n",V_drone.x,V_drone.y,V_drone.z);
+    // ////printf("qEb: \t%f\t%f\t%f\t%f\n",q.qi, q.qx, q.qy, q.qz);
+    // ////printf("V_b: \t%f\t%f\t%f\t [m/s]\n\n",V_inf.x,V_inf.y,V_inf.z);
 
     V[0] = V_inf.x;
     V[1] = V_inf.y;
     V[2] = V_inf.z;   
 
-    // //printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
+    // ////printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
   }
 
   void TrajectoryScenario(){
-     if       (traj_sec.number / 19  == 0){
-      traj_sec.pos_end.x += 5.0f;
-    }else if (traj_sec.number / 19  == 1){
-      traj_sec.pos_end.y += 5.0f;    
-    }else if (traj_sec.number / 19  == 2){
-      traj_sec.pos_end.x += -5.0f;
-      traj_sec.pos_end.y += -5.0f;
-    }else if (traj_sec.number / 19  == 3){
-      traj_sec.pos_end.z += 5.0f;    
-    }else if (traj_sec.number / 19  == 4){
-      traj_sec.pos_end.z += -5.0f;    
-    } else{
-      traj_sec.pos_end.x += 5.0f;
+    traj_sec.number += 1;
+    if (traj_sec.number >= 4){
       traj_sec.number = 0;
+    } 
+
+     if      (traj_sec.number % 4  == 0){
+      traj_sec.pos_end.x +=  1.0f;
+      traj_sec.pos_end.y += -1.0f;    
+    }else if (traj_sec.number % 4  == 1){
+      traj_sec.pos_end.x +=  1.0f;
+      traj_sec.pos_end.y +=  1.0f;    
+    }else if (traj_sec.number % 4  == 2){
+      traj_sec.pos_end.x += -1.0f;
+      traj_sec.pos_end.y +=  1.0f;
+    }else if (traj_sec.number % 4  == 3){
+      traj_sec.pos_end.x += -1.0f;
+      traj_sec.pos_end.y += -1.0f;    
     }
 
-    if        (traj_sec.number % 19  == 0){
-      traj_sec.vel_max = 1.0f;
-      traj_sec.acc_max = 1.0f;
-    } else if (traj_sec.number % 19  == 1){
-      traj_sec.vel_max = 1.0f;
-      traj_sec.acc_max = 5.0f;
-    } else if (traj_sec.number % 19  == 2){
-      traj_sec.vel_max = 5.0f;
-      traj_sec.acc_max = 1.0f;
-    } else if (traj_sec.number % 19  == 3){
-      traj_sec.vel_max = 5.0f;
-      traj_sec.acc_max = 5.0f;
-    } else if (traj_sec.number % 19  == 4){
-      traj_sec.vel_max = 5.0f;
-      traj_sec.acc_max = 10.0f;
-    } else if (traj_sec.number % 19  == 5){
-      traj_sec.vel_max = 5.0f;
-      traj_sec.acc_max = 15.0f;
-    } else if (traj_sec.number % 19  == 6){
-      traj_sec.vel_max = 10.0f;
-      traj_sec.acc_max = 1.0f;
-    } else if (traj_sec.number % 19  == 7){
-      traj_sec.vel_max = 10.0f;
-      traj_sec.acc_max = 5.0f;
-    } else if (traj_sec.number % 19  == 8){
-      traj_sec.vel_max = 10.0f;
-      traj_sec.acc_max = 10.0f;
-    } else if (traj_sec.number % 19  == 9){
-      traj_sec.vel_max = 10.0f;
-      traj_sec.acc_max = 15.0f;
-    } else if (traj_sec.number % 19  == 10){
-      traj_sec.vel_max = 15.0f;
-      traj_sec.acc_max = 1.0f;
-    } else if (traj_sec.number % 19  == 11){
-      traj_sec.vel_max = 15.0f;
-      traj_sec.acc_max = 5.0f;
-    } else if (traj_sec.number % 19  == 12){
-      traj_sec.vel_max = 15.0f;
-      traj_sec.acc_max = 10.0f;
-    } else if (traj_sec.number % 19  == 13){
-      traj_sec.vel_max = 15.0f;
-      traj_sec.acc_max = 15.0f;
-    } else if (traj_sec.number % 19  == 14){
-      traj_sec.vel_max = 20.0f;
-      traj_sec.acc_max = 1.0f;
-    } else if (traj_sec.number % 19  == 15){
-      traj_sec.vel_max = 20.0f;
-      traj_sec.acc_max = 5.0f;
-    } else if (traj_sec.number % 19  == 16){
-      traj_sec.vel_max = 20.0f;
-      traj_sec.acc_max = 10.0f;
-    } else if (traj_sec.number % 19  == 17){
-      traj_sec.vel_max = 20.0f;
-      traj_sec.acc_max = 15.0f;
-    } else {
-      traj_sec.vel_max = 1.0f;
-      traj_sec.acc_max = 1.0f;
-    } 
+    traj_sec.vel_max = varset.max_vel; 
+    traj_sec.acc_max = varset.max_acc;
+    
+    aerolog.max_vel = varset.max_vel; 
+    aerolog.max_acc = varset.max_acc;
+
   }
 
   void CalcNewTrajectory(){
-    traj_sec.number = traj_sec.number + 1;
     
     // traj_sec.pos_beg.x = traj.pos.x;
     // traj_sec.pos_beg.y = traj.pos.y;
@@ -507,10 +549,12 @@
     
     TrajectoryScenario(); //get pos_end, v_max, a_max based on scenario
 
-
+    #ifdef SITL
     printf("\nPos_beg: %f \t %f \t %f",traj_sec.pos_beg.x,traj_sec.pos_beg.y,traj_sec.pos_beg.z);
     printf("\nPos_end: %f \t %f \t %f",traj_sec.pos_end.x,traj_sec.pos_end.y,traj_sec.pos_end.z);
-
+    printf("\nv_lim: %f\na_lim: %f",traj_sec.vel_max, traj_sec.acc_max); 
+    printf("\nv_lim: %f\na_lim: %f",varset.max_vel, varset.max_acc);
+    #endif
     
     traj_sec.delta_pos = sqrtf(pow(traj_sec.pos_end.x-traj_sec.pos_beg.x,2) +  pow(traj_sec.pos_end.y-traj_sec.pos_beg.y,2) +  pow(traj_sec.pos_end.z-traj_sec.pos_beg.z,2));
     traj_sec.dir.x = (traj_sec.pos_end.x-traj_sec.pos_beg.x)/traj_sec.delta_pos;
@@ -523,7 +567,7 @@
     if(time_a_constraint>time_v_constraint){
       traj_sec.type = 0;
       traj_sec.t_end = time_a_constraint;
-      printf("\ntimeline: %f -> %f",traj_sec.t_beg,traj_sec.t_end);
+      //printf("\ntimeline: %f -> %f",traj_sec.t_beg,traj_sec.t_end);
     } else {
       traj_sec.type = 1;
       traj_sec.t_trans_beg =  M_PI * traj_sec.vel_max/traj_sec.acc_max/2.0;
@@ -531,8 +575,8 @@
       traj_sec.t_end = (traj_sec.delta_pos-2*traj_sec.d_x_trans)/traj_sec.vel_max + 2* traj_sec.t_trans_beg;
       traj_sec.t_trans_end =  traj_sec.t_end-traj_sec.t_trans_beg;
 
-      printf("\ntimeline: %f -> %f -> %f -> %f",traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
-      printf("\ntransient distance: %f ",traj_sec.d_x_trans);
+      //printf("\ntimeline: %f -> %f -> %f -> %f",traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
+      //printf("\ntransient distance: %f ",traj_sec.d_x_trans);
     }
 
 
@@ -541,84 +585,13 @@
 
   void UpdateTrajectory(){
     traj.t = t;
+    aerolog.t = t;
+    aerolog.mode = varset.mode;
 
-    traj.pos.x = 00.;
-    traj.pos.y = 00.;
-    traj.pos.z = -50.;
+    traj.pos.x =  0.0f;
+    traj.pos.y =  0.0f;
+    traj.pos.z = -2.0f;
 
-    traj.vel.x = 0.;
-    traj.vel.y = 0.;
-    traj.vel.z = 0.;
-
-    traj.acc.x = 0.;
-    traj.acc.y = 0.;
-    traj.acc.z = 0.;
-
-
-
-    float new_pos;
-    float new_vel;
-    float new_acc;
-    if(traj_sec.type == 0 ){
-      if (t >= traj_sec.t_beg && t <= traj_sec.t_end){
-        float i = (t-traj_sec.t_beg)/(traj_sec.t_end-traj_sec.t_beg);
-        new_pos = traj_sec.delta_pos * ( i - sinf(2*M_PI*i)/(2*M_PI) );
-        new_vel = traj_sec.delta_pos * ( 1 - cosf(2*M_PI*i) ) / (traj_sec.t_end-traj_sec.t_beg);             ;
-        new_acc = traj_sec.delta_pos * (2*M_PI) * sinf(2*M_PI*i) / pow((traj_sec.t_end-traj_sec.t_beg),2);
-      }else if(t > traj_sec.t_end){
-        new_pos = traj_sec.delta_pos;
-        new_vel = 0.0f;
-        new_acc = 0.0f;
-      } else {
-        new_pos = 0.0f;
-        new_vel = 0.0f;
-        new_acc = 0.0f;
-      }
-    }else if(traj_sec.type == 1 ){
-      if (t >= traj_sec.t_beg && t <= traj_sec.t_trans_beg){
-        float i = (t-traj_sec.t_beg)/(traj_sec.t_trans_beg-traj_sec.t_beg);
-        new_pos = -traj_sec.vel_max*(traj_sec.t_trans_beg-traj_sec.t_beg)/(2*M_PI)*sinf(M_PI*i) + traj_sec.vel_max*(t-traj_sec.t_beg)/2.0;
-        new_vel = traj_sec.vel_max/2.0*(1.0-cosf(M_PI*i));
-        new_acc = M_PI*traj_sec.vel_max/(2.0*(traj_sec.t_trans_beg-traj_sec.t_beg))*sinf(M_PI*i);
-
-      } else if (t >= traj_sec.t_trans_beg && t <= traj_sec.t_trans_end){
-        new_pos = (t-traj_sec.t_trans_beg)*traj_sec.vel_max + traj_sec.d_x_trans;
-        new_vel = traj_sec.vel_max;
-        new_acc = 0.0f;
-      } else if (t >= traj_sec.t_trans_end && t <= traj_sec.t_end){
-        float i = (t-traj_sec.t_trans_end)/(traj_sec.t_end-traj_sec.t_trans_end);
-        new_pos = +traj_sec.vel_max*(traj_sec.t_trans_beg-traj_sec.t_beg)/(2*M_PI)*sinf(M_PI*i) - traj_sec.vel_max*(t-traj_sec.t_trans_end)/2.0 + traj_sec.vel_max * (t-traj_sec.t_trans_end) + traj_sec.delta_pos - traj_sec.d_x_trans;
-        new_vel = -traj_sec.vel_max/2.0*(1.0-cosf(M_PI*i))+traj_sec.vel_max;
-        new_acc = -M_PI*traj_sec.vel_max/(2.0*(traj_sec.t_end-traj_sec.t_trans_end))*sinf(M_PI*i);
-
-      } else if (t >= traj_sec.t_end){
-        new_pos = traj_sec.delta_pos;
-        new_vel = 0.0f;
-        new_acc = 0.0f;
-      } else {
-        new_pos = 0.0f;
-        new_vel = 0.0f;
-        new_acc = 0.0f;
-      }
-
-    }
-
-    traj.pos.x = traj_sec.dir.x * new_pos + traj_sec.pos_beg.x;
-    traj.pos.y = traj_sec.dir.y * new_pos + traj_sec.pos_beg.y;
-    traj.pos.z = traj_sec.dir.z * new_pos + traj_sec.pos_beg.z;
-    
-    traj.vel.x = traj_sec.dir.x * new_vel;
-    traj.vel.y = traj_sec.dir.y * new_vel;
-    traj.vel.z = traj_sec.dir.z * new_vel;
-
-    traj.acc.x = traj_sec.dir.x * new_acc;
-    traj.acc.y = traj_sec.dir.y * new_acc;
-    traj.acc.z = traj_sec.dir.z * new_acc;
-
-    traj.pos.x = traj_sec.pos_end.x;
-    traj.pos.y = traj_sec.pos_end.y;
-    traj.pos.z = traj_sec.pos_end.z;
-    
     traj.vel.x = 0.0f;
     traj.vel.y = 0.0f;
     traj.vel.z = 0.0f;
@@ -627,20 +600,126 @@
     traj.acc.y = 0.0f;
     traj.acc.z = 0.0f;
 
-    // printf("\nPos: %f \t %f \t %f",traj.pos.x,traj.pos.y,traj.pos.z);
-    if(traj_sec.type == 1){
-    printf("\nPos: %f \tVel: %f \tAcc: %f \ttime: %f \ttimeline: %f -> %f -> %f -> %f",new_pos,new_vel,new_acc,t,traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
+
+
+
+
+    if (varset.mode == 0) {
+
+      traj.pos.x = traj_sec.pos_beg.x;
+      traj.pos.y = traj_sec.pos_beg.y;
+      traj.pos.z = traj_sec.pos_beg.z;
+      
+      traj.vel.x = 0.0f;
+      traj.vel.y = 0.0f;
+      traj.vel.z = 0.0f;
+
+      traj.acc.x = 0.0f;
+      traj.acc.y = 0.0f;
+      traj.acc.z = 0.0f;
+
+    } else if (varset.mode == 1){
+
+      float new_pos;
+      float new_vel;
+      float new_acc;
+      if(traj_sec.type == 0 ){
+        if (t >= traj_sec.t_beg && t <= traj_sec.t_end){
+          float i = (t-traj_sec.t_beg)/(traj_sec.t_end-traj_sec.t_beg);
+          new_pos = traj_sec.delta_pos * ( i - sinf(2*M_PI*i)/(2*M_PI) );
+          new_vel = traj_sec.delta_pos * ( 1 - cosf(2*M_PI*i) ) / (traj_sec.t_end-traj_sec.t_beg);             ;
+          new_acc = traj_sec.delta_pos * (2*M_PI) * sinf(2*M_PI*i) / pow((traj_sec.t_end-traj_sec.t_beg),2);
+        }else if(t > traj_sec.t_end){
+          new_pos = traj_sec.delta_pos;
+          new_vel = 0.0f;
+          new_acc = 0.0f;
+        } else {
+          new_pos = 0.0f;
+          new_vel = 0.0f;
+          new_acc = 0.0f;
+        }
+      }else if(traj_sec.type == 1 ){
+        if (t >= traj_sec.t_beg && t <= traj_sec.t_trans_beg){
+          float i = (t-traj_sec.t_beg)/(traj_sec.t_trans_beg-traj_sec.t_beg);
+          new_pos = -traj_sec.vel_max*(traj_sec.t_trans_beg-traj_sec.t_beg)/(2*M_PI)*sinf(M_PI*i) + traj_sec.vel_max*(t-traj_sec.t_beg)/2.0;
+          new_vel = traj_sec.vel_max/2.0*(1.0-cosf(M_PI*i));
+          new_acc = M_PI*traj_sec.vel_max/(2.0*(traj_sec.t_trans_beg-traj_sec.t_beg))*sinf(M_PI*i);
+
+        } else if (t >= traj_sec.t_trans_beg && t <= traj_sec.t_trans_end){
+          new_pos = (t-traj_sec.t_trans_beg)*traj_sec.vel_max + traj_sec.d_x_trans;
+          new_vel = traj_sec.vel_max;
+          new_acc = 0.0f;
+        } else if (t >= traj_sec.t_trans_end && t <= traj_sec.t_end){
+          float i = (t-traj_sec.t_trans_end)/(traj_sec.t_end-traj_sec.t_trans_end);
+          new_pos = +traj_sec.vel_max*(traj_sec.t_trans_beg-traj_sec.t_beg)/(2*M_PI)*sinf(M_PI*i) - traj_sec.vel_max*(t-traj_sec.t_trans_end)/2.0 + traj_sec.vel_max * (t-traj_sec.t_trans_end) + traj_sec.delta_pos - traj_sec.d_x_trans;
+          new_vel = -traj_sec.vel_max/2.0*(1.0-cosf(M_PI*i))+traj_sec.vel_max;
+          new_acc = -M_PI*traj_sec.vel_max/(2.0*(traj_sec.t_end-traj_sec.t_trans_end))*sinf(M_PI*i);
+
+        } else if (t >= traj_sec.t_end){
+          new_pos = traj_sec.delta_pos;
+          new_vel = 0.0f;
+          new_acc = 0.0f;
+        } else {
+          new_pos = 0.0f;
+          new_vel = 0.0f;
+          new_acc = 0.0f;
+        }
+
+      }
+      traj.pos.x = traj_sec.dir.x * new_pos + traj_sec.pos_beg.x;
+      traj.pos.y = traj_sec.dir.y * new_pos + traj_sec.pos_beg.y;
+      traj.pos.z = traj_sec.dir.z * new_pos + traj_sec.pos_beg.z;
+      
+      traj.vel.x = traj_sec.dir.x * new_vel;
+      traj.vel.y = traj_sec.dir.y * new_vel;
+      traj.vel.z = traj_sec.dir.z * new_vel;
+
+      traj.acc.x = traj_sec.dir.x * new_acc;
+      traj.acc.y = traj_sec.dir.y * new_acc;
+      traj.acc.z = traj_sec.dir.z * new_acc;
+
+    } else if (varset.mode == 2){
+
+      traj.pos.x = traj_sec.pos_end.x;
+      traj.pos.y = traj_sec.pos_end.y;
+      traj.pos.z = traj_sec.pos_end.z;
+      
+      traj.vel.x = 0.0f;
+      traj.vel.y = 0.0f;
+      traj.vel.z = 0.0f;
+
+      traj.acc.x = 0.0f;
+      traj.acc.y = 0.0f;
+      traj.acc.z = 0.0f;
     }
-    // printf("\nVel: %f \t %f \t %f",traj.vel.x,traj.vel.y,traj.vel.z);
-    // printf("\nAcc: %f \t %f \t %f",traj.acc.x,traj.acc.y,traj.acc.z);
+
+
+
+    aerolog.ref_pos_x = traj.pos.x;
+    aerolog.ref_pos_y = traj.pos.y;
+    aerolog.ref_pos_z = traj.pos.z;
+    aerolog.ref_vel_x = traj.vel.x;
+    aerolog.ref_vel_y = traj.vel.y;
+    aerolog.ref_vel_z = traj.vel.z;
+    aerolog.ref_acc_x = traj.acc.x;
+    aerolog.ref_acc_y = traj.acc.y;
+    aerolog.ref_acc_z = traj.acc.z;
+
+    // //printf("\nPos: %f \t %f \t %f",traj.pos.x,traj.pos.y,traj.pos.z);
+    if(traj_sec.type == 1){
+    //printf("\nPos: %f \tVel: %f \tAcc: %f \ttime: %f \ttimeline: %f -> %f -> %f -> %f",new_pos,new_vel,new_acc,t,traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
+    }
+    // //printf("\nVel: %f \t %f \t %f",traj.vel.x,traj.vel.y,traj.vel.z);
+    // //printf("\nAcc: %f \t %f \t %f",traj.acc.x,traj.acc.y,traj.acc.z);
 
 
 
 
-
-    if (t > (traj_sec.t_end + 10.0)){
-      t=0;
-      CalcNewTrajectory();
+    if (varset.mode != 0){
+      if (t > (traj_sec.t_end + 10.0)){
+        t=0;
+        CalcNewTrajectory();
+      }
     }
 
     // if (t <= 20 && t >= 0){    
@@ -668,9 +747,9 @@
 
 
   void LinAccCon(void){
-    float PGain = 0.5f;
-    float VGain = 2.0f;
-    PGain = PGain * VGain;
+    float PGain = varset.p_gain;
+    float VGain = varset.d_gain;
+    //PGain = PGain * VGain;
 
     ctrl_lin.pos.x = stateGetPositionNed_f()->x;
     ctrl_lin.pos.y = stateGetPositionNed_f()->y;
@@ -682,28 +761,53 @@
     ctrl_lin.acc.y = stateGetAccelNed_f()->y;
     ctrl_lin.acc.z = stateGetAccelNed_f()->z;
 
-    //printf("\nPos: %f \t %f \t %f",ctrl_lin.pos.x,ctrl_lin.pos.y,ctrl_lin.pos.z);
-    //printf("\nVel: %f \t %f \t %f",ctrl_lin.vel.x,ctrl_lin.vel.y,ctrl_lin.vel.z);
-    //printf("\nAcc: %f \t %f \t %f",ctrl_lin.acc.x,ctrl_lin.acc.y,ctrl_lin.acc.z);
+    aerolog.pos_x = ctrl_lin.pos.x;
+    aerolog.pos_y = ctrl_lin.pos.y;
+    aerolog.pos_z = ctrl_lin.pos.z;
+    aerolog.vel_x = ctrl_lin.vel.x;
+    aerolog.vel_y = ctrl_lin.vel.y;
+    aerolog.vel_z = ctrl_lin.vel.z;
+    aerolog.acc_x = ctrl_lin.acc.x;
+    aerolog.acc_y = ctrl_lin.acc.y;
+    aerolog.acc_z = ctrl_lin.acc.z;
+
+    ////printf("\nPos: %f \t %f \t %f",ctrl_lin.pos.x,ctrl_lin.pos.y,ctrl_lin.pos.z);
+    ////printf("\nVel: %f \t %f \t %f",ctrl_lin.vel.x,ctrl_lin.vel.y,ctrl_lin.vel.z);
+    ////printf("\nAcc: %f \t %f \t %f",ctrl_lin.acc.x,ctrl_lin.acc.y,ctrl_lin.acc.z);
 
     ctrl_lin.cmdacc.x = PGain * (traj.pos.x-ctrl_lin.pos.x) + VGain * (traj.vel.x-ctrl_lin.vel.x) + traj.acc.x;
     ctrl_lin.cmdacc.y = PGain * (traj.pos.y-ctrl_lin.pos.y) + VGain * (traj.vel.y-ctrl_lin.vel.y) + traj.acc.y;
     ctrl_lin.cmdacc.z = PGain * (traj.pos.z-ctrl_lin.pos.z) + VGain * (traj.vel.z-ctrl_lin.vel.z) + traj.acc.z;
 
-    //printf("\n\nacc_com:\t%f\t%f\t%f\n", ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
+    ////printf("\n\nacc_com:\t%f\t%f\t%f\n", ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
 
     ctrl_lin.cmdacc.x = ctrl_lin.cmdacc.x - meas_acc.x;
     ctrl_lin.cmdacc.y = ctrl_lin.cmdacc.y - meas_acc.y;
     ctrl_lin.cmdacc.z = ctrl_lin.cmdacc.z - meas_acc.z;
 
+   
+    #ifdef SITL
+    printf("\nREF Pos: %f, %f, %f",(traj.pos.x),(traj.pos.y),(traj.pos.z));
+    printf("\nREF Vel: %f, %f, %f",(traj.vel.x),(traj.vel.y),(traj.vel.z));
+    printf("\nREF Acc: %f, %f, %f",(traj.acc.x),(traj.acc.y),(traj.acc.z));
+    printf("\nMEAS Pos: %f, %f, %f",(ctrl_lin.pos.x),(ctrl_lin.pos.y),(ctrl_lin.pos.z));
+    printf("\nMEAS Vel: %f, %f, %f",(ctrl_lin.vel.x),(ctrl_lin.vel.y),(ctrl_lin.vel.z));
 
-    //printf("\n\nacc_err:\t%f\t%f\t%f\n", ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
+    printf("\nTOT  Acc: %f, %f, %f",(ctrl_lin.cmdacc.x+meas_acc.x),(ctrl_lin.cmdacc.y+meas_acc.y),(ctrl_lin.cmdacc.z+meas_acc.z));
+    printf("\nMEAS Acc: %f, %f, %f",(meas_acc.x),(meas_acc.y),(meas_acc.z));
+ 
+    printf("\nCMD Pos: %f, %f, %f",(traj.pos.x-ctrl_lin.pos.x),(traj.pos.y-ctrl_lin.pos.y),(traj.pos.z-ctrl_lin.pos.z));
+    printf("\nCMD Vel: %f, %f, %f",(traj.vel.x-ctrl_lin.vel.x),(traj.vel.y-ctrl_lin.vel.y),(traj.vel.z-ctrl_lin.vel.z));
+    printf("\nCMD  Acc: %f, %f, %f",ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
+    #endif
 
-    //printf("\n\nq:\t%f\t%f\t%f\t%f\n", q.qi,q.qx,q.qy,q.qz);
+    ////printf("\n\nacc_err:\t%f\t%f\t%f\n", ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
+
+    ////printf("\n\nq:\t%f\t%f\t%f\t%f\n", q.qi,q.qx,q.qy,q.qz);
 
     float_quat_vmult(&dv, &q, &ctrl_lin.cmdacc);
 
-    //printf("\n\ndv:\t%f\t%f\t%f\n", dv.x,dv.y,dv.z);
+    ////printf("\n\ndv:\t%f\t%f\t%f\n", dv.x,dv.y,dv.z);
 
     // if (dv.x > 0.1){
     //   dv.x = 0.1;
@@ -723,7 +827,7 @@
     //   dv.z = -2;
     // }
 
-    // //printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
+    // ////printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
   }
 
   void get_increment(void){
@@ -809,18 +913,18 @@
       sum = 0;
     } 
 
-    du[3] = du[3] * 480.;
+    du[2] = du[2] * 480.;
 
     float du_min =  960.-thrust_in; // min = 0    (defined by thrust_in = CMD_Thrust / 9600 * 20)
     float du_max = 8640.-thrust_in; // max = 20
-    // //printf("\ndu_min:\t%e\n",du_min);
-    // //printf("\ndu_max:\t%e\n",du_max);
-    // //printf("\ndu[3]:\t%e\n",du[3]);
+    // ////printf("\ndu_min:\t%e\n",du_min);
+    // ////printf("\ndu_max:\t%e\n",du_max);
+    // ////printf("\ndu[3]:\t%e\n",du[3]);
     
-    if (du[3] < du_min){
-      du[3] = du_min;
-    }else if (du[3] > du_max){
-      du[3] = du_max;
+    if (du[2] < du_min){
+      du[2] = du_min;
+    }else if (du[2] > du_max){
+      du[2] = du_max;
     }
 
 
@@ -834,12 +938,9 @@
       G[1][0] =  da_wing_x_dthetai() - 20.0 * thrust_in/MAX_PPRZ; 
       G[1][1] =  da_wing_y_dthetai(); 
       G[1][2] =  da_wing_z_dthetai(); 
-      G[2][0] =  da_wing_x_dpsii(); 
-      G[2][1] =  da_wing_y_dpsii(); 
-      G[2][2] =  da_wing_z_dpsii(); 
-      G[3][0] =  0.0f; 
-      G[3][1] =  0.0f; 
-      G[3][2] =  -20.0* thrust_in/MAX_PPRZ; 
+      G[2][0] =  0.0f; 
+      G[2][1] =  0.0f; 
+      G[2][2] =  -20.0* thrust_in/MAX_PPRZ; 
     } else {
       G[0][0] =  da_wing_x_dphii(); 
       G[1][0] =  da_wing_y_dphii()+ 20.0 * thrust_in/MAX_PPRZ; 
@@ -847,12 +948,9 @@
       G[0][1] =  da_wing_x_dthetai() - 20.0* thrust_in/MAX_PPRZ; 
       G[1][1] =  da_wing_y_dthetai(); 
       G[2][1] =  da_wing_z_dthetai(); 
-      G[0][2] =  da_wing_x_dpsii(); 
-      G[1][2] =  da_wing_y_dpsii(); 
-      G[2][2] =  da_wing_z_dpsii(); 
-      G[0][3] =  0.0f; 
-      G[1][3] =  0.0f; 
-      G[2][3] =  -20.0* thrust_in/MAX_PPRZ; 
+      G[0][2] =  0.0f; 
+      G[1][2] =  0.0f; 
+      G[2][2] =  -20.0* thrust_in/MAX_PPRZ; 
     }
   }
 
@@ -865,9 +963,9 @@
   }
 
   void add_increment(void){
-    AbiSendMsgTHRUST(THRUST_INCREMENT_ID, du[3]);
-    // //printf("thrust filt: %f", thrust_filt.o[0]);
-    thrust_in = thrust_filt.o[0] + du[3];
+    AbiSendMsgTHRUST(THRUST_INCREMENT_ID, du[2]);
+    // ////printf("thrust filt: %f", thrust_filt.o[0]);
+    thrust_in = thrust_filt.o[0] + du[2];
     if (thrust_in > 9600){
       thrust_in = 9600;
     } 
@@ -883,17 +981,17 @@
     struct Int32Quat q_i_res = {0};
 
     float magdu;
-    magdu = sqrt(du[0]*du[0]+du[1]*du[1]+du[2]*du[2]);
+    magdu = sqrt(du[0]*du[0]+du[1]*du[1]+d_yaw*d_yaw);
 
     dq.qi = cos(magdu);
     dq.qx = sin(magdu)*du[0]/magdu;
     dq.qy = sin(magdu)*du[1]/magdu;
-    dq.qz = sin(magdu)*du[2]/magdu;
+    dq.qz = sin(magdu)*d_yaw/magdu;
     float_quat_comp(&q_res, &q, &dq);
 
     magdu = sqrt(q_res.qi*q_res.qi+q_res.qx*q_res.qx+q_res.qy*q_res.qy+q_res.qz*q_res.qz);
 
-    q_res.qi = q_res.qi/magdu;
+    q_res.qi = q_res.qi/magdu;//printf
     q_res.qx = q_res.qx/magdu;
     q_res.qy = q_res.qy/magdu;
     q_res.qz = q_res.qz/magdu;
@@ -909,9 +1007,9 @@
     //   q_res.qy = 0.0;
     //   q_res.qz = 0.0;
     // }
-    // //printf("\n\nQ:  \t%f\t%f\t%f\t%f" , q.qi      , q.qx      , q.qy      , q.qz    );
-    // //printf("\ndQ:  \t%f\t%f\t%f\t%f", dq.qi     , dq.qx     , dq.qy     , dq.qz   );
-    //printf("\nQres:\t%f\t%f\t%f\t%f\n", q_res.qi  , q_res.qx  , q_res.qy  , q_res.qz);
+    // ////printf("\n\nQ:  \t%f\t%f\t%f\t%f" , q.qi      , q.qx      , q.qy      , q.qz    );
+    // ////printf("\ndQ:  \t%f\t%f\t%f\t%f", dq.qi     , dq.qx     , dq.qy     , dq.qz   );
+    ////printf("\nQres:\t%f\t%f\t%f\t%f\n", q_res.qi  , q_res.qx  , q_res.qy  , q_res.qz);
 
 
     // q_res.qi = cosf(10.0/180*M_PI);
@@ -932,35 +1030,35 @@
 
   void print_states(void){
 
-    //printf("%f\t%f\t%f", ctrl_lin.pos.x, ctrl_lin.pos.y, ctrl_lin.pos.z);
-    //printf("\t%f\t%f\t%f", traj.pos.x, traj.pos.y, traj.pos.z);
-    //printf("\t%f\t%f\t%f", ctrl_lin.vel.x, ctrl_lin.vel.y, ctrl_lin.vel.z);
-    //printf("\t%f\t%f\t%f", traj.vel.x, traj.vel.y, traj.vel.z);
-    //printf("\t%f\t%f\t%f", ctrl_lin.acc.x, ctrl_lin.acc.y, ctrl_lin.acc.z);
-    //printf("\t%f\t%f\t%f", traj.acc.x, traj.acc.y, traj.acc.z);
-    // //printf("\npos_est [  m  ]: \t%f\t%f\t%f", ctrl_lin.pos->x, ctrl_lin.pos->y, ctrl_lin.pos->z);
-    // //printf("\npos_ref [  m  ]: \t%f\t%f\t%f", traj.pos.x, traj.pos.y, traj.pos.z);
-    // //printf("\nvel_est [ m/s ]: \t%f\t%f\t%f", ctrl_lin.vel->x, ctrl_lin.vel->y, ctrl_lin.vel->z);
-    // //printf("\nvel_ref [ m/s ]: \t%f\t%f\t%f", traj.vel.x, traj.vel.y, traj.vel.z);
-    // //printf("\nacc_est [m/s^2]: \t%f\t%f\t%f", ctrl_lin.acc->x, ctrl_lin.acc->y, ctrl_lin.acc->z);
-    // //printf("\nacc_ref [m/s^2]: \t%f\t%f\t%f", traj.acc.x, traj.acc.y, traj.acc.z);
+    ////printf("%f\t%f\t%f", ctrl_lin.pos.x, ctrl_lin.pos.y, ctrl_lin.pos.z);
+    ////printf("\t%f\t%f\t%f", traj.pos.x, traj.pos.y, traj.pos.z);
+    ////printf("\t%f\t%f\t%f", ctrl_lin.vel.x, ctrl_lin.vel.y, ctrl_lin.vel.z);
+    ////printf("\t%f\t%f\t%f", traj.vel.x, traj.vel.y, traj.vel.z);
+    ////printf("\t%f\t%f\t%f", ctrl_lin.acc.x, ctrl_lin.acc.y, ctrl_lin.acc.z);
+    ////printf("\t%f\t%f\t%f", traj.acc.x, traj.acc.y, traj.acc.z);
+    // ////printf("\npos_est [  m  ]: \t%f\t%f\t%f", ctrl_lin.pos->x, ctrl_lin.pos->y, ctrl_lin.pos->z);
+    // ////printf("\npos_ref [  m  ]: \t%f\t%f\t%f", traj.pos.x, traj.pos.y, traj.pos.z);
+    // ////printf("\nvel_est [ m/s ]: \t%f\t%f\t%f", ctrl_lin.vel->x, ctrl_lin.vel->y, ctrl_lin.vel->z);
+    // ////printf("\nvel_ref [ m/s ]: \t%f\t%f\t%f", traj.vel.x, traj.vel.y, traj.vel.z);
+    // ////printf("\nacc_est [m/s^2]: \t%f\t%f\t%f", ctrl_lin.acc->x, ctrl_lin.acc->y, ctrl_lin.acc->z);
+    // ////printf("\nacc_ref [m/s^2]: \t%f\t%f\t%f", traj.acc.x, traj.acc.y, traj.acc.z);
 
 
-    //printf("\t%f\t%f\t%f\t%f",q.qi,q.qx,q.qy,q.qz);
-    //printf("\t%f\t%f\t%f",V[0],V[1],V[2]);
+    ////printf("\t%f\t%f\t%f\t%f",q.qi,q.qx,q.qy,q.qz);
+    ////printf("\t%f\t%f\t%f",V[0],V[1],V[2]);
 
-    //printf("\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
+    ////printf("\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
     //G[0][0],G[0][1],G[0][2],G[0][3],
     //G[1][0],G[1][1],G[1][2],G[1][3],
     //G[2][0],G[2][1],G[2][2],G[2][3]);
-    //printf("\t%f\t%f\t%f", dv.x, dv.y, dv.z);
-    //printf("\t%f\t%f\t%f\t%f\n", du[0], du[1], du[2], du[3]);
-    // //printf("\nG: \t%f\t%f\t%f\t%f\n \t%f\t%f\t%f\t%f\n \t%f\t%f\t%f\t%f",
+    ////printf("\t%f\t%f\t%f", dv.x, dv.y, dv.z);
+    ////printf("\t%f\t%f\t%f\t%f\n", du[0], du[1], du[2], du[3]);
+    // ////printf("\nG: \t%f\t%f\t%f\t%f\n \t%f\t%f\t%f\t%f\n \t%f\t%f\t%f\t%f",
     // G[0][0],G[0][1],G[0][2],G[0][3],
     // G[1][0],G[1][1],G[1][2],G[1][3],
     // G[2][0],G[2][1],G[2][2],G[2][3]);
-    // //printf("\ndv [m/s^2]: \t%f\t%f\t%f", dv.x, dv.y, dv.z);
-    // //printf("\ndu [ 3xrad | N ]: \t%f\t%f\t%f\t%f", du[0], du[1], du[2], du[3]);
+    // ////printf("\ndv [m/s^2]: \t%f\t%f\t%f", dv.x, dv.y, dv.z);
+    // ////printf("\ndu [ 3xrad | N ]: \t%f\t%f\t%f\t%f", du[0], du[1], du[2], du[3]);
   }
 //
 
@@ -992,10 +1090,10 @@
   void guidance_indi_filter_thrust(void){
     // Actuator dynamics
     thrust_act = thrust_act + GUIDANCE_INDI_THRUST_DYNAMICS * (thrust_in - thrust_act);
-    // //printf('thrust act: %f',thrust_act);
+    // ////printf('thrust act: %f',thrust_act);
     // same filter as for the acceleration
     
-    // //printf("Thrust_act (input for filter): \t%f ",thrust_act);
+    // ////printf("Thrust_act (input for filter): \t%f ",thrust_act);
     update_butterworth_2_low_pass(&thrust_filt, thrust_act);
   }
 
@@ -1026,8 +1124,8 @@
     update_butterworth_2_low_pass(&filt_quat[2], quat->qy);
     update_butterworth_2_low_pass(&filt_quat[3], quat->qz);
 
-    // //printf("\nquat\n%f\t%f\t%f\t%f\n\n",quat->qi,quat->qx,quat->qy,quat->qz);
-    //printf("\nquat\n%f\t%f\t%f\t%f\n\n",stateGetNedToBodyQuat_f()->qi,stateGetNedToBodyQuat_f()->qx,stateGetNedToBodyQuat_f()->qy,stateGetNedToBodyQuat_f()->qz);
+    // ////printf("\nquat\n%f\t%f\t%f\t%f\n\n",quat->qi,quat->qx,quat->qy,quat->qz);
+    ////printf("\nquat\n%f\t%f\t%f\t%f\n\n",stateGetNedToBodyQuat_f()->qi,stateGetNedToBodyQuat_f()->qx,stateGetNedToBodyQuat_f()->qy,stateGetNedToBodyQuat_f()->qz);
 
 
     // update_butterworth_2_low_pass(&roll_filt, eulers->phi);
@@ -1041,27 +1139,27 @@
   // void print_matrix(float **ptr,int m, int n){
   //     for (int r = 0; r < m; r++) {
   //       for (int c = 0; c < n; c++) {
-  //         // //printf("\t%e\t",ptr[r][c]);
+  //         // ////printf("\t%e\t",ptr[r][c]);
   //       }
-  //       // //printf("\n");
+  //       // ////printf("\n");
   //     }
-  //     // //printf("\n");
+  //     // ////printf("\n");
   // }
 
   // // Print_matix_function
   // void print_matrix_matlab(float **ptr,int m, int n){
-  //     // //printf("\n[");
+  //     // ////printf("\n[");
   //     for (int r = 0; r < m; r++) {
   //       for (int c = 0; c < n; c++) {
-  //         // //printf("\t%e",ptr[r][c]);
+  //         // ////printf("\t%e",ptr[r][c]);
   //         if (c<(n-1)){
-  //           // //printf(",");
+  //           // ////printf(",");
   //         }
   //       }
   //       if (r<(m-1)){
-  //         // //printf(";\n");
+  //         // ////printf(";\n");
   //       }else{
-  //         // //printf("];\n\n");
+  //         // ////printf("];\n\n");
   //       }
   //     }
   // }
@@ -1071,90 +1169,87 @@
   //   // void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l){
   //   //     for (int r = 0; r < m; r++) {
           
-  //   //       // //printf("|");
+  //   //       // ////printf("|");
   //   //       for (int c = 0; c < n; c++) {
-  //   //         // //printf("\t%e\t",ptrA[r][c]);
+  //   //         // ////printf("\t%e\t",ptrA[r][c]);
   //   //       }
-  //   //       // //printf("|");
+  //   //       // ////printf("|");
 
   //   //       if(r == 1){
-  //   //         // //printf("\t*\t");
+  //   //         // ////printf("\t*\t");
   //   //       }else{
-  //   //         // //printf("\t\t");
+  //   //         // ////printf("\t\t");
   //   //       }
 
-  //   //       // //printf("|");
-  //   //       // //printf("\t%e\t",ptrX[r][0]);
-  //   //       // //printf("|");
+  //   //       // ////printf("|");
+  //   //       // ////printf("\t%e\t",ptrX[r][0]);
+  //   //       // ////printf("|");
 
   //   //       if(r == 1){
-  //   //         // //printf("\t=\t");
+  //   //         // ////printf("\t=\t");
   //   //       }else{
-  //   //         // //printf("\t\t");
+  //   //         // ////printf("\t\t");
   //   //       }
           
-  //   //       // //printf("|");
-  //   //       // //printf("\t%e\t",ptrB[r][0]);
-  //   //       // //printf("|");
+  //   //       // ////printf("|");
+  //   //       // ////printf("\t%e\t",ptrB[r][0]);
+  //   //       // ////printf("|");
 
-  //   //       // //printf("\n");
+  //   //       // ////printf("\n");
   //   //     }
-  //   //     // //printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|");
-  //   //     // //printf("\t%e\t",ptrX[3][0]);
-  //   //     // //printf("|");
+  //   //     // ////printf("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t|");
+  //   //     // ////printf("\t%e\t",ptrX[3][0]);
+  //   //     // ////printf("|");
 
 
-  //   //     // //printf("\n");
+  //   //     // ////printf("\n");
   //   // }
   // //
 
 
   // void print_2darr(int row, int col, float* Data_00){
 
-  //   // //printf("[");
+  //   // ////printf("[");
   //   // print 2D array
   //   for (int i = 0; i < row; i++){
   //       for (int j = 0; j < col; j++) {
   //           float* MatData_val = Data_00 + (i * col + j);
   //           if (j==col-1){
-  //             // //printf("\t%e", *MatData_val);
+  //             // ////printf("\t%e", *MatData_val);
   //           }else{      
-  //             // //printf("\t%e,", *MatData_val);
+  //             // ////printf("\t%e,", *MatData_val);
   //           }
 
   //       }
   //       if (i==row-1){
-  //         // //printf("]\n");
+  //         // ////printf("]\n");
   //       }else{      
-  //         // //printf(";\n");
+  //         // ////printf(";\n");
   //       }
         
   //   }
-  //   // //printf("\n");
+  //   // ////printf("\n");
   // }
 
   // void print_row(float *ptr,int m){
   //     for (int r = 0; r < m; r++) {
-  //         // //printf("\t%e\t",ptr[r]);
+  //         // ////printf("\t%e\t",ptr[r]);
   //     }
-  //     // //printf("\n\n");
+  //     // ////printf("\n\n");
   // }
 
   // void print_row_matlab(float *ptr,int m){
-  //     // //printf("\n[");
+  //     // ////printf("\n[");
   //     for (int r = 0; r < m; r++) {
-  //         // //printf("\t%e",ptr[r]);
+  //         // ////printf("\t%e",ptr[r]);
   //         if(r!=m-1){
-  //           // //printf(",");
+  //           // ////printf(",");
   //         }
   //     }
-  //     // //printf("];\n\n");
-  // }
+  //     // ////printf("];\n\n");//printf
 //
 
-
-// CELib (matlab functions)
-
+// CE Lib Matlab
   /*
   * function res = a_D_wing_x(V)
   */
@@ -4805,7 +4900,7 @@
 
   void test_a_L_wing(void)
   {
-  // //printf("\nRunning test_a_L_wing func in guidance_aerobatic\n\n");
+  // ////printf("\nRunning test_a_L_wing func in guidance_aerobatic\n\n");
   int Vinf;
   int theta;
   int psi;
@@ -4816,15 +4911,15 @@
   theta = 4;
   psi = 60;
 
-  // //printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\t");
+  // ////printf("Vinf\tphi\ttheta\tpsi\tVx\tVy\tVz\ta_wing_x\ta_wing_z\ta_L_wing_x\ta_L_wing_z\ta_D_wing_x\ta_D_wing_z\tAoA\tAoS\tAoD\tCl\tCd\tdCl\tdCd\tVxz_2\t");
 
-  // //printf("da_wing_x_dphii\tda_wing_x_dpsii\tda_wing_x_dthetai\tda_wing_y_dphii\tda_wing_y_dpsii\tda_wing_y_dthetai\tda_wing_z_dphii\tda_wing_z_dpsii\tda_wing_z_dthetai\t");
+  // ////printf("da_wing_x_dphii\tda_wing_x_dpsii\tda_wing_x_dthetai\tda_wing_y_dphii\tda_wing_y_dpsii\tda_wing_y_dthetai\tda_wing_z_dphii\tda_wing_z_dpsii\tda_wing_z_dthetai\t");
 
-  // //printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
+  // ////printf("dalphai_dphii\tdalphai_dpsii\tdalphai_dthetai\tdbetai_dphii\tdbetai_dpsii\tdbetai_dthetai\tdCd_dphii\tdCd_dpsii\tdCd_dthetai\tdCl_dphii\tdCl_dpsii\tdCl_dthetai\t");
 
-  // //printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
+  // ////printf("dVx_dphii\tdVx_dpsii\tdVx_dthetai\tdVxz_2_dphii\tdVxz_2_dpsii\tdVxz_2_dthetai\tdVy_dphii\tdVy_dthetai\tdVz_dphii\tdVz_dpsii\tdVz_dthetai\tVxz_2_dalphai_dphii\tVxz_2_dalphai_dpsii\t");
 
-  // //printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
+  // ////printf("Vxz_2_dCd_dphii\tVxz_2_dCd_dpsii\tVxz_2_dCl_dphii\tVxz_2_dCl_dpsii\n");
 
   for (Vinf=0;Vinf<10;Vinf++)
   {
@@ -4838,98 +4933,98 @@
 
 
         
-          // //printf("%i"  ,Vinf );
+          // ////printf("%i"  ,Vinf );
           
-          // //printf("\t%.4f",phi  );
+          // ////printf("\t%.4f",phi  );
           
-          // //printf("\t%i"  ,theta);
-          // //printf("\t%i"  ,psi  );
+          // ////printf("\t%i"  ,theta);
+          // ////printf("\t%i"  ,psi  );
           
-          // //printf("\t%.4f",V[0]  );
-          // //printf("\t%.4f",V[1]  );
-          // //printf("\t%.4f",V[2]  );
+          // ////printf("\t%.4f",V[0]  );
+          // ////printf("\t%.4f",V[1]  );
+          // ////printf("\t%.4f",V[2]  );
 
-          // //printf("\t%.4f",a_wing_x());
-          // //printf("\t%.4f",a_wing_z());
+          // ////printf("\t%.4f",a_wing_x());
+          // ////printf("\t%.4f",a_wing_z());
 
-          // //printf("\t%.4f",a_L_wing_x());
-          // //printf("\t%.4f",a_L_wing_z());
+          // ////printf("\t%.4f",a_L_wing_x());
+          // ////printf("\t%.4f",a_L_wing_z());
 
-          // //printf("\t%.4f",a_D_wing_x());
-          // //printf("\t%.4f",a_D_wing_z());
+          // ////printf("\t%.4f",a_D_wing_x());
+          // ////printf("\t%.4f",a_D_wing_z());
 
-          // //printf("\t%.4f",AoA());
-          // //printf("\t%.4f",AoS());
-          // //printf("\t%.4f",AoD());
+          // ////printf("\t%.4f",AoA());
+          // ////printf("\t%.4f",AoS());
+          // ////printf("\t%.4f",AoD());
 
-          // //printf("\t%.4f",Cl());
-          // //printf("\t%.4f",Cd());
-          // //printf("\t%.4f",dCl());
-          // //printf("\t%.4f",dCd());
+          // ////printf("\t%.4f",Cl());
+          // ////printf("\t%.4f",Cd());
+          // ////printf("\t%.4f",dCl());
+          // ////printf("\t%.4f",dCd());
 
-          // //printf("\t%.4f",Vxz_2());
+          // ////printf("\t%.4f",Vxz_2());
 
-          // //printf("\t%.4f",da_wing_x_dphii());
-          // //printf("\t%.4f",da_wing_x_dpsii());
-          // //printf("\t%.4f",da_wing_x_dthetai());
-
-
-          // //printf("\t%.4f",da_wing_y_dphii());
-          // //printf("\t%.4f",da_wing_y_dpsii());
-          // //printf("\t%.4f",da_wing_y_dthetai());
+          // ////printf("\t%.4f",da_wing_x_dphii());
+          // ////printf("\t%.4f",da_wing_x_dpsii());
+          // ////printf("\t%.4f",da_wing_x_dthetai());
 
 
-          // //printf("\t%.4f",da_wing_z_dphii());
-          // //printf("\t%.4f",da_wing_z_dpsii());
-          // //printf("\t%.4f",da_wing_z_dthetai());
+          // ////printf("\t%.4f",da_wing_y_dphii());
+          // ////printf("\t%.4f",da_wing_y_dpsii());
+          // ////printf("\t%.4f",da_wing_y_dthetai());
 
-          // //printf("\t%.4f",dalphai_dphii());
-          // //printf("\t%.4f",dalphai_dpsii());
-          // //printf("\t%.4f",dalphai_dthetai());
 
-          // //printf("\t%.4f",dbetai_dphii());
-          // //printf("\t%.4f",dbetai_dpsii());
-          // //printf("\t%.4f",dbetai_dthetai());
+          // ////printf("\t%.4f",da_wing_z_dphii());
+          // ////printf("\t%.4f",da_wing_z_dpsii());
+          // ////printf("\t%.4f",da_wing_z_dthetai());
 
-          // //printf("\t%.4f",dCd_dphii());
-          // //printf("\t%.4f",dCd_dpsii());
-          // //printf("\t%.4f",dCd_dthetai());
+          // ////printf("\t%.4f",dalphai_dphii());
+          // ////printf("\t%.4f",dalphai_dpsii());
+          // ////printf("\t%.4f",dalphai_dthetai());
+
+          // ////printf("\t%.4f",dbetai_dphii());
+          // ////printf("\t%.4f",dbetai_dpsii());
+          // ////printf("\t%.4f",dbetai_dthetai());
+
+          // ////printf("\t%.4f",dCd_dphii());
+          // ////printf("\t%.4f",dCd_dpsii());
+          // ////printf("\t%.4f",dCd_dthetai());
           
-          // //printf("\t%.4f",dCl_dphii());
-          // //printf("\t%.4f",dCl_dpsii());
-          // //printf("\t%.4f",dCl_dthetai());
+          // ////printf("\t%.4f",dCl_dphii());
+          // ////printf("\t%.4f",dCl_dpsii());
+          // ////printf("\t%.4f",dCl_dthetai());
 
-          // //printf("\t%.4f",dVx_dphii());
-          // //printf("\t%.4f",dVx_dpsii());
-          // //printf("\t%.4f",dVx_dthetai());
+          // ////printf("\t%.4f",dVx_dphii());
+          // ////printf("\t%.4f",dVx_dpsii());
+          // ////printf("\t%.4f",dVx_dthetai());
 
-          // //printf("\t%.4f",dVxz_2_dphii());
-          // //printf("\t%.4f",dVxz_2_dpsii());
-          // //printf("\t%.4f",dVxz_2_dthetai());
+          // ////printf("\t%.4f",dVxz_2_dphii());
+          // ////printf("\t%.4f",dVxz_2_dpsii());
+          // ////printf("\t%.4f",dVxz_2_dthetai());
 
-          // //printf("\t%.4f",dVy_dphii());
-          // //printf("\t%.4f",dVy_dthetai());
-          // //printf("\t%.4f",dVz_dphii());
+          // ////printf("\t%.4f",dVy_dphii());
+          // ////printf("\t%.4f",dVy_dthetai());
+          // ////printf("\t%.4f",dVz_dphii());
 
-          // //printf("\t%.4f",dVz_dpsii());
-          // //printf("\t%.4f",dVz_dthetai());
-          // //printf("\t%.4f",Vxz_2_dalphai_dphii());
+          // ////printf("\t%.4f",dVz_dpsii());
+          // ////printf("\t%.4f",dVz_dthetai());
+          // ////printf("\t%.4f",Vxz_2_dalphai_dphii());
 
-          // //printf("\t%.4f",Vxz_2_dalphai_dpsii());
-          // //printf("\t%.4f",Vxz_2_dCd_dphii());
-          // //printf("\t%.4f",Vxz_2_dCd_dpsii());
+          // ////printf("\t%.4f",Vxz_2_dalphai_dpsii());
+          // ////printf("\t%.4f",Vxz_2_dCd_dphii());
+          // ////printf("\t%.4f",Vxz_2_dCd_dpsii());
 
 
-          // //printf("\t%.4f",Vxz_2_dCl_dphii());
-          // //printf("\t%.4f",Vxz_2_dCl_dpsii());
+          // ////printf("\t%.4f",Vxz_2_dCl_dphii());
+          // ////printf("\t%.4f",Vxz_2_dCl_dpsii());
 
-          // //printf("\n");
+          // ////printf("\n");
 
 
         }
       }
 
   }
-  // //printf("\n");
+  // ////printf("\n");
   }
 //
