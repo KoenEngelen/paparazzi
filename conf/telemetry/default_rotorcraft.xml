@@ -37,6 +37,7 @@
       <!-- <message name="INS_EKF2"                 period=".25"/> -->
       <message name="AHRS_REF_QUAT" 	         period="0.1"/>
       <message name="AEROBATIC_INDI" 	         period="0.1"/>
+      <message name="AEROBATIC_LOG"            period="0.1"/>
     </mode>
 
     <mode name="ppm">
