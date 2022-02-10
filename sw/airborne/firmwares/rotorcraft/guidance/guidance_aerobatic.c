@@ -74,6 +74,36 @@
     .mode = GUIDANCE_AEROBATIC_MODE
   };
 
+  struct GuidanceLogStruct aerolog = {
+    .t = 0.0f,
+    .mode = GUIDANCE_AEROBATIC_MODE,
+    .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
+    .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
+    .qi = 0,
+    .qx = 0,
+    .qy = 0,
+    .qz = 0,
+    .pos_x = 0.0f,
+    .pos_y = 0.0f,
+    .pos_z = 0.0f,
+    .vel_x = 0.0f,
+    .vel_y = 0.0f,
+    .vel_z = 0.0f,
+    .acc_x = 0.0f,
+    .acc_y = 0.0f,
+    .acc_z = 0.0f,
+    .ref_pos_x = 0.0f,
+    .ref_pos_y = 0.0f,
+    .ref_pos_z = 0.0f,
+    .ref_vel_x = 0.0f,
+    .ref_vel_y = 0.0f,
+    .ref_vel_z = 0.0f,
+    .ref_acc_x = 0.0f,
+    .ref_acc_y = 0.0f,
+    .ref_acc_z = 0.0f
+  };
+
+
   struct FloatVect3 V_inf;
   struct FloatVect3 V_drone;
   struct FloatQuat q;
@@ -154,6 +184,15 @@
   Butterworth2LowPass thrust_filt;
 
   float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
+
+
+  float log_pos[3] = {0.0f};
+  float log_vel[3] = {0.0f};
+  float log_acc[3] = {0.0f};
+  float log_ref_pos[3] = {0.0f};
+  float log_ref_vel[3] = {0.0f};
+  float log_ref_acc[3] = {0.0f};
+  float log_gains[2] = {0.0f};
 
 
 //
@@ -259,6 +298,7 @@
   // void print_matrix(float** ptr,int m, int n);
   // void print_row(float* ptr,int m);
 //
+
 
 //Guidance Module
   void guidance_h_module_init(void)
@@ -404,6 +444,14 @@
     meas_acc.y = stateGetAccelNed_f()->y;
     meas_acc.z = stateGetAccelNed_f()->z;
 
+
+
+
+    aerolog.qi = q.qi;
+    aerolog.qx = q.qx;
+    aerolog.qy = q.qy;
+    aerolog.qz = q.qz;
+
     // meas_acc.x = filt_accel_ned[0].o[0];
     // meas_acc.y = filt_accel_ned[1].o[0];
     // meas_acc.z = filt_accel_ned[2].o[0];
@@ -496,6 +544,10 @@
 
     traj_sec.vel_max = varset.max_vel; 
     traj_sec.acc_max = varset.max_acc;
+
+    aerolog.max_vel = varset.max_vel;
+    aerolog.max_acc = varset.max_acc;
+
   }
 
   void CalcNewTrajectory(){
@@ -546,6 +598,8 @@
 
   void UpdateTrajectory(){
     traj.t = t;
+    aerolog.t = t;
+    aerolog.mode = varset.mode;
 
     traj.pos.x =  0.0f;
     traj.pos.y =  0.0f;
@@ -652,6 +706,33 @@
       traj.acc.z = 0.0f;
     }
 
+
+
+    aerolog.ref_pos_x = traj.pos.x;
+    aerolog.ref_pos_y = traj.pos.y;
+    aerolog.ref_pos_z = traj.pos.z;
+    aerolog.ref_vel_x = traj.vel.x;
+    aerolog.ref_vel_y = traj.vel.y;
+    aerolog.ref_vel_z = traj.vel.z;
+    aerolog.ref_acc_x = traj.acc.x;
+    aerolog.ref_acc_y = traj.acc.y;
+    aerolog.ref_acc_z = traj.acc.z;
+
+    log_ref_pos[0] = aerolog.ref_pos_x;
+    log_ref_pos[1] = aerolog.ref_pos_y;
+    log_ref_pos[2] = aerolog.ref_pos_z;
+    log_ref_vel[0] = aerolog.ref_vel_x;
+    log_ref_vel[1] = aerolog.ref_vel_y;
+    log_ref_vel[2] = aerolog.ref_vel_z;
+    log_ref_acc[0] = aerolog.ref_acc_x;
+    log_ref_acc[1] = aerolog.ref_acc_y;
+    log_ref_acc[2] = aerolog.ref_acc_z;
+
+    #ifdef SITL
+    printf("\npos: %e %e %e",(int32_t)1000 * aerolog.pos_x, (int32_t)1000 * aerolog.pos_y, (int32_t)1000 * aerolog.pos_z);
+    #endif
+
+
     // //printf("\nPos: %f \t %f \t %f",traj.pos.x,traj.pos.y,traj.pos.z);
     if(traj_sec.type == 1){
     //printf("\nPos: %f \tVel: %f \tAcc: %f \ttime: %f \ttimeline: %f -> %f -> %f -> %f",new_pos,new_vel,new_acc,t,traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
@@ -707,7 +788,30 @@
     ctrl_lin.acc.x = stateGetAccelNed_f()->x;
     ctrl_lin.acc.y = stateGetAccelNed_f()->y;
     ctrl_lin.acc.z = stateGetAccelNed_f()->z;
-    
+
+    aerolog.pos_x = stateGetPositionNed_f()->x;
+    aerolog.pos_y = stateGetPositionNed_f()->y;
+    aerolog.pos_z = stateGetPositionNed_f()->z;
+    aerolog.vel_x = stateGetSpeedNed_f()->x;
+    aerolog.vel_y = stateGetSpeedNed_f()->y;
+    aerolog.vel_z = stateGetSpeedNed_f()->z;
+    aerolog.acc_x = stateGetAccelNed_f()->x;
+    aerolog.acc_y = stateGetAccelNed_f()->y;
+    aerolog.acc_z = stateGetAccelNed_f()->z;
+
+    log_pos[0] = stateGetPositionNed_f()->x;
+    log_pos[1] = stateGetPositionNed_f()->y;
+    log_pos[2] = stateGetPositionNed_f()->z;
+    log_vel[0] = stateGetSpeedNed_f()->x;
+    log_vel[1] = stateGetSpeedNed_f()->y;
+    log_vel[2] = stateGetSpeedNed_f()->z;
+    log_acc[0] = stateGetAccelNed_f()->x;
+    log_acc[1] = stateGetAccelNed_f()->y;
+    log_acc[2] = stateGetAccelNed_f()->z;
+
+    log_gains[0] = varset.p_gain;
+    log_gains[1] = varset.d_gain;
+
     ////printf("\nPos: %f \t %f \t %f",ctrl_lin.pos.x,ctrl_lin.pos.y,ctrl_lin.pos.z);
     ////printf("\nVel: %f \t %f \t %f",ctrl_lin.vel.x,ctrl_lin.vel.y,ctrl_lin.vel.z);
     ////printf("\nAcc: %f \t %f \t %f",ctrl_lin.acc.x,ctrl_lin.acc.y,ctrl_lin.acc.z);

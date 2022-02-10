@@ -65,6 +65,37 @@ struct AerobaticVariableSettings {
     float mode;       // 0 = hover, 1 = trajectory, 2 = impulse
 };
 
+struct GuidanceLogStruct {
+    float t;
+    float mode;
+    float max_vel;
+    float max_acc;
+    float qi;
+    float qx;
+    float qy;
+    float qz;
+    float pos_x;
+    float pos_y;
+    float pos_z;
+    float vel_x;
+    float vel_y;
+    float vel_z;
+    float acc_x;
+    float acc_y;
+    float acc_z;
+    float ref_pos_x;
+    float ref_pos_y;
+    float ref_pos_z;
+    float ref_vel_x;
+    float ref_vel_y;
+    float ref_vel_z;
+    float ref_acc_x;
+    float ref_acc_y;
+    float ref_acc_z;
+
+};
+
+extern struct GuidanceLogStruct aerolog;
 extern struct AerobaticVariableSettings varset;
 
 extern float guidance_aerobatic_indi_gain;

@@ -7,6 +7,7 @@
         #include "subsystems/radio_control.h"
         #include "firmwares/rotorcraft/guidance/guidance_h.h"
         #include "autopilot.h"
+
     </header>
 
     <waypoints>

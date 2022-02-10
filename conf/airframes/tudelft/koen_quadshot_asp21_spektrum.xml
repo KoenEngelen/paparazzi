@@ -221,6 +221,14 @@
     <define name="PSI_DDGAIN"   value=" 0"/>
   </section>
 
+  <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
+      <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
+      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>
+      <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
+      <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>
+      <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
+  </section>
+
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
     <!-- setpoints -->
     <define name="SP_MAX_PHI" value="60." unit="deg"/>
@@ -355,7 +363,7 @@
 
 
   <firmware name="rotorcraft">
-    <target name="ap" board="lisa_m_2.0">
+    <target name="ap" board="lisa_mx_2.1">
 
     <module name="radio_control" type="sbus">
       <!--<configure name="RADIO_CONTROL_PPM_PIN" value="UART1_RX"/> -->

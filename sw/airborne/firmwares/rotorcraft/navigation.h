@@ -35,6 +35,7 @@
 #include "subsystems/navigation/common_flight_plan.h"
 #include "autopilot.h"
 
+
 #include "firmwares/rotorcraft/guidance/guidance_h.h"
 
 /** default approaching_time for a wp */
@@ -156,6 +157,7 @@ static inline void NavResurrect(void)
   if (autopilot_get_mode() == AP_MODE_NAV) { autopilot_set_motors_on(TRUE); }
 }
 
+
 static inline void revertAerobatic(void){
   autopilot_static_set_mode(AP_MODE_NAV);
   guidance_h_mode_changed(GUIDANCE_H_MODE_NAV);
@@ -165,7 +167,6 @@ static inline void setAerobatic(void){
     // guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
     guidance_h_mode_changed(8);
 }
-
 
 #define NavSetManual nav_set_manual
 #define NavSetFailsafe nav_set_failsafe
