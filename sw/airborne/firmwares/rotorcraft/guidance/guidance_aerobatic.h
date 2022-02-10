@@ -48,11 +48,24 @@
  */
 
 //#ifndef GUIDANCE_MODULE_H_
+#ifndef GUIDANCE_AEROBATIC_H_
+#define GUIDANCE_AEROBATIC_H_
+
 #define GUIDANCE_MODULE_H_
 
 //#include "generated/modules.h"
 #include "math/pprz_algebra_int.h"
 #include "math/pprz_matrix_decomp_float.h"
+
+struct AerobaticVariableSettings {
+    float max_vel;  //maximum velocity used on trajectory
+    float max_acc;  //maximum acceleration used on trajectory
+    float p_gain;   //gain used on position control
+    float d_gain;   //gain used on velocity control
+    float mode;       // 0 = hover, 1 = trajectory, 2 = impulse
+};
+
+extern struct AerobaticVariableSettings varset;
 
 extern float guidance_aerobatic_indi_gain;
 
@@ -62,4 +75,4 @@ void guidance_aerobatic_run(void);
 
 //#endif /* GUIDANCE_MODULE_H_ */
 
-
+#endif 
