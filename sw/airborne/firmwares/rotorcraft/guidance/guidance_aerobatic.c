@@ -327,7 +327,6 @@
   // ////printf("thrust filt: %f", thrust_filt.o[0]);
   
   // test_SVD(); //This function works in init
-  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_LOG, send_aerobatic_log);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
 //
