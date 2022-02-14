@@ -118,6 +118,11 @@ extern void guidance_h_run(bool in_flight);
 extern void guidance_h_hover_enter(void);
 extern void guidance_h_nav_enter(void);
 
+extern void guidance_h_module_init(void);
+extern void guidance_h_module_enter(void);
+extern void guidance_h_module_read_rc(void);
+extern void guidance_h_module_run(bool in_flight);
+
 /** Set horizontal guidance from NAV and run control loop
  */
 extern void guidance_h_from_nav(bool in_flight);

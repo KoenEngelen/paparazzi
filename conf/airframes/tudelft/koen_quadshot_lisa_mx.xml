@@ -1,8 +1,28 @@
 <!-- this is a quadshot vehicle equiped with Lisa/m2.0 and an aspirin 2.1
      More information on the Quadshot can be found at transition-robotics.com -->
 
-<airframe name="quadshot lisa mx">
-  <description> This is a quadshot vehicle equiped with Lisa mx v2.1 and an aspirin 2.1 More information on the Quadshot can be found at transition-robotics.com </description>
+<airframe name="Quadshot Lisa MX v2.1">
+  <description>
+    Transition robotics Quadshot (https://www.openuas.org/airframes/)
+    + Airframe to validate all onboard functionally...
+      Quadshot
+        + Autopilot:   Lisa MX 2.1
+        + IMU:         Aspirin 2.2
+        + Motors:      Default Motors
+        + Actuators:   Default ESCs
+        + GPS:         uBlox 6 GNSS helix antenna
+        + TELEMETRY:   XBee Pro S1
+        + CURRENT:     V/A sensing module
+        + RC RX:       OpenRXSR on SBus port
+        + AGL ranging: TFMini the IIC(I2C) version
+
+    NOTES:
+        + Plz calibrate your magnetometer, Yes, you too ;), unit UKF auto works...
+        + And callibrate your Accelometer also...
+        + Uses PAPARAZZI "standard" radio channel settings
+        + Oh yeah, it is yellow :)
+  </description>
+
   <servos driver="Pwm">
     <servo name="A1" no="0" min="1000" neutral="1100" max="1600"/>
     <servo name="A2" no="1" min="1000" neutral="1100" max="1600"/>
@@ -69,7 +89,6 @@
     <define name="YAW_COEF"    value="{ -256,  256,  128, -128 }"/>
     <define name="THRUST_COEF" value="{  256,  256,  256,  256 }"/>
   </section>
-
   <!-- If you got a caliberation XML document from your IMU supplier, import this in the IMU section -->
   <!-- Note that is better to have *no* caliberation file at all, than a one with incorrect caliberation values.
        The default factory values are most of the time perfectly acceptable, so by default we will not use the caliberation file -->
@@ -261,21 +280,15 @@
     <define name="ADAPTIVE_INDI" value="FALSE"/>
   </section>
 
-  <modules main_freq="512">
-    <module name="gps" type="ubx_ucenter"/>
+  <!-- <modules main_freq="512"> -->
+    <!-- <module name="gps" type="ubx_ucenter"/> -->
     <!-- The the led_safety_status module will make the Quadshot LEDs blink in certain patterns when there are safety violations-->
-    <load name="led_safety_status.xml">
-          <define name="USE_LED_BODY" value="1"/>
-          <define name="SAFETY_WARNING_LED" value="BODY"/>
-    </load>
-    <load name="sonar_adc.xml">
-      <configure name="ADC_SONAR" value="ADC_2"/>
-      <!-- <define name="USE_SONAR"/> -->
-      <define name="SENSOR_SYNC_SEND_SONAR"/>
-      <define name="SONAR_SCALE" value="0.0032"/>
-    </load>
-    <load name="sys_mon"/>
-    <module name="logger_spi_link"/>
+    <!-- <load name="led_safety_status.xml"> -->
+          <!-- <define name="USE_LED_BODY" value="1"/> -->
+          <!-- <define name="SAFETY_WARNING_LED" value="BODY"/> -->
+    <!-- </load> -->
+    <!-- <load name="sys_mon"/> -->
+    <!-- <module name="logger_spi_link"/> -->
     <!-- <load name="AOA_adc.xml"> -->
       <!-- <configure name="ADC_AOA" value="ADC_2"/> -->
       <!-- <define name="AOA_OFFSET" value="0"/> -->
@@ -286,7 +299,7 @@
     <!-- <load name="airspeed_ets.xml"> -->
       <!-- <define name="AIRSPEED_ETS_SYNC_SEND"/> -->
     <!-- </load> -->
-  </modules>
+  <!-- </modules> -->
 
   <firmware name="rotorcraft">
     <target name="ap" board="lisa_mx_2.1">
@@ -332,6 +345,13 @@
       <define name="AHRS_USE_GPS_HEADING" value="0"/>
     </module>
     
+    <!-- Modules section (depricated modules main_frequency) -->
+    <module name="gps" type="ubx_ucenter"/>
+    <load name="led_safety_status.xml">
+          <define name="USE_LED_BODY" value="1"/>
+          <define name="SAFETY_WARNING_LED" value="BODY"/>
+    </load>
+
     <!-- <module name="ins"/> -->
     <module name="ins"  type="ekf2"/>
     <module name="airspeed_ms45xx_i2c">
@@ -352,5 +372,7 @@
     </module>
     <module name="sys_id_chirp"/>
     <module name="sys_mon"/>
+
   </firmware>
+
 </airframe>

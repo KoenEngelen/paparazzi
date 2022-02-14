@@ -113,6 +113,10 @@ extern void guidance_v_notify_in_flight(bool in_flight);
 extern void guidance_v_run(bool in_flight);
 extern void guidance_v_z_enter(void);
 
+extern void guidance_v_module_init(void);
+extern void guidance_v_module_enter(void);
+extern void guidance_v_module_run(bool in_flight);
+
 /** Set guidance ref parameters
  */
 extern void guidance_v_set_ref(int32_t pos, int32_t speed, int32_t accel);
