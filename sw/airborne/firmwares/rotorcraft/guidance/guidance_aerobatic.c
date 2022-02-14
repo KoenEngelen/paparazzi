@@ -130,7 +130,7 @@
   #define ROWS_GUIDANCE 3 //rows
   #define COLS_GUIDANCE 3 //columns
 
-  float Weight[COLS_GUIDANCE] = {1, 1 , 1 , 1};
+  float Weight[COLS_GUIDANCE] = {1};
 
   float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
 
@@ -352,6 +352,17 @@
                          &varset.d_gain,
                          &varset.mode);
  }
+
+  static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
+   pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
+                         3,&log_pos[0],
+                         3,&log_vel[0],
+                         3,&log_acc[0],
+                         3,&log_ref_pos[0],
+                         3,&log_ref_vel[0],
+                         3,&log_ref_acc[0],
+                         2,&log_gains[0]);
+ }
 //
 
 // Initialize function
@@ -367,6 +378,7 @@
   // ////printf("thrust filt: %f", thrust_filt.o[0]);
   
   // test_SVD(); //This function works in init
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_LOG, send_aerobatic_log);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
 //
@@ -728,9 +740,9 @@
     log_ref_acc[1] = aerolog.ref_acc_y;
     log_ref_acc[2] = aerolog.ref_acc_z;
 
-    #ifdef SITL
-    printf("\npos: %e %e %e",(int32_t)1000 * aerolog.pos_x, (int32_t)1000 * aerolog.pos_y, (int32_t)1000 * aerolog.pos_z);
-    #endif
+    // #ifdef SITL
+    // printf("\npos: %e %e %e",(int32_t)1000 * aerolog.pos_x, (int32_t)1000 * aerolog.pos_y, (int32_t)1000 * aerolog.pos_z);
+    // #endif
 
 
     // //printf("\nPos: %f \t %f \t %f",traj.pos.x,traj.pos.y,traj.pos.z);

@@ -21,6 +21,7 @@
  */
 
 #include "high_speed_logger_spi_link.h"
+#include "guidance/guidance_aerobatic.h"
 #include "stabilization.h"
 #include "subsystems/imu.h"
 #include "modules/sensors/airspeed_ms45xx_i2c.h"
@@ -70,30 +71,36 @@ void high_speed_logger_spi_link_periodic(void)
 
     high_speed_logger_spi_link_ready = false;
     write_extension = true;
-    
-    high_speed_logger_spi_link_data.gyro_p      = imu.gyro_unscaled.p;
-    high_speed_logger_spi_link_data.gyro_q      = imu.gyro_unscaled.q;
-    high_speed_logger_spi_link_data.gyro_r      = imu.gyro_unscaled.r;
-    
-    high_speed_logger_spi_link_data.acc_x       = imu.accel_unscaled.x;
-    high_speed_logger_spi_link_data.acc_y       = imu.accel_unscaled.y;
-    high_speed_logger_spi_link_data.acc_z       = imu.accel_unscaled.z;
-    
-    // high_speed_logger_spi_link_data.mag_x       = imu.mag_unscaled.x;
-    // high_speed_logger_spi_link_data.mag_y       = imu.mag_unscaled.y;
-    // high_speed_logger_spi_link_data.mag_z       = imu.mag_unscaled.z;
 
-    high_speed_logger_spi_link_data.qi          = stateGetNedToBodyQuat_i()->qi;
-    high_speed_logger_spi_link_data.qx          = stateGetNedToBodyQuat_i()->qx;
-    high_speed_logger_spi_link_data.qy          = stateGetNedToBodyQuat_i()->qy;
-    high_speed_logger_spi_link_data.qz          = stateGetNedToBodyQuat_i()->qz;
+    //return correct
+    high_speed_logger_spi_link_data.qi = (int32_t)1000 * aerolog.qi;
+    high_speed_logger_spi_link_data.qx = (int32_t)1000 * aerolog.qx;
+    high_speed_logger_spi_link_data.qy = (int32_t)1000 * aerolog.qy;
+    high_speed_logger_spi_link_data.qz = (int32_t)1000 * aerolog.qz;
+
+    //return 0
+    high_speed_logger_spi_link_data.ax = (int32_t)1000 * aerolog.pos_x;
+    high_speed_logger_spi_link_data.ay = (int32_t)1000 * aerolog.pos_y;
+    high_speed_logger_spi_link_data.az = (int32_t)1000 * aerolog.pos_z;
     
-    high_speed_logger_spi_link_data.pressure    = (int32_t)1000 * ms45xx.pressure;
-    high_speed_logger_spi_link_data.temperature = (int32_t)1000 * ms45xx.temperature;
-    high_speed_logger_spi_link_data.airspeed    = (int32_t)1000 * ms45xx.airspeed;
+    // #ifdef SITL
+    // printf("\n\nLOGPOS: %e %e %e\n", high_speed_logger_spi_link_data.ax,high_speed_logger_spi_link_data.ay,high_speed_logger_spi_link_data.az);
+    // printf("\npos: %e %e %e",(int32_t)1000* aerolog.pos_x, (int32_t)1000*aerolog.pos_y, (int32_t)1000*aerolog.pos_z);
+    // #endif
+
+    //return 0
+    high_speed_logger_spi_link_data.bx = (int32_t)1000 * aerolog.vel_x;
+    high_speed_logger_spi_link_data.by = (int32_t)1000 * aerolog.vel_y;
+    high_speed_logger_spi_link_data.bz = (int32_t)1000 * aerolog.vel_z;
+
+    //return 0
+    high_speed_logger_spi_link_data.cx = (int32_t)1000 * aerolog.acc_x;
+    high_speed_logger_spi_link_data.cy = (int32_t)1000 * aerolog.acc_y;
+    high_speed_logger_spi_link_data.cz = (int32_t)1000 * aerolog.acc_z;
     
-    high_speed_logger_spi_link_data.angle       = (int32_t)1000 * aoa_adc.angle;
-    high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
+    //return correct
+    high_speed_logger_spi_link_data.dx = (int32_t)1000 * aerolog.t;
+    high_speed_logger_spi_link_data.dy = (int32_t)1000 * aerolog.mode;
 
   }
   else if(high_speed_logger_spi_link_ready && write_extension){
@@ -102,26 +109,31 @@ void high_speed_logger_spi_link_periodic(void)
 
     high_speed_logger_spi_link_ready = false;
     write_extension = false;
-    
-    high_speed_logger_spi_link_data.gyro_p      = imu.gyro_unscaled.p;
-    high_speed_logger_spi_link_data.gyro_q      = imu.gyro_unscaled.q;
-    high_speed_logger_spi_link_data.gyro_r      = imu.gyro_unscaled.r;
-    
-    high_speed_logger_spi_link_data.acc_x       = imu.accel_unscaled.x;
-    high_speed_logger_spi_link_data.acc_y       = imu.accel_unscaled.y;
-    high_speed_logger_spi_link_data.acc_z       = imu.accel_unscaled.z;
 
-    high_speed_logger_spi_link_data.qi          = stabilization_cmd[COMMAND_ROLL];
-    high_speed_logger_spi_link_data.qx          = stabilization_cmd[COMMAND_PITCH];
-    high_speed_logger_spi_link_data.qy          = stabilization_cmd[COMMAND_YAW];
-    high_speed_logger_spi_link_data.qz          = stabilization_cmd[COMMAND_THRUST];
+    //return 0
+    high_speed_logger_spi_link_data.qi = stabilization_cmd[COMMAND_ROLL];
+    high_speed_logger_spi_link_data.qx = stabilization_cmd[COMMAND_PITCH];
+    high_speed_logger_spi_link_data.qy = stabilization_cmd[COMMAND_YAW];
+    high_speed_logger_spi_link_data.qz = stabilization_cmd[COMMAND_THRUST];
     
-    high_speed_logger_spi_link_data.pressure    = (int32_t)1000 * ms45xx.pressure;
-    high_speed_logger_spi_link_data.temperature = (int32_t)1000 * ms45xx.temperature;
-    high_speed_logger_spi_link_data.airspeed    = (int32_t)1000 * ms45xx.airspeed;
+    //return correct
+    high_speed_logger_spi_link_data.ax = (int32_t)1000 * aerolog.ref_pos_x;
+    high_speed_logger_spi_link_data.ay = (int32_t)1000 * aerolog.ref_pos_y;
+    high_speed_logger_spi_link_data.az = (int32_t)1000 * aerolog.ref_pos_z;
+    
+    //return 0 (which it should be)
+    high_speed_logger_spi_link_data.bx = (int32_t)1000 * aerolog.ref_vel_x;
+    high_speed_logger_spi_link_data.by = (int32_t)1000 * aerolog.ref_vel_y;
+    high_speed_logger_spi_link_data.bz = (int32_t)1000 * aerolog.ref_vel_z;
+    
+    //return 0 (which it should be)
+    high_speed_logger_spi_link_data.cx = (int32_t)1000 * aerolog.ref_acc_x;
+    high_speed_logger_spi_link_data.cy = (int32_t)1000 * aerolog.ref_acc_y;
+    high_speed_logger_spi_link_data.cz = (int32_t)1000 * aerolog.ref_acc_z;
 
-    high_speed_logger_spi_link_data.angle       = (int32_t)1000 * aoa_adc.angle;
-    high_speed_logger_spi_link_data.angle_raw   = aoa_adc.raw;
+    //return correct
+    high_speed_logger_spi_link_data.dx = (int32_t)1000 * aerolog.max_vel;
+    high_speed_logger_spi_link_data.dy = (int32_t)1000 * aerolog.max_acc;
 
     
   }
