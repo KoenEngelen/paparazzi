@@ -188,25 +188,25 @@
   float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
 
 
-  float log_pos[3] = {0.0f};
-  float log_vel[3] = {0.0f};
-  float log_acc[3] = {0.0f};
-  float log_ref_pos[3] = {0.0f};
-  float log_ref_vel[3] = {0.0f};
-  float log_ref_acc[3] = {0.0f};
-  float log_gains[2] = {0.0f};
+  float log_pos[3] = {0};
+  float log_vel[3] = {0};
+  float log_acc[3] = {0};
+  float log_ref_pos[3] = {0};
+  float log_ref_vel[3] = {0};
+  float log_ref_acc[3] = {0};
+  float log_gains[2] = {0};
 
 
 //
 
 //Declare all functions
-  extern void guidance_h_module_init(void);
-  extern void guidance_h_module_enter(void);
-  extern void guidance_h_module_read_rc(void);
-  extern void guidance_h_module_run(bool in_flight);
-  extern void guidance_v_module_init(void);
-  extern void guidance_v_module_enter(void);
-  extern void guidance_v_module_run(bool in_flight);
+  // extern void guidance_h_module_init(void);
+  // extern void guidance_h_module_enter(void);
+  // extern void guidance_h_module_read_rc(void);
+  // extern void guidance_h_module_run(bool in_flight);
+  // extern void guidance_v_module_init(void);
+  // extern void guidance_v_module_enter(void);
+  // extern void guidance_v_module_run(bool in_flight);
 
   // void guidance_h_module_init(void);
   // void guidance_h_module_enter(void);
@@ -215,10 +215,10 @@
 
 
 
-  void guidance_aerobatic_init(void);
+  // void guidance_aerobatic_init(void);
   void guidance_aerobatic_enter(void);
   void guidance_aerobatic_read_rc(void);
-  void guidance_aerobatic_run(void);
+  // void guidance_aerobatic_run(void);
 
 
   void filter_init(void);
@@ -331,35 +331,37 @@
     guidance_aerobatic_run();
   }
 
-  void guidance_v_module_init(void)
-  {
-    // initialization of your custom vertical controller goes here
-  }
+    void guidance_v_module_init(void)
+    {
+      // initialization of your custom vertical controller goes here
+    }
 
-  // Implement own Vertical loops
-  void guidance_v_module_enter(void)
-  {
-    // your code that should be executed when entering this vertical mode goes here
-  }
+    // Implement own Vertical loops
+    void guidance_v_module_enter(void)
+    {
+      // your code that should be executed when entering this vertical mode goes here
+    }
 
-  void guidance_v_module_run(UNUSED bool in_flight)
-  {
-    // your vertical controller goes here
-  }
+    void guidance_v_module_run(UNUSED bool in_flight)
+    {
+      // your vertical controller goes here
+    }
+  
+
 //
 
 //Messages
- static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev){
-   pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
+  static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev){
+    pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
                          &varset.max_vel,
                          &varset.max_acc,
                          &varset.p_gain,
                          &varset.d_gain,
                          &varset.mode);
- }
+  }
 
   static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
-   pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
+    pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
                          3,&log_pos[0],
                          3,&log_vel[0],
                          3,&log_acc[0],
@@ -367,7 +369,7 @@
                          3,&log_ref_vel[0],
                          3,&log_ref_acc[0],
                          2,&log_gains[0]);
- }
+  }
 //
 
 // Initialize function
@@ -654,12 +656,14 @@
       float new_vel;
       float new_acc;
 
+      float i = 0;
+
       new_pos = 0.0f;
       new_vel = 0.0f;
       new_acc = 0.0f;
       if(traj_sec.type == 0 ){
         if (t >= traj_sec.t_beg && t <= traj_sec.t_end){
-          float i = (t-traj_sec.t_beg)/(traj_sec.t_end-traj_sec.t_beg);
+          i = (t-traj_sec.t_beg)/(traj_sec.t_end-traj_sec.t_beg);
           new_pos = traj_sec.delta_pos * ( i - sinf(2*M_PI*i)/(2*M_PI) );
           new_vel = traj_sec.delta_pos * ( 1 - cosf(2*M_PI*i) ) / (traj_sec.t_end-traj_sec.t_beg);             ;
           new_acc = traj_sec.delta_pos * (2*M_PI) * sinf(2*M_PI*i) / pow((traj_sec.t_end-traj_sec.t_beg),2);
@@ -670,7 +674,7 @@
         }
       }else if(traj_sec.type == 1 ){
         if (t >= traj_sec.t_beg && t <= traj_sec.t_trans_beg){
-          float i = (t-traj_sec.t_beg)/(traj_sec.t_trans_beg-traj_sec.t_beg);
+          i = (t-traj_sec.t_beg)/(traj_sec.t_trans_beg-traj_sec.t_beg);
           new_pos = -traj_sec.vel_max*(traj_sec.t_trans_beg-traj_sec.t_beg)/(2*M_PI)*sinf(M_PI*i) + traj_sec.vel_max*(t-traj_sec.t_beg)/2.0;
           new_vel = traj_sec.vel_max/2.0*(1.0-cosf(M_PI*i));
           new_acc = M_PI*traj_sec.vel_max/(2.0*(traj_sec.t_trans_beg-traj_sec.t_beg))*sinf(M_PI*i);
@@ -680,7 +684,7 @@
           new_vel = traj_sec.vel_max;
           new_acc = 0.0f;
         } else if (t >= traj_sec.t_trans_end && t <= traj_sec.t_end){
-          float i = (t-traj_sec.t_trans_end)/(traj_sec.t_end-traj_sec.t_trans_end);
+          i = (t-traj_sec.t_trans_end)/(traj_sec.t_end-traj_sec.t_trans_end);
           new_pos = +traj_sec.vel_max*(traj_sec.t_trans_beg-traj_sec.t_beg)/(2*M_PI)*sinf(M_PI*i) - traj_sec.vel_max*(t-traj_sec.t_trans_end)/2.0 + traj_sec.vel_max * (t-traj_sec.t_trans_end) + traj_sec.delta_pos - traj_sec.d_x_trans;
           new_vel = -traj_sec.vel_max/2.0*(1.0-cosf(M_PI*i))+traj_sec.vel_max;
           new_acc = -M_PI*traj_sec.vel_max/(2.0*(traj_sec.t_end-traj_sec.t_trans_end))*sinf(M_PI*i);
@@ -900,7 +904,7 @@
     float tol = max * FLT_EPSILON;
 
     // get: WGt = Weight * G_transposed
-    int i,j;
+    int i,j,k;
     for (i=0; i<COLS_GUIDANCE; i++){
       for (j=0; j<ROWS_GUIDANCE; j++){
         WGt[i][j] = Weight[i] * G[j][i];
@@ -909,9 +913,9 @@
 
     // get: GWGt = G * Weight * G_transposed
     sum = 0;
-    for (int i = 0; i < ROWS_GUIDANCE; i++){
-      for (int j = 0; j < ROWS_GUIDANCE; j++){
-        for (int k = 0; k < COLS_GUIDANCE; k++){
+    for (i = 0; i < ROWS_GUIDANCE; i++){
+      for (j = 0; j < ROWS_GUIDANCE; j++){
+        for (k = 0; k < COLS_GUIDANCE; k++){
           sum =  sum + G[i][k] * WGt[k][j];
         }
         GWGt[i][j] = sum;
@@ -929,8 +933,8 @@
     // get: WiUv =  W_inverse * U * dv
     sum = 0;
     float tmp_dv;
-    for (int i = 0; i < ROWS_GUIDANCE; i++){
-      for (int j = 0; j < ROWS_GUIDANCE; j++){
+    for (i = 0; i < ROWS_GUIDANCE; i++){
+      for (j = 0; j < ROWS_GUIDANCE; j++){
         if (j == 0){
             tmp_dv = dv.x;
         } else if (j == 1){
@@ -952,8 +956,8 @@
 
     // get: VWiUv = V * (W_inverse * U * dv) = V * WiUv
     sum = 0;
-    for (int i = 0; i < ROWS_GUIDANCE; i++){
-      for (int j = 0; j < ROWS_GUIDANCE; j++){
+    for (i = 0; i < ROWS_GUIDANCE; i++){
+      for (j = 0; j < ROWS_GUIDANCE; j++){
         sum = sum + svd_V[i][j] * WiUv[j];
       }
       VWiUv[i] = sum;
@@ -961,8 +965,8 @@
     }
     // get: du = (Weight * G_transposed) * (V * (W_inverse * U * dv)) = WGt * VWiUv
     sum = 0;
-    for (int i = 0; i < COLS_GUIDANCE; i++){
-      for (int j = 0; j < ROWS_GUIDANCE; j++){
+    for (i = 0; i < COLS_GUIDANCE; i++){
+      for (j = 0; j < ROWS_GUIDANCE; j++){
         sum = sum + WGt[i][j] * VWiUv[j];
       }
       du[i] = sum;
@@ -1561,7 +1565,7 @@
 
   /*
   * function res = a_L_wing_z(V,phi)
-  */
+  */ 
   float a_L_wing_z(void)
   {
     float phi_rad;
