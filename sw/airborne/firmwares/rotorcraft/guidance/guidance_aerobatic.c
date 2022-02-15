@@ -132,7 +132,7 @@
   #define ROWS_GUIDANCE 3 //rows
   #define COLS_GUIDANCE 3 //columns
 
-  float Weight[COLS_GUIDANCE] = {1};
+  float Weight[COLS_GUIDANCE] = {1, 1 ,1};
 
   float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
 
