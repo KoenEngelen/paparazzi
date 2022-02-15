@@ -26,7 +26,6 @@
     RENAME servos
     Reorganize AC order
     Do battery set
-
   </description>
 
   <firmware name="rotorcraft">

@@ -108,6 +108,8 @@
   struct FloatVect3 V_drone;
   struct FloatQuat q;
 
+  struct FloatVect3 V_temp;
+
 
   struct FloatVect3 Yaw_proj;
   struct FloatVect3 Yaw_ref;
@@ -130,7 +132,7 @@
   #define ROWS_GUIDANCE 3 //rows
   #define COLS_GUIDANCE 3 //columns
 
-  float Weight[COLS_GUIDANCE] = {1, 1 , 1 , 1};
+  float Weight[COLS_GUIDANCE] = {1};
 
   float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
 
@@ -297,6 +299,9 @@
   void print_states(void);
   // void print_matrix(float** ptr,int m, int n);
   // void print_row(float* ptr,int m);
+
+  void CalcNewTrajectory(void);
+  void TrajectoryScenario(void);
 //
 
 
@@ -352,6 +357,17 @@
                          &varset.d_gain,
                          &varset.mode);
  }
+
+  static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
+   pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
+                         3,&log_pos[0],
+                         3,&log_vel[0],
+                         3,&log_acc[0],
+                         3,&log_ref_pos[0],
+                         3,&log_ref_vel[0],
+                         3,&log_ref_acc[0],
+                         2,&log_gains[0]);
+ }
 //
 
 // Initialize function
@@ -367,6 +383,7 @@
   // ////printf("thrust filt: %f", thrust_filt.o[0]);
   
   // test_SVD(); //This function works in init
+  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_LOG, send_aerobatic_log);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
 //
@@ -636,6 +653,10 @@
       float new_pos;
       float new_vel;
       float new_acc;
+
+      new_pos = 0.0f;
+      new_vel = 0.0f;
+      new_acc = 0.0f;
       if(traj_sec.type == 0 ){
         if (t >= traj_sec.t_beg && t <= traj_sec.t_end){
           float i = (t-traj_sec.t_beg)/(traj_sec.t_end-traj_sec.t_beg);
@@ -644,10 +665,6 @@
           new_acc = traj_sec.delta_pos * (2*M_PI) * sinf(2*M_PI*i) / pow((traj_sec.t_end-traj_sec.t_beg),2);
         }else if(t > traj_sec.t_end){
           new_pos = traj_sec.delta_pos;
-          new_vel = 0.0f;
-          new_acc = 0.0f;
-        } else {
-          new_pos = 0.0f;
           new_vel = 0.0f;
           new_acc = 0.0f;
         }
@@ -670,10 +687,6 @@
 
         } else if (t >= traj_sec.t_end){
           new_pos = traj_sec.delta_pos;
-          new_vel = 0.0f;
-          new_acc = 0.0f;
-        } else {
-          new_pos = 0.0f;
           new_vel = 0.0f;
           new_acc = 0.0f;
         }
@@ -728,9 +741,9 @@
     log_ref_acc[1] = aerolog.ref_acc_y;
     log_ref_acc[2] = aerolog.ref_acc_z;
 
-    #ifdef SITL
-    printf("\npos: %e %e %e",(int32_t)1000 * aerolog.pos_x, (int32_t)1000 * aerolog.pos_y, (int32_t)1000 * aerolog.pos_z);
-    #endif
+    // #ifdef SITL
+    // printf("\npos: %e %e %e",(int32_t)1000 * aerolog.pos_x, (int32_t)1000 * aerolog.pos_y, (int32_t)1000 * aerolog.pos_z);
+    // #endif
 
 
     // //printf("\nPos: %f \t %f \t %f",traj.pos.x,traj.pos.y,traj.pos.z);
@@ -827,26 +840,28 @@
     ctrl_lin.cmdacc.z = ctrl_lin.cmdacc.z - meas_acc.z;
 
    
-    // #ifdef SITL
-    // printf("\nREF Pos: %f, %f, %f",(traj.pos.x),(traj.pos.y),(traj.pos.z));
-    // printf("\nREF Vel: %f, %f, %f",(traj.vel.x),(traj.vel.y),(traj.vel.z));
-    // printf("\nREF Acc: %f, %f, %f",(traj.acc.x),(traj.acc.y),(traj.acc.z));
-    // printf("\nMEAS Pos: %f, %f, %f",(ctrl_lin.pos.x),(ctrl_lin.pos.y),(ctrl_lin.pos.z));
-    // printf("\nMEAS Vel: %f, %f, %f",(ctrl_lin.vel.x),(ctrl_lin.vel.y),(ctrl_lin.vel.z));
+    #ifdef SITL
+      printf("\nREF Pos: %f, %f, %f",(traj.pos.x),(traj.pos.y),(traj.pos.z));
+      printf("\nREF Vel: %f, %f, %f",(traj.vel.x),(traj.vel.y),(traj.vel.z));
+      printf("\nREF Acc: %f, %f, %f",(traj.acc.x),(traj.acc.y),(traj.acc.z));
+      printf("\nMEAS Pos: %f, %f, %f",(ctrl_lin.pos.x),(ctrl_lin.pos.y),(ctrl_lin.pos.z));
+      printf("\nMEAS Vel: %f, %f, %f",(ctrl_lin.vel.x),(ctrl_lin.vel.y),(ctrl_lin.vel.z));
 
-    // printf("\nTOT  Acc: %f, %f, %f",(ctrl_lin.cmdacc.x+meas_acc.x),(ctrl_lin.cmdacc.y+meas_acc.y),(ctrl_lin.cmdacc.z+meas_acc.z));
-    // printf("\nMEAS Acc: %f, %f, %f",(meas_acc.x),(meas_acc.y),(meas_acc.z));
- 
-    // printf("\nCMD Pos: %f, %f, %f",(traj.pos.x-ctrl_lin.pos.x),(traj.pos.y-ctrl_lin.pos.y),(traj.pos.z-ctrl_lin.pos.z));
-    // printf("\nCMD Vel: %f, %f, %f",(traj.vel.x-ctrl_lin.vel.x),(traj.vel.y-ctrl_lin.vel.y),(traj.vel.z-ctrl_lin.vel.z));
-    // printf("\nCMD  Acc: %f, %f, %f",ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
-    // #endif
+      printf("\nTOT  Acc: %f, %f, %f",(ctrl_lin.cmdacc.x+meas_acc.x),(ctrl_lin.cmdacc.y+meas_acc.y),(ctrl_lin.cmdacc.z+meas_acc.z));
+      printf("\nMEAS Acc: %f, %f, %f",(meas_acc.x),(meas_acc.y),(meas_acc.z));
+  
+      printf("\nCMD Pos: %f, %f, %f",(traj.pos.x-ctrl_lin.pos.x),(traj.pos.y-ctrl_lin.pos.y),(traj.pos.z-ctrl_lin.pos.z));
+      printf("\nCMD Vel: %f, %f, %f",(traj.vel.x-ctrl_lin.vel.x),(traj.vel.y-ctrl_lin.vel.y),(traj.vel.z-ctrl_lin.vel.z));
+      printf("\nCMD  Acc: %f, %f, %f",ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
+    #endif
 
     ////printf("\n\nacc_err:\t%f\t%f\t%f\n", ctrl_lin.cmdacc.x,ctrl_lin.cmdacc.y,ctrl_lin.cmdacc.z);
 
     ////printf("\n\nq:\t%f\t%f\t%f\t%f\n", q.qi,q.qx,q.qy,q.qz);
-
-    float_quat_vmult(&dv, &q, &ctrl_lin.cmdacc);
+    V_temp.x = ctrl_lin.cmdacc.x;
+    V_temp.y = ctrl_lin.cmdacc.y;
+    V_temp.z = ctrl_lin.cmdacc.z;
+    float_quat_vmult(&dv, &q, &V_temp);
 
     ////printf("\n\ndv:\t%f\t%f\t%f\n", dv.x,dv.y,dv.z);
 
@@ -1016,7 +1031,7 @@
     stabilization_cmd[COMMAND_THRUST] = thrust_in;
 
     struct FloatEulers rpy;
-    struct Int32Eulers rpyi;
+    // struct Int32Eulers rpyi;
     struct FloatQuat dq;
     struct FloatQuat q_res = {0};
     struct Int32Quat q_i_res = {0};
@@ -1060,7 +1075,7 @@
 
     float_eulers_of_quat(&rpy, &q_res);
 
-    EULERS_BFP_OF_REAL(rpyi,rpy);
+    // EULERS_BFP_OF_REAL(rpyi,rpy);
 
     QUAT_BFP_OF_REAL(q_i_res, q_res);
     QUAT_BFP_OF_REAL(stab_att_sp_quat, q_res);
