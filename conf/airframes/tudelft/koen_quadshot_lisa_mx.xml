@@ -116,8 +116,8 @@
 
   <section name="AUTOPILOT">
     <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
-    <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
-    <define name="MODE_AUTO2"  value="AP_MODE_NAV"/>
+    <define name="MODE_AUTO1"  value="AP_MODE_NAV"/>
+    <define name="MODE_AUTO2" value="AP_MODE_MODULE"/>
   </section>
 
   <section name="BAT">
@@ -352,8 +352,8 @@
           <define name="SAFETY_WARNING_LED" value="BODY"/>
     </load>
 
-    <!-- <module name="ins"/> -->
-    <module name="ins"  type="ekf2"/>
+    <module name="ins"/>
+    <!-- <module name="ins"  type="ekf2"/> -->
     <module name="airspeed_ms45xx_i2c">
       <define name="MS45XX_I2C_DEV" value="i2c1" />
       <define name="MS45XX_I2C_ADDR" value="0x50" />

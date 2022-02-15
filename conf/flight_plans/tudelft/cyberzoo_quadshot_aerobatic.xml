@@ -7,7 +7,7 @@
         #include "subsystems/radio_control.h"
         #include "firmwares/rotorcraft/guidance/guidance_h.h"
         #include "autopilot.h"
-
+        #include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
     </header>
 
     <waypoints>
@@ -17,6 +17,11 @@
         <waypoint name="TD" x="0.8" y="-1.7"/>
         <waypoint name="GOAL" x="1.9" y="1.0"/>
         <waypoint name="TRAJECTORY" x="1.9" y="1.0"/>
+        <waypoint name="REF" x="0.0" y="0.0"/>
+        <waypoint name="T1" x="1.0" y="1.0"/>
+        <waypoint name="T2" x="1.0" y="-1.0"/>
+        <waypoint name="T3" x="-1.0" y="-1.0"/>
+        <waypoint name="T4" x="-1.0" y="1.0"/>
         <waypoint lat="51.9905874" lon="4.3767766" name="_CZ1"/>
         <waypoint lat="51.990644" lon="4.376721" name="_CZ2"/>
         <waypoint lat="51.990676" lon="4.376805" name="_CZ3"/>
@@ -57,7 +62,13 @@
         <block name="Standby" strip_button="Standby" strip_icon="home.png">
             <stay wp="STDBY"/>
         </block>
+        <block name="MAKE SQUARE">
+            <call_once fun="makeWaypointsSquare(WP_T1, WP_T2, WP_T3, WP_T4)"/>
+        </block>
         <block name="START AEROBATIC">
+            <call_once fun="NavSetWaypointHere(WP_REF)"/>
+            <call_once fun="setReferenceHere(WP_REF)"/>
+            <call_once fun="getWaypoints(WP_T1, WP_T2, WP_T3, WP_T4)"/>
             <call_once fun="setAerobatic()"/>
             <stay wp="STDBY"/>
         </block>
