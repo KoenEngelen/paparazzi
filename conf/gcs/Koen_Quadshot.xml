@@ -1,0 +1,39 @@
+<!DOCTYPE layout SYSTEM "layout.dtd">
+
+<layout width="1500" height="1000">
+  <columns>
+    <rows SIZE="400">
+      <widget NAME="strips" size="500"/>
+      <widget NAME="alarms" size="490"/>
+    </rows>
+    <rows>
+      <widget NAME="map2d" size="700">
+        <papget type="message_field" display="text" x="998" y="608">
+          <property name="scale" value="0.0039063"/>
+          <property name="field" value="INS:ins_x"/>
+          <property name="ac_id" value="37"/>
+          <property name="format" value="%.2f"/>
+          <property name="size" value="15."/>
+          <property name="color" value="#00ff00"/>
+        </papget>
+        <papget type="message_field" display="text" x="791" y="202">
+          <property name="scale" value="1."/>
+          <property name="field" value="AEROBATIC_INDI:p_gain"/>
+          <property name="ac_id" value="37"/>
+          <property name="format" value="%.2f"/>
+          <property name="size" value="15."/>
+          <property name="color" value="#00ff00"/>
+        </papget>
+        <papget type="message_field" display="text" x="788" y="234">
+          <property name="scale" value="1."/>
+          <property name="field" value="AEROBATIC_INDI:d_gain"/>
+          <property name="ac_id" value="37"/>
+          <property name="format" value="%.2f"/>
+          <property name="size" value="15."/>
+          <property name="color" value="#00ff00"/>
+        </papget>
+      </widget>
+      <widget NAME="aircraft" size="290"/>
+    </rows>
+  </columns>
+</layout>

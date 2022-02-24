@@ -541,8 +541,8 @@
       traj_sec.number = 0;
     } 
 
-    traj_sec.pos_end.x =  x_coords[traj_sec.number];
-    traj_sec.pos_end.y =  y_coords[traj_sec.number];
+    traj_sec.pos_end.x =  y_coords[traj_sec.number];
+    traj_sec.pos_end.y =  x_coords[traj_sec.number];
 
     traj_sec.vel_max = varset.max_vel; 
     traj_sec.acc_max = varset.max_acc;
@@ -1125,7 +1125,7 @@
     traj_sec.pos_beg.z = traj.pos.z;
 
 
-    printf("\nWP_REF: \t%f \t%f \t%f \nPOS: \t%f \t%f \t%f" , fix_pos.x, fix_pos.y, fix_pos.z, stateGetPositionNed_f()->x, stateGetPositionNed_f()->y, stateGetPositionNed_f()->z);
+    // printf("\nWP_REF: \t%f \t%f \t%f \nPOS: \t%f \t%f \t%f" , fix_pos.x, fix_pos.y, fix_pos.z, stateGetPositionNed_f()->x, stateGetPositionNed_f()->y, stateGetPositionNed_f()->z);
   }
 
   void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
@@ -1140,7 +1140,7 @@
     y_coords[2] = waypoint_get_y(wp_3);
     y_coords[3] = waypoint_get_y(wp_4);
 
-    printf("\nWPs: \t%f \t %f\n \t%f \t%f\n \t%f \t%f\n \t%f \t%f" , x_coords[0], y_coords[0], x_coords[1], y_coords[1], x_coords[2], y_coords[2], x_coords[3], y_coords[3]);
+    // printf("\nWPs: \t%f \t %f\n \t%f \t%f\n \t%f \t%f\n \t%f \t%f" , x_coords[0], y_coords[0], x_coords[1], y_coords[1], x_coords[2], y_coords[2], x_coords[3], y_coords[3]);
   }
 
   void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
@@ -1154,7 +1154,7 @@
     y_coords[1] = waypoint_get_y(wp_2);
     y_coords[2] = waypoint_get_y(wp_3);
     y_coords[3] = waypoint_get_y(wp_4);
-    printf("\nWPs: \t%f \t %f\n \t%f \t%f\n \t%f \t%f\n \t%f \t%f" , x_coords[0], y_coords[0], x_coords[1], y_coords[1], x_coords[2], y_coords[2], x_coords[3], y_coords[3]);
+    // printf("\nWPs: \t%f \t %f\n \t%f \t%f\n \t%f \t%f\n \t%f \t%f" , x_coords[0], y_coords[0], x_coords[1], y_coords[1], x_coords[2], y_coords[2], x_coords[3], y_coords[3]);
 
   }
 
