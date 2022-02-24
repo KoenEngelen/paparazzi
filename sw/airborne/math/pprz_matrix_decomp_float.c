@@ -140,7 +140,8 @@ static inline float pythag(float a, float b)
   }
 }
 
-int min(int num1, int num2) {
+
+static int imin(int num1, int num2) {
     return (num1 > num2 ) ? num2 : num1;
 }
 /** SVD decomposition
@@ -298,7 +299,7 @@ int pprz_svd_float(float **a, float *w, float **v, int m, int n)
   }
 
   /* Accumulation of left-hand transformations. */
-  for (i = min(m,n) - 1; i >= 0; --i) {
+  for (i = imin(m,n) - 1; i >= 0; --i) {
     l = i + 1;
     G = w[i];
     if (i < (n - 1)) {
@@ -526,249 +527,249 @@ void pprz_svd_solve_float(float **x, float **u, float *w, float **v, float **b, 
  * @param[out] parameters* Parameters of the linear fit
  * @param[out] fit_error* Total error of the fit
  */
-// void fit_linear_model(float *targets, int D, float (*samples)[D], uint16_t count, bool use_bias, float *params,
-//                       float *fit_error)
-// {
+void fit_linear_model(float *targets, int D, float (*samples)[D], uint16_t count, bool use_bias, float *params,
+                      float *fit_error)
+{
 
-//   // We will solve systems of the form A x = b,
-//   // where A = [nx(D+1)] matrix with entries [s1, ..., sD, 1] for each sample (1 is the bias)
-//   // and b = [nx1] vector with the target values.
-//   // x in the system are the parameters for the linear regression function.
+  // We will solve systems of the form A x = b,
+  // where A = [nx(D+1)] matrix with entries [s1, ..., sD, 1] for each sample (1 is the bias)
+  // and b = [nx1] vector with the target values.
+  // x in the system are the parameters for the linear regression function.
 
-//   // local vars for iterating, random numbers:
-//   int sam, d;
-//   uint16_t n_samples = count;
-//   uint8_t D_1 = D + 1;
-//   // ensure that n_samples is high enough to ensure a result for a single fit:
-//   n_samples = (n_samples < D_1) ? D_1 : n_samples;
-//   // n_samples should not be higher than count:
-//   n_samples = (n_samples < count) ? n_samples : count;
+  // local vars for iterating, random numbers:
+  int sam, d;
+  uint16_t n_samples = count;
+  uint8_t D_1 = D + 1;
+  // ensure that n_samples is high enough to ensure a result for a single fit:
+  n_samples = (n_samples < D_1) ? D_1 : n_samples;
+  // n_samples should not be higher than count:
+  n_samples = (n_samples < count) ? n_samples : count;
 
-//   // initialize matrices and vectors for the full point set problem:
-//   // this is used for determining inliers
-//   float _AA[count][D_1];
-//   MAKE_MATRIX_PTR(AA, _AA, count);
-//   float _targets_all[count][1];
-//   MAKE_MATRIX_PTR(targets_all, _targets_all, count);
+  // initialize matrices and vectors for the full point set problem:
+  // this is used for determining inliers
+  float _AA[count][D_1];
+  MAKE_MATRIX_PTR(AA, _AA, count);
+  float _targets_all[count][1];
+  MAKE_MATRIX_PTR(targets_all, _targets_all, count);
 
-//   for (sam = 0; sam < count; sam++) {
-//     for (d = 0; d < D; d++) {
-//       AA[sam][d] = samples[sam][d];
-//     }
-//     if (use_bias) {
-//       AA[sam][D] = 1.0f;
-//     } else {
-//       AA[sam][D] = 0.0f;
-//     }
-//     targets_all[sam][0] = targets[sam];
-//   }
+  for (sam = 0; sam < count; sam++) {
+    for (d = 0; d < D; d++) {
+      AA[sam][d] = samples[sam][d];
+    }
+    if (use_bias) {
+      AA[sam][D] = 1.0f;
+    } else {
+      AA[sam][D] = 0.0f;
+    }
+    targets_all[sam][0] = targets[sam];
+  }
 
-//   // decompose A in u, w, v with singular value decomposition A = u * w * vT.
-//   // u replaces A as output:
-//   float _parameters[D_1][1];
-//   MAKE_MATRIX_PTR(parameters, _parameters, D_1);
-//   float w[n_samples], _v[D_1][D_1];
-//   MAKE_MATRIX_PTR(v, _v, D_1);
+  // decompose A in u, w, v with singular value decomposition A = u * w * vT.
+  // u replaces A as output:
+  float _parameters[D_1][1];
+  MAKE_MATRIX_PTR(parameters, _parameters, D_1);
+  float w[n_samples], _v[D_1][D_1];
+  MAKE_MATRIX_PTR(v, _v, D_1);
 
-//   // solve the system:
+  // solve the system:
 
-//   pprz_svd_float(AA, w, v, count, D_1);
-//   pprz_svd_solve_float(parameters, AA, w, v, targets_all, count, D_1, 1);
+  pprz_svd_float(AA, w, v, count, D_1);
+  pprz_svd_solve_float(parameters, AA, w, v, targets_all, count, D_1, 1);
 
-//   // used to determine the error of a set of parameters on the whole set:
-//   float _bb[count][1];
-//   MAKE_MATRIX_PTR(bb, _bb, count);
-//   float _C[count][1];
-//   MAKE_MATRIX_PTR(C, _C, count);
+  // used to determine the error of a set of parameters on the whole set:
+  float _bb[count][1];
+  MAKE_MATRIX_PTR(bb, _bb, count);
+  float _C[count][1];
+  MAKE_MATRIX_PTR(C, _C, count);
 
-//   // error is determined on the entire set
-//   // bb = AA * parameters:
-//   // TODO: error: AA has been replaced in the pprz_svd_float procedure by U!!!
-//   MAT_MUL(count, D_1, 1, bb, AA, parameters);
-//   // subtract bu_all: C = 0 in case of perfect fit:
-//   MAT_SUB(count, 1, C, bb, targets_all);
-//   *fit_error = 0;
-//   for (sam = 0; sam < count; sam++) {
-//     *fit_error += fabsf(C[sam][0]);
-//   }
-//   if (count > 0) {
-//     *fit_error /= count;
-//   }
+  // error is determined on the entire set
+  // bb = AA * parameters:
+  // TODO: error: AA has been replaced in the pprz_svd_float procedure by U!!!
+  MAT_MUL(count, D_1, 1, bb, AA, parameters);
+  // subtract bu_all: C = 0 in case of perfect fit:
+  MAT_SUB(count, 1, C, bb, targets_all);
+  *fit_error = 0;
+  for (sam = 0; sam < count; sam++) {
+    *fit_error += fabsf(C[sam][0]);
+  }
+  if (count > 0) {
+    *fit_error /= count;
+  }
 
-//   for (d = 0; d < D_1; d++) {
-//     params[d] = parameters[d][0];
-//   }
-// }
-
-
-// /**
-//  * Fit a linear model from samples to target values with a prior.
-//  * Effectively a wrapper for the pprz_svd_float and pprz_svd_solve_float functions.
-//  *
-//  * @param[in] targets The target values
-//  * @param[in] samples The samples / feature vectors
-//  * @param[in] D The dimensionality of the samples
-//  * @param[in] count The number of samples
-//  * @param[in] use_bias Whether to use the bias. Please note that params should always be of size D+1, but in case of no bias, the bias value is set to 0.
-//  * @param[in] priors Prior per dimension. If use_bias, also for the dimension D+1.
-//  * @param[out] parameters* Parameters of the linear fit
-//  * @param[out] fit_error* Total error of the fit
-//  */
-// void fit_linear_model_prior(float *targets, int D, float (*samples)[D], uint16_t count, bool use_bias, float *priors,
-//                             float *params, float *fit_error)
-// {
-
-//   // We will solve systems of the form A x = b,
-//   // where A = [nx(D+1)] matrix with entries [s1, ..., sD, 1] for each sample (1 is the bias)
-//   // and b = [nx1] vector with the target values.
-//   // x in the system are the parameters for the linear regression function.
-
-//   // local vars for iterating, random numbers:
-//   int sam, d;
-//   uint16_t n_samples = count;
-//   uint8_t D_1 = D + 1;
-
-//   if (D_1 != 2) {
-//     DEBUG_PRINT("not yet implemented!!\n");
-//     return;
-//   }
-
-//   DEBUG_PRINT("n_samples = %d\n", n_samples);
-
-//   // ensure that n_samples is high enough to ensure a result for a single fit:
-//   n_samples = (n_samples < D_1) ? D_1 : n_samples;
-//   // n_samples should not be higher than count:
-//   n_samples = (n_samples < count) ? n_samples : count;
-//   count = n_samples;
-
-//   DEBUG_PRINT("n_samples = %d\n", n_samples);
-
-//   // initialize matrices and vectors for the full point set problem:
-//   // this is used for determining inliers
-//   float _AA[count][D_1];
-//   MAKE_MATRIX_PTR(AA, _AA, count);
-//   float _AAT[D_1][count];
-//   MAKE_MATRIX_PTR(AAT, _AAT, D_1);
-//   float _AATAA[D_1][D_1];
-//   MAKE_MATRIX_PTR(AATAA, _AATAA, D_1);
-//   float _PRIOR[D_1][D_1];
-//   MAKE_MATRIX_PTR(PRIOR, _PRIOR, D_1);
-//   for(d = 0; d < D; d++) {
-//     PRIOR[d][d] = priors[d];
-//   }
-//   if(use_bias) {
-//     PRIOR[D][D] = priors[D];
-//   }
-//   else {
-//     PRIOR[D][D] = 1.0f;
-//   }
-
-//   float _targets_all[count][1];
-//   MAKE_MATRIX_PTR(targets_all, _targets_all, count);
-
-//   for (sam = 0; sam < count; sam++) {
-//     for (d = 0; d < D; d++) {
-//       AA[sam][d] = samples[sam][d];
-//     }
-//     if (use_bias) {
-//       AA[sam][D] = 1.0f;
-//     } else {
-//       AA[sam][D] = 0.0f;
-//     }
-//     targets_all[sam][0] = targets[sam];
-//   }
-
-//   DEBUG_PRINT("A:\n");
-//   DEBUG_MAT_PRINT(count, D_1, AA);
-
-//   // make the pseudo-inverse matrix:
-//   float_mat_transpose(AAT, AA, count, D_1);
-
-//   DEBUG_PRINT("AT:\n");
-//   DEBUG_MAT_PRINT(D_1, count, AAT);
-
-//   float_mat_mul(AATAA, AAT, AA, D_1, count, D_1);
-
-//   DEBUG_PRINT("ATA:\n");
-//   DEBUG_MAT_PRINT(D_1, D_1, AATAA);
-
-//   // TODO: here, AATAA is used as float** - should be ok right?
-//   // add the prior to AATAA:
-//   float_mat_sum(AATAA, AATAA, PRIOR, D_1, D_1);
-
-//   DEBUG_PRINT("ATA+prior*I:\n");
-//   DEBUG_MAT_PRINT(D_1, D_1, AATAA);
-
-//   float _INV_AATAA[D_1][D_1];
-//   MAKE_MATRIX_PTR(INV_AATAA, _INV_AATAA, D_1);
-
-//   /*
-//   // 2-dimensional:
-//   float det = AATAA[0][0] * AATAA[1][1] - AATAA[0][1] * AATAA[1][0];
-//   if (fabsf(det) < 1e-4) {
-//     printf("Not invertible\n");
-//     return; // does this return go well?
-//   } //not invertible
-
-//   INV_AATAA[0][0] =  AATAA[1][1] / det;
-//   INV_AATAA[0][1] = -AATAA[0][1] / det;
-//   INV_AATAA[1][0] = -AATAA[1][0] / det;
-//   INV_AATAA[1][1] =  AATAA[0][0] / det;
-
-//   DEBUG_PRINT("INV assuming D_1 = 2:\n");
-//   DEBUG_MAT_PRINT(D_1, D_1, INV_AATAA);
-//   */
-
-//   // the AATAA matrix is square, so:
-//   float_mat_invert(INV_AATAA, AATAA, D_1);
-
-//   DEBUG_PRINT("GENERIC INV:\n");
-//   DEBUG_MAT_PRINT(D_1, D_1, INV_AATAA);
+  for (d = 0; d < D_1; d++) {
+    params[d] = parameters[d][0];
+  }
+}
 
 
-//   //float_mat_inv_2d(INV_AATAA, _INV_AATAA);
-//   float _PINV[D_1][count];
-//   MAKE_MATRIX_PTR(PINV, _PINV, D_1);
-//   // TODO: what is the difference with float_mat_mul used above? Only that this is a matrix expansion?
-//   MAT_MUL(D_1, D_1, count, PINV, INV_AATAA, AAT);
+/**
+ * Fit a linear model from samples to target values with a prior.
+ * Effectively a wrapper for the pprz_svd_float and pprz_svd_solve_float functions.
+ *
+ * @param[in] targets The target values
+ * @param[in] samples The samples / feature vectors
+ * @param[in] D The dimensionality of the samples
+ * @param[in] count The number of samples
+ * @param[in] use_bias Whether to use the bias. Please note that params should always be of size D+1, but in case of no bias, the bias value is set to 0.
+ * @param[in] priors Prior per dimension. If use_bias, also for the dimension D+1.
+ * @param[out] parameters* Parameters of the linear fit
+ * @param[out] fit_error* Total error of the fit
+ */
+void fit_linear_model_prior(float *targets, int D, float (*samples)[D], uint16_t count, bool use_bias, float *priors,
+                            float *params, float *fit_error)
+{
 
-//   DEBUG_PRINT("PINV:\n");
-//   DEBUG_MAT_PRINT(D_1, count, PINV);
+  // We will solve systems of the form A x = b,
+  // where A = [nx(D+1)] matrix with entries [s1, ..., sD, 1] for each sample (1 is the bias)
+  // and b = [nx1] vector with the target values.
+  // x in the system are the parameters for the linear regression function.
 
-//   float _parameters[D_1][1];
-//   MAKE_MATRIX_PTR(parameters, _parameters, D_1);
-//   MAT_MUL(D_1, count, 1, parameters, PINV, targets_all);
+  // local vars for iterating, random numbers:
+  int sam, d;
+  uint16_t n_samples = count;
+  uint8_t D_1 = D + 1;
 
-//   DEBUG_PRINT("parameters:\n");
-//   DEBUG_MAT_PRINT(D_1, 1, parameters);
+  if (D_1 != 2) {
+    DEBUG_PRINT("not yet implemented!!\n");
+    return;
+  }
 
-//   // used to determine the error of a set of parameters on the whole set:
-//   float _bb[count][1];
-//   MAKE_MATRIX_PTR(bb, _bb, count);
-//   float _C[count][1];
-//   MAKE_MATRIX_PTR(C, _C, count);
+  DEBUG_PRINT("n_samples = %d\n", n_samples);
+
+  // ensure that n_samples is high enough to ensure a result for a single fit:
+  n_samples = (n_samples < D_1) ? D_1 : n_samples;
+  // n_samples should not be higher than count:
+  n_samples = (n_samples < count) ? n_samples : count;
+  count = n_samples;
+
+  DEBUG_PRINT("n_samples = %d\n", n_samples);
+
+  // initialize matrices and vectors for the full point set problem:
+  // this is used for determining inliers
+  float _AA[count][D_1];
+  MAKE_MATRIX_PTR(AA, _AA, count);
+  float _AAT[D_1][count];
+  MAKE_MATRIX_PTR(AAT, _AAT, D_1);
+  float _AATAA[D_1][D_1];
+  MAKE_MATRIX_PTR(AATAA, _AATAA, D_1);
+  float _PRIOR[D_1][D_1];
+  MAKE_MATRIX_PTR(PRIOR, _PRIOR, D_1);
+  for(d = 0; d < D; d++) {
+    PRIOR[d][d] = priors[d];
+  }
+  if(use_bias) {
+    PRIOR[D][D] = priors[D];
+  }
+  else {
+    PRIOR[D][D] = 1.0f;
+  }
+
+  float _targets_all[count][1];
+  MAKE_MATRIX_PTR(targets_all, _targets_all, count);
+
+  for (sam = 0; sam < count; sam++) {
+    for (d = 0; d < D; d++) {
+      AA[sam][d] = samples[sam][d];
+    }
+    if (use_bias) {
+      AA[sam][D] = 1.0f;
+    } else {
+      AA[sam][D] = 0.0f;
+    }
+    targets_all[sam][0] = targets[sam];
+  }
+
+  DEBUG_PRINT("A:\n");
+  DEBUG_MAT_PRINT(count, D_1, AA);
+
+  // make the pseudo-inverse matrix:
+  float_mat_transpose(AAT, AA, count, D_1);
+
+  DEBUG_PRINT("AT:\n");
+  DEBUG_MAT_PRINT(D_1, count, AAT);
+
+  float_mat_mul(AATAA, AAT, AA, D_1, count, D_1);
+
+  DEBUG_PRINT("ATA:\n");
+  DEBUG_MAT_PRINT(D_1, D_1, AATAA);
+
+  // TODO: here, AATAA is used as float** - should be ok right?
+  // add the prior to AATAA:
+  float_mat_sum(AATAA, AATAA, PRIOR, D_1, D_1);
+
+  DEBUG_PRINT("ATA+prior*I:\n");
+  DEBUG_MAT_PRINT(D_1, D_1, AATAA);
+
+  float _INV_AATAA[D_1][D_1];
+  MAKE_MATRIX_PTR(INV_AATAA, _INV_AATAA, D_1);
+
+  /*
+  // 2-dimensional:
+  float det = AATAA[0][0] * AATAA[1][1] - AATAA[0][1] * AATAA[1][0];
+  if (fabsf(det) < 1e-4) {
+    printf("Not invertible\n");
+    return; // does this return go well?
+  } //not invertible
+
+  INV_AATAA[0][0] =  AATAA[1][1] / det;
+  INV_AATAA[0][1] = -AATAA[0][1] / det;
+  INV_AATAA[1][0] = -AATAA[1][0] / det;
+  INV_AATAA[1][1] =  AATAA[0][0] / det;
+
+  DEBUG_PRINT("INV assuming D_1 = 2:\n");
+  DEBUG_MAT_PRINT(D_1, D_1, INV_AATAA);
+  */
+
+  // the AATAA matrix is square, so:
+  float_mat_invert(INV_AATAA, AATAA, D_1);
+
+  DEBUG_PRINT("GENERIC INV:\n");
+  DEBUG_MAT_PRINT(D_1, D_1, INV_AATAA);
 
 
-//   DEBUG_PRINT("A:\n");
-//   DEBUG_MAT_PRINT(count, D_1, AA);
+  //float_mat_inv_2d(INV_AATAA, _INV_AATAA);
+  float _PINV[D_1][count];
+  MAKE_MATRIX_PTR(PINV, _PINV, D_1);
+  // TODO: what is the difference with float_mat_mul used above? Only that this is a matrix expansion?
+  MAT_MUL(D_1, D_1, count, PINV, INV_AATAA, AAT);
 
-//   // error is determined on the entire set
-//   // bb = AA * parameters:
-//   MAT_MUL(count, D_1, 1, bb, AA, parameters);
+  DEBUG_PRINT("PINV:\n");
+  DEBUG_MAT_PRINT(D_1, count, PINV);
 
-//   // subtract bu_all: C = 0 in case of perfect fit:
-//   MAT_SUB(count, 1, C, bb, targets_all);
+  float _parameters[D_1][1];
+  MAKE_MATRIX_PTR(parameters, _parameters, D_1);
+  MAT_MUL(D_1, count, 1, parameters, PINV, targets_all);
 
-//   *fit_error = 0;
-//   for (sam = 0; sam < count; sam++) {
-//     *fit_error += fabsf(C[sam][0]);
-//   }
-//   *fit_error /= count;
+  DEBUG_PRINT("parameters:\n");
+  DEBUG_MAT_PRINT(D_1, 1, parameters);
 
-//   DEBUG_PRINT("Fit error = %f\n", *fit_error);
+  // used to determine the error of a set of parameters on the whole set:
+  float _bb[count][1];
+  MAKE_MATRIX_PTR(bb, _bb, count);
+  float _C[count][1];
+  MAKE_MATRIX_PTR(C, _C, count);
 
-//   for (d = 0; d < D_1; d++) {
-//     params[d] = parameters[d][0];
-//   }
-//   DEBUG_PRINT("End of the function\n");
-// }
+
+  DEBUG_PRINT("A:\n");
+  DEBUG_MAT_PRINT(count, D_1, AA);
+
+  // error is determined on the entire set
+  // bb = AA * parameters:
+  MAT_MUL(count, D_1, 1, bb, AA, parameters);
+
+  // subtract bu_all: C = 0 in case of perfect fit:
+  MAT_SUB(count, 1, C, bb, targets_all);
+
+  *fit_error = 0;
+  for (sam = 0; sam < count; sam++) {
+    *fit_error += fabsf(C[sam][0]);
+  }
+  *fit_error /= count;
+
+  DEBUG_PRINT("Fit error = %f\n", *fit_error);
+
+  for (d = 0; d < D_1; d++) {
+    params[d] = parameters[d][0];
+  }
+  DEBUG_PRINT("End of the function\n");
+}

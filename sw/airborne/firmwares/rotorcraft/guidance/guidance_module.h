@@ -52,5 +52,4 @@
 
 #include "generated/modules.h"
 
-
 #endif /* GUIDANCE_MODULE_H_ */
