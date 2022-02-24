@@ -375,6 +375,9 @@
       <field name="fstop"               type="float">Stop frequency</field>
       <field name="noise_onaxis_ratio"  type="float">Noise ratio onaxis</field>
       <field name="noise_offaxis"       type="float">Noise offaxis</field>
+      <field name="current_value"       type="int16">Current chirp value</field>
+      <field name="fade_in"             type="uint8" unit="bool">Fade in feature active</field>
+      <field name="exponential"         type="uint8" unit="bool">Exponential chirp active</field>
     </message>
 
     <message name="BARO_WORDS" id="46">

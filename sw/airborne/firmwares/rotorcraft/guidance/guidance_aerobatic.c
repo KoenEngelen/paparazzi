@@ -33,11 +33,11 @@
   #include "math/pprz_matrix_decomp_float.h"
   #include "math/pprz_matrix_decomp_float.c"
   #include "math/pprz_simple_matrix.h"
-  #include "subsystems/datalink/telemetry.h"
+  #include "modules/datalink/telemetry.h"
   #include "firmwares/rotorcraft/stabilization.h"
   #include "filters/low_pass_filter.h"
-  #include "subsystems/abi.h"
-  #include "subsystems/navigation/waypoints.h"
+  #include "modules/core/abi.h"
+  #include "modules/nav/waypoints.h"
   // #include 
 
   #define PPRZ_MSG_ID_AEROBATIC_INDI 158
