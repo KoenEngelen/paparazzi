@@ -120,6 +120,10 @@ static void send_fp(struct transport_tx *trans, struct link_device *dev)
   int32_t carrot_heading = ANGLE_BFP_OF_REAL(guidance_h.sp.heading);
   int32_t thrust = (int32_t)autopilot.throttle;
   struct EnuCoor_i *pos = stateGetPositionEnu_i();
+  struct EnuCoor_f *pos_f = stateGetPositionEnu_f();
+  pos->x = (int32_t)pos_f->x;
+  pos->y = (int32_t)pos_f->y;
+  pos->z = (int32_t)pos_f->z;
 #if GUIDANCE_INDI_HYBRID
   struct FloatEulers eulers_zxy;
   float_eulers_of_quat_zxy(&eulers_zxy, stateGetNedToBodyQuat_f());

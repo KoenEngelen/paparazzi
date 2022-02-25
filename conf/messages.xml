@@ -1549,6 +1549,7 @@
       <field name="ref_vel" type="float[]"/>
       <field name="ref_acc" type="float[]"/>
       <field name="gains" type="float[]"/>
+      <field name="count" type="uint32"/>
     </message>
 
     <message name="AHRS_EULER" id="173">

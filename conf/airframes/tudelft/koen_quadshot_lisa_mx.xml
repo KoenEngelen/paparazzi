@@ -63,8 +63,10 @@
     <!-- <let var="forward_right" value="aileron_gain*$aileron_feedback_right+elevator_gain*$elevator_feedback_right"/> -->
 
     <!--     if using PID with gain scheduling -->
-    <let var="forward_left"  value="3*$aileron_feedback_left + 4*$elevator_feedback_left"/>
-    <let var="forward_right" value="3*$aileron_feedback_right + 4*$elevator_feedback_right"/>
+    <!-- <let var="forward_left"  value="3*$aileron_feedback_left + 4*$elevator_feedback_left"/>
+    <let var="forward_right" value="3*$aileron_feedback_right + 4*$elevator_feedback_right"/> -->
+    <let var="forward_left"  value="0"/>
+    <let var="forward_right" value="0"/>
 
     <!-- This statement tells the autopilot to use the hover feedback if in mode attitude direct and to use the forward feedback in all other cases-->
     <set servo="ELEVON_LEFT"    value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? $hover_left  : $forward_left" />
