@@ -1398,6 +1398,7 @@
       <field name="p_gain" type="float"/>
       <field name="d_gain" type="float"/>
       <field name="mode" type="float"/>
+      <field name="count" type="uint32"/>
     </message>
 
 
@@ -1542,13 +1543,9 @@
     </message>
     
     <message name="AEROBATIC_LOG" id="172">
-      <field name="pos" type="float[]"/>
-      <field name="vel" type="float[]"/>
-      <field name="acc" type="float[]"/>
-      <field name="ref_pos" type="float[]"/>
-      <field name="ref_vel" type="float[]"/>
-      <field name="ref_acc" type="float[]"/>
-      <field name="gains" type="float[]"/>
+      <field name="posx" type="float"/>
+      <field name="posy" type="float"/>
+      <field name="posz" type="float"/>
       <field name="count" type="uint32"/>
     </message>
 

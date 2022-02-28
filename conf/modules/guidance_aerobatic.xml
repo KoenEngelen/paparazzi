@@ -28,7 +28,7 @@
     <file name="guidance_aerobatic.h"/>
   </header>
   <!-- <init fun="guidance_module_h_init()"/> -->
-  <!-- <init fun="guidance_aerobatic_enter()"/> -->
+  <!-- <init fun="guidance_aerobatic_enter()"/> --> <!--Try to uncomment-->
   <!-- <periodic fun="guidance_aerobatic_run()" freq="512" autorun="TRUE"/> -->
 
   <makefile>
@@ -38,7 +38,7 @@
   <makefile target="ap|nps" firmware="rotorcraft">
     <!-- <file name="pprz_matrix_decomp_float.c" dir="math"/> -->
     <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
-    <define name="GUIDANCE_V_MODE_MODULE_SETTING" value="GUIDANCE_V_MODE_MODULE"/>
+    <!-- <define name="GUIDANCE_V_MODE_MODULE_SETTING" value="GUIDANCE_V_MODE_MODULE"/> -->
     <define name="GUIDANCE_H_MODE_MODULE_SETTING" value="GUIDANCE_H_MODE_MODULE"/>
   </makefile>
 

@@ -66,9 +66,9 @@
             <call_once fun="makeWaypointsSquare(WP_T1, WP_T2, WP_T3, WP_T4)"/>
         </block>
         <block name="START AEROBATIC">
-            <call_once fun="NavSetWaypointHere(WP_REF)"/>
-            <call_once fun="setReferenceHere(WP_REF)"/>
-            <call_once fun="getWaypoints(WP_T1, WP_T2, WP_T3, WP_T4)"/>
+            <!-- <call_once fun="NavSetWaypointHere(WP_REF)"/> -->
+            <!-- <call_once fun="setReferenceHere(WP_REF)"/> -->
+            <!-- <call_once fun="getWaypoints(WP_T1, WP_T2, WP_T3, WP_T4)"/> -->
             <call_once fun="setAerobatic()"/>
             <stay wp="STDBY"/>
         </block>

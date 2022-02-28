@@ -363,18 +363,15 @@
                          &varset.max_acc,
                          &varset.p_gain,
                          &varset.d_gain,
-                         &varset.mode);
+                         &varset.mode,
+                         &count);
   }
 
   static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
     pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
-                         3,&log_pos[0],
-                         3,&log_vel[0],
-                         3,&log_acc[0],
-                         3,&log_ref_pos[0],
-                         3,&log_ref_vel[0],
-                         3,&log_ref_acc[0],
-                         2,&log_gains[0],
+                         &log_pos[0],
+                         &log_pos[1],
+                         &log_pos[2],
                          &count);
   }
 //
@@ -388,6 +385,21 @@
 
   t = -5.0;
 
+
+  log_pos[0] = stateGetPositionNed_f()->x;
+  log_pos[1] = stateGetPositionNed_f()->y;
+  log_pos[2] = stateGetPositionNed_f()->z;
+
+  x_coords[0] = log_pos[0] + 1.0f;
+  x_coords[1] = log_pos[0] - 1.0f;
+  x_coords[2] = log_pos[0] - 1.0f;
+  x_coords[3] = log_pos[0] + 1.0f;
+
+  y_coords[0] = log_pos[1] + 1.0f;
+  y_coords[1] = log_pos[1] + 1.0f;
+  y_coords[2] = log_pos[1] - 1.0f;
+  y_coords[3] = log_pos[1] - 1.0f;
+  
   filter_init();
   // ////printf("thrust filt: %f", thrust_filt.o[0]);
   
@@ -407,6 +419,22 @@
     traj_sec.type = 0;
     traj_sec.number = -1;
     traj_sec.t_beg = 0.0f;
+
+
+    log_pos[0] = stateGetPositionNed_f()->x;
+    log_pos[1] = stateGetPositionNed_f()->y;
+    log_pos[2] = stateGetPositionNed_f()->z;
+
+    x_coords[0] = log_pos[0] + 1.0f;
+    x_coords[1] = log_pos[0] - 1.0f;
+    x_coords[2] = log_pos[0] - 1.0f;
+    x_coords[3] = log_pos[0] + 1.0f;
+
+    y_coords[0] = log_pos[1] + 1.0f;
+    y_coords[1] = log_pos[1] + 1.0f;
+    y_coords[2] = log_pos[1] - 1.0f;
+    y_coords[3] = log_pos[1] - 1.0f;
+
     CalcNewTrajectory();
 
     filter_init();
@@ -426,7 +454,7 @@
   if (t > 360000){
     t = 0;
   }
-  if (count == UINT32_MAX){
+  if (count > 100000){
     count = 0;
   }
   count = count + 1; 

@@ -159,11 +159,11 @@ static inline void NavResurrect(void)
 
 
 static inline void revertAerobatic(void){
-  autopilot_static_set_mode(AP_MODE_NAV);
+  autopilot_set_mode(AP_MODE_NAV);
   guidance_h_mode_changed(GUIDANCE_H_MODE_NAV);
 }
 static inline void setAerobatic(void){
-    autopilot_static_set_mode(AP_MODE_MODULE);
+    autopilot_set_mode(AP_MODE_MODULE);
     // guidance_h_mode_changed(GUIDANCE_H_MODE_MODULE);
     guidance_h_mode_changed(8);
 }
