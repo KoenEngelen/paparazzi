@@ -153,7 +153,7 @@ void autopilot_init(void)
 #ifdef RADIO_CONTROL
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_RC, send_rc);
 #endif
-  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_MINIMAL_COM, send_minimal_com);
+  // register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_MINIMAL_COM, send_minimal_com);
 }
 
 /** AP periodic call

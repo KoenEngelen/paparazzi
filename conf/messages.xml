@@ -378,6 +378,7 @@
       <field name="current_value"       type="int16">Current chirp value</field>
       <field name="fade_in"             type="uint8" unit="bool">Fade in feature active</field>
       <field name="exponential"         type="uint8" unit="bool">Exponential chirp active</field>
+
     </message>
 
     <message name="BARO_WORDS" id="46">
@@ -1552,6 +1553,7 @@
       <field name="ref_vel" type="float[]"/>
       <field name="ref_acc" type="float[]"/>
       <field name="gains" type="float[]"/>
+      <field name="count" type="uint32"/>
     </message>
 
     <message name="AHRS_EULER" id="173">

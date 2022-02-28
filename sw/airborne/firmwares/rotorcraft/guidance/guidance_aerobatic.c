@@ -26,6 +26,7 @@
 
 //Include
   #include <stdlib.h>
+  #include <stdint.h>
   #include <string.h>
   #include <math.h>
   #include <stdio.h>
@@ -200,6 +201,7 @@
   float log_ref_acc[3] = {0};
   float log_gains[2] = {0};
 
+  uint32_t count = 0;
 
 //
 
@@ -372,7 +374,8 @@
                          3,&log_ref_pos[0],
                          3,&log_ref_vel[0],
                          3,&log_ref_acc[0],
-                         2,&log_gains[0]);
+                         2,&log_gains[0],
+                         &count);
   }
 //
 
@@ -423,6 +426,20 @@
   if (t > 360000){
     t = 0;
   }
+  if (count == UINT32_MAX){
+    count = 0;
+  }
+  count = count + 1; 
+
+  log_pos[0] = stateGetPositionNed_f()->x;
+  log_pos[1] = stateGetPositionNed_f()->y;
+  log_pos[2] = stateGetPositionNed_f()->z;
+  log_vel[0] = stateGetSpeedNed_f()->x;
+  log_vel[1] = stateGetSpeedNed_f()->y;
+  log_vel[2] = stateGetSpeedNed_f()->z;
+  log_acc[0] = stateGetAccelNed_f()->x;
+  log_acc[1] = stateGetAccelNed_f()->y;
+  log_acc[2] = stateGetAccelNed_f()->z;
 
   guidance_indi_propagate_filters();
   guidance_indi_filter_thrust();
@@ -779,9 +796,9 @@
     float VGain = varset.d_gain;
     //PGain = PGain * VGain;
 
-    ctrl_lin.pos.x = stateGetPositionNed_f()->x;
-    ctrl_lin.pos.y = stateGetPositionNed_f()->y;
-    ctrl_lin.pos.z = stateGetPositionNed_f()->z;
+    ctrl_lin.pos.x = stateGetPositionEnu_f()->y;
+    ctrl_lin.pos.y = stateGetPositionEnu_f()->x;
+    ctrl_lin.pos.z = -stateGetPositionEnu_f()->z;
     ctrl_lin.vel.x = stateGetSpeedNed_f()->x;
     ctrl_lin.vel.y = stateGetSpeedNed_f()->y;
     ctrl_lin.vel.z = stateGetSpeedNed_f()->z;
@@ -798,6 +815,8 @@
     aerolog.acc_x = ctrl_lin.acc.x;
     aerolog.acc_y = ctrl_lin.acc.y;
     aerolog.acc_z = ctrl_lin.acc.z;
+
+
 
     log_pos[0] = ctrl_lin.pos.x;
     log_pos[1] = ctrl_lin.pos.y;
