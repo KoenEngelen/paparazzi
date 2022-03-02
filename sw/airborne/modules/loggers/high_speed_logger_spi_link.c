@@ -60,87 +60,33 @@ void high_speed_logger_spi_link_periodic(void)
 {
   // Static counter to identify missing samples
   static int32_t counter = 0;
-  static volatile bool write_extension = false;
   // count all periodic steps
-  counter ++;
 
   // only send a new message if the previous was completely sent
-  if (high_speed_logger_spi_link_ready && !write_extension) {
-    // copy the counter into the SPI datablock
-    high_speed_logger_spi_link_data.id = counter;
-
+  if (high_speed_logger_spi_link_ready) {
     high_speed_logger_spi_link_ready = false;
-    write_extension = true;
 
-    //return correct
-    high_speed_logger_spi_link_data.qi = (int32_t)1000 * aerolog.qi;
-    high_speed_logger_spi_link_data.qx = (int32_t)1000 * aerolog.qx;
-    high_speed_logger_spi_link_data.qy = (int32_t)1000 * aerolog.qy;
-    high_speed_logger_spi_link_data.qz = (int32_t)1000 * aerolog.qz;
+    high_speed_logger_spi_link_data.id = sd_id + counter%2;
 
-    //return 0
-    high_speed_logger_spi_link_data.ax = (int32_t)1000 * aerolog.pos_x;
-    high_speed_logger_spi_link_data.ay = (int32_t)1000 * aerolog.pos_y;
-    high_speed_logger_spi_link_data.az = (int32_t)1000 * aerolog.pos_z;
+    high_speed_logger_spi_link_data.d1  = sd_log[ 0+15*(counter%2)];
+    high_speed_logger_spi_link_data.d2  = sd_log[ 1+15*(counter%2)];
+    high_speed_logger_spi_link_data.d3  = sd_log[ 2+15*(counter%2)];
+    high_speed_logger_spi_link_data.d4  = sd_log[ 3+15*(counter%2)];
+    high_speed_logger_spi_link_data.d5  = sd_log[ 4+15*(counter%2)];
+    high_speed_logger_spi_link_data.d6  = sd_log[ 5+15*(counter%2)];
+    high_speed_logger_spi_link_data.d7  = sd_log[ 6+15*(counter%2)];
+    high_speed_logger_spi_link_data.d8  = sd_log[ 7+15*(counter%2)];
+    high_speed_logger_spi_link_data.d9  = sd_log[ 8+15*(counter%2)];
+    high_speed_logger_spi_link_data.d10 = sd_log[ 9+15*(counter%2)];
+    high_speed_logger_spi_link_data.d11 = sd_log[10+15*(counter%2)];
+    high_speed_logger_spi_link_data.d12 = sd_log[11+15*(counter%2)];
+    high_speed_logger_spi_link_data.d13 = sd_log[12+15*(counter%2)];
+    high_speed_logger_spi_link_data.d14 = sd_log[13+15*(counter%2)];
+    high_speed_logger_spi_link_data.d15 = sd_log[14+15*(counter%2)];
     
-    // #ifdef SITL
-    // printf("\n\nLOGPOS: %e %e %e\n", high_speed_logger_spi_link_data.ax,high_speed_logger_spi_link_data.ay,high_speed_logger_spi_link_data.az);
-    // printf("\npos: %e %e %e",(int32_t)1000* aerolog.pos_x, (int32_t)1000*aerolog.pos_y, (int32_t)1000*aerolog.pos_z);
-    // #endif
-
-    //return 0
-    high_speed_logger_spi_link_data.bx = (int32_t)1000 * aerolog.vel_x;
-    high_speed_logger_spi_link_data.by = (int32_t)1000 * aerolog.vel_y;
-    high_speed_logger_spi_link_data.bz = (int32_t)1000 * aerolog.vel_z;
-
-    //return 0
-    high_speed_logger_spi_link_data.cx = (int32_t)1000 * aerolog.acc_x;
-    high_speed_logger_spi_link_data.cy = (int32_t)1000 * aerolog.acc_y;
-    high_speed_logger_spi_link_data.cz = (int32_t)1000 * aerolog.acc_z;
-    
-    //return correct
-    high_speed_logger_spi_link_data.dx = (int32_t)1000 * aerolog.t;
-    high_speed_logger_spi_link_data.dy = (int32_t)1000 * aerolog.mode;
-
+    counter ++;
   }
-  else if(high_speed_logger_spi_link_ready && write_extension){
-    // copy the counter into the SPI datablock
-    high_speed_logger_spi_link_data.id = counter+1000;
-
-    high_speed_logger_spi_link_ready = false;
-    write_extension = false;
-
-    //return 0
-    high_speed_logger_spi_link_data.qi = stabilization_cmd[COMMAND_ROLL];
-    high_speed_logger_spi_link_data.qx = stabilization_cmd[COMMAND_PITCH];
-    high_speed_logger_spi_link_data.qy = stabilization_cmd[COMMAND_YAW];
-    high_speed_logger_spi_link_data.qz = stabilization_cmd[COMMAND_THRUST];
-    
-    //return correct
-    high_speed_logger_spi_link_data.ax = (int32_t)1000 * aerolog.ref_pos_x;
-    high_speed_logger_spi_link_data.ay = (int32_t)1000 * aerolog.ref_pos_y;
-    high_speed_logger_spi_link_data.az = (int32_t)1000 * aerolog.ref_pos_z;
-    
-    //return 0 (which it should be)
-    high_speed_logger_spi_link_data.bx = (int32_t)1000 * aerolog.ref_vel_x;
-    high_speed_logger_spi_link_data.by = (int32_t)1000 * aerolog.ref_vel_y;
-    high_speed_logger_spi_link_data.bz = (int32_t)1000 * aerolog.ref_vel_z;
-    
-    //return 0 (which it should be)
-    high_speed_logger_spi_link_data.cx = (int32_t)1000 * aerolog.ref_acc_x;
-    high_speed_logger_spi_link_data.cy = (int32_t)1000 * aerolog.ref_acc_y;
-    high_speed_logger_spi_link_data.cz = (int32_t)1000 * aerolog.ref_acc_z;
-
-    //return correct
-    high_speed_logger_spi_link_data.dx = (int32_t)1000 * aerolog.max_vel;
-    high_speed_logger_spi_link_data.dy = (int32_t)1000 * aerolog.max_acc;
-
-    
-  }
-
-  // if (autopilot.in_flight){
-    spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
-  // }
+  spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
 }
 
 static void high_speed_logger_spi_link_trans_cb(struct spi_transaction *trans __attribute__((unused)))

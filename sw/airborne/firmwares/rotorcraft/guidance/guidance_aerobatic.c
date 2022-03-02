@@ -25,29 +25,28 @@
  */
 
 //Include
-  #include <stdlib.h>
-  #include <string.h>
-  #include <math.h>
-  #include <stdio.h>
-  #include "math/pprz_algebra_float.h"
-  #include "math/pprz_matrix_decomp_float.h"
-  #include "math/pprz_matrix_decomp_float.c"
-  #include "math/pprz_simple_matrix.h"
-  #include "subsystems/datalink/telemetry.h"
-  #include "firmwares/rotorcraft/stabilization.h"
-  #include "filters/low_pass_filter.h"
-  #include "subsystems/abi.h"
-  #include "subsystems/navigation/waypoints.h"
-  // #include 
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <stdio.h>
+#include "math/pprz_algebra_float.h"
+#include "math/pprz_matrix_decomp_float.h"
+#include "math/pprz_matrix_decomp_float.c"
+#include "math/pprz_simple_matrix.h"
+#include "stabilization.h"
+#include "subsystems/datalink/telemetry.h"
+#include "firmwares/rotorcraft/stabilization.h"
+#include "filters/low_pass_filter.h"
+#include "subsystems/abi.h"
+#include "subsystems/navigation/waypoints.h"
 
-  #define PPRZ_MSG_ID_AEROBATIC_INDI 158
-//
+#define PPRZ_MSG_ID_AEROBATIC_INDI 158
 
 //Declare variables
-  float guidance_aerobatic_indi_gain = 0.5;
-  float debug_value;
+float guidance_aerobatic_indi_gain = 0.5;
+float debug_value;
 
-  struct ctrl_lin_struct {
+struct ctrl_lin_struct {
     // Input Position
     struct NedCoor_f pos; //get from stat.h: stateGetPositionNed_f(void)
     // Input Velocity
@@ -56,26 +55,24 @@
     struct NedCoor_f acc; //get from stat.h: stateGetAccelNed_f(void)
     // Output Acceleration
     struct NedCoor_f cmdacc;
-  } ctrl_lin;
+} ctrl_lin;
 
-  struct trajectory {
+struct trajectory {
     float t;
     struct NedCoor_f pos;
     struct NedCoor_f vel;
     struct NedCoor_f acc;
-  } traj;
+} traj;
 
-
-
-  struct AerobaticVariableSettings varset = {
+struct AerobaticVariableSettings varset = {
     .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
     .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
     .p_gain  = GUIDANCE_AEROBATIC_P_GAIN,
     .d_gain  = GUIDANCE_AEROBATIC_D_GAIN,
     .mode = GUIDANCE_AEROBATIC_MODE
-  };
+};
 
-  struct GuidanceLogStruct aerolog = {
+struct GuidanceLogStruct aerolog = {
     .t = 0.0f,
     .mode = GUIDANCE_AEROBATIC_MODE,
     .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
@@ -101,47 +98,52 @@
     .ref_vel_z = 0.0f,
     .ref_acc_x = 0.0f,
     .ref_acc_y = 0.0f,
-    .ref_acc_z = 0.0f
-  };
+    .ref_acc_z = 0.0f,
+    .thrust_in = 0.0f,
+    .d_yaw = 0.0f,
+    .du0 = 0.0f,
+    .du1 = 0.0f,
+    .du2 = 0.0f
+};
 
 
-  struct FloatVect3 V_inf;
-  struct FloatVect3 V_drone;
-  struct FloatQuat q;
+struct FloatVect3 V_inf;
+struct FloatVect3 V_drone;
+struct FloatQuat q;
 
-  struct FloatVect3 V_temp;
+struct FloatVect3 V_temp;
 
-  struct FloatVect3 Yaw_proj;
-  struct FloatVect3 Yaw_ref;
+struct FloatVect3 Yaw_proj;
+struct FloatVect3 Yaw_ref;
 
-  struct FloatVect3 Yaw_b;
-  struct FloatVect3 Yaw_bE;
+struct FloatVect3 Yaw_b;
+struct FloatVect3 Yaw_bE;
 
-  float d_yaw;
+float d_yaw;
 
-  struct NedCoor_f meas_acc;  
-  struct NedCoor_f fix_pos;
+struct NedCoor_f meas_acc;  
+struct NedCoor_f fix_pos;
 
-  float thrust_in = 0;
+float thrust_in = 0;
 
-  float V[3]={0.1f,2.0f,1.0f};
-  float phi = 0;
-  float alpha = 0;
+float V[3]={0.1f,2.0f,1.0f};
+float phi = 0;
+float alpha = 0;
 
-  float t = 0.0;
+float t = 0.0;
 
-  #define ROWS_GUIDANCE 3 //rows
-  #define COLS_GUIDANCE 3 //columns
+#define ROWS_GUIDANCE 3 //rows
+#define COLS_GUIDANCE 3 //columns
 
-  float Weight[COLS_GUIDANCE] = {1, 1 ,1};
+float Weight[COLS_GUIDANCE] = {1, 1 ,1};
 
-  float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
+float G[ROWS_GUIDANCE][COLS_GUIDANCE] = {0};
 
-  struct FloatVect3 dv;
-  float du[COLS_GUIDANCE] = {0};
+struct FloatVect3 dv;
+float du[COLS_GUIDANCE] = {0};
 
 
-  struct trajectory_section {
+struct trajectory_section {
     int number;
     float t_beg;
     float t_trans_beg;
@@ -158,213 +160,191 @@
     float delta_pos;
     float vel_max;
     float acc_max;
-  } traj_sec;
+} traj_sec;
 
-  float x_coords[4] = {0};
-  float y_coords[4] = {0};
+float x_coords[4] = {0};
+float y_coords[4] = {0};
 
 
-  #ifdef GUIDANCE_INDI_SPECIFIC_FORCE_GAIN
+#ifdef GUIDANCE_INDI_SPECIFIC_FORCE_GAIN
   float thrust_in_specific_force_gain = GUIDANCE_INDI_SPECIFIC_FORCE_GAIN;
-  #else
+#else
   float thrust_in_specific_force_gain = -500;
-  #endif
+#endif
 
-  #ifndef GUIDANCE_INDI_FILTER_CUTOFF
+#ifndef GUIDANCE_INDI_FILTER_CUTOFF
   #ifdef STABILIZATION_INDI_FILT_CUTOFF
-  #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
+    #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
   #else
-  #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+    #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
   #endif
-  #endif
+#endif
 
-  #define GUIDANCE_INDI_THRUST_DYNAMICS 0.1
+#define GUIDANCE_INDI_THRUST_DYNAMICS 0.1
 
-  float thrust_act = 0;
-  Butterworth2LowPass filt_accel_ned[3];
-  Butterworth2LowPass filt_vel_ned[3];
-  Butterworth2LowPass filt_pos_ned[3];
-  Butterworth2LowPass filt_quat[4];
-  // Butterworth2LowPass roll_filt;
-  // Butterworth2LowPass pitch_filt;
-  Butterworth2LowPass thrust_filt;
+float thrust_act = 0;
+Butterworth2LowPass filt_accel_ned[3];
+Butterworth2LowPass filt_vel_ned[3];
+Butterworth2LowPass filt_pos_ned[3];
+Butterworth2LowPass filt_quat[4];
+// Butterworth2LowPass roll_filt;
+// Butterworth2LowPass pitch_filt;
+Butterworth2LowPass thrust_filt;
 
-  float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
-
-
-  float log_pos[3] = {0};
-  float log_vel[3] = {0};
-  float log_acc[3] = {0};
-  float log_ref_pos[3] = {0};
-  float log_ref_vel[3] = {0};
-  float log_ref_acc[3] = {0};
-  float log_gains[2] = {0};
+float filter_cutoff = GUIDANCE_INDI_FILTER_CUTOFF;
 
 
-//
+float log_pos[3] = {0};
+float log_vel[3] = {0};
+float log_acc[3] = {0};
+float log_ref_pos[3] = {0};
+float log_ref_vel[3] = {0};
+float log_ref_acc[3] = {0};
+float log_gains[2] = {0};
+
+int32_t sd_id;
+int32_t sd_log[30];
 
 //Declare all functions
-  // extern void guidance_h_module_init(void);
-  // extern void guidance_h_module_enter(void);
-  // extern void guidance_h_module_read_rc(void);
-  // extern void guidance_h_module_run(bool in_flight);
-  // extern void guidance_v_module_init(void);
-  // extern void guidance_v_module_enter(void);
-  // extern void guidance_v_module_run(bool in_flight);
 
-  // void guidance_h_module_init(void);
-  // void guidance_h_module_enter(void);
-  // void guidance_h_module_read_rc(void);
-  // void guidance_h_module_run(bool in_flight);
+// void guidance_aerobatic_init(void);
+void guidance_aerobatic_enter(void);
+void guidance_aerobatic_read_rc(void);
+// void guidance_aerobatic_run(void);
 
 
+void filter_init(void);
+static void guidance_indi_filter_thrust(void);
+void guidance_indi_propagate_filters(void);
 
-  // void guidance_aerobatic_init(void);
-  void guidance_aerobatic_enter(void);
-  void guidance_aerobatic_read_rc(void);
-  // void guidance_aerobatic_run(void);
+void test_SVD(void);
+void add_increment(void);
+void test_a_L_wing(void);
+float a_D_wing_x(void);
+float a_D_wing_z(void);
+float a_L_wing_x(void);
+float a_L_wing_z(void);
+float a_wing_x(void);
+float a_wing_z(void);
+float AoA(void);
+float AoD(void);
+float AoS(void);
+float Cd(void);
+float Cl(void);
+float dCd(void);
+float dCl(void);
+float Vxz_2(void);
+float da_wing_x_dphii(void);
+float da_wing_x_dpsii(void);
+float da_wing_x_dthetai(void);
+float da_wing_y_dphii(void);
+float da_wing_y_dpsii(void);
+float da_wing_y_dthetai(void);
+float da_wing_z_dphii(void);
+float da_wing_z_dpsii(void);
+float da_wing_z_dthetai(void);
+float dalphai_dphii(void);
+float dalphai_dpsii(void);
+float dalphai_dthetai(void);
+float dbetai_dphii(void);
+float dbetai_dpsii(void);
+float dbetai_dthetai(void);
+float dCd_dphii(void);
+float dCd_dpsii(void);
+float dCd_dthetai(void);
+float dCl_dphii(void);
+float dCl_dpsii(void);
+float dCl_dthetai(void);
+float dVx_dphii(void);
+float dVx_dpsii(void);
+float dVx_dthetai(void);
+float dVxz_2_dphii(void);
+float dVxz_2_dpsii(void);
+float dVxz_2_dthetai(void);
+float dVy_dphii(void);
+float dVy_dthetai(void);
+float dVz_dphii(void);
+float dVz_dpsii(void);
+float dVz_dthetai(void);
+float Vxz_2_dalphai_dphii(void);
+float Vxz_2_dalphai_dpsii(void);
+float Vxz_2_dCd_dphii(void);
+float Vxz_2_dCd_dpsii(void);
+float Vxz_2_dCl_dphii(void);
+float Vxz_2_dCl_dpsii(void);
 
 
-  void filter_init(void);
-  static void guidance_indi_filter_thrust(void);
-  void guidance_indi_propagate_filters(void);
+void print_matrix(float **ptr,int m, int n);
+void print_matrix_matlab(float **ptr,int m, int n);
+// void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l);
+void print_2darr(int row, int col, float* Data_00);
+void print_row(float *ptr,int m);
+void print_row_matlab(float *ptr,int m);
 
-  void test_SVD(void);
-  void add_increment(void);
-  void test_a_L_wing(void);
-  float a_D_wing_x(void);
-  float a_D_wing_z(void);
-  float a_L_wing_x(void);
-  float a_L_wing_z(void);
-  float a_wing_x(void);
-  float a_wing_z(void);
-  float AoA(void);
-  float AoD(void);
-  float AoS(void);
-  float Cd(void);
-  float Cl(void);
-  float dCd(void);
-  float dCl(void);
-  float Vxz_2(void);
-  float da_wing_x_dphii(void);
-  float da_wing_x_dpsii(void);
-  float da_wing_x_dthetai(void);
-  float da_wing_y_dphii(void);
-  float da_wing_y_dpsii(void);
-  float da_wing_y_dthetai(void);
-  float da_wing_z_dphii(void);
-  float da_wing_z_dpsii(void);
-  float da_wing_z_dthetai(void);
-  float dalphai_dphii(void);
-  float dalphai_dpsii(void);
-  float dalphai_dthetai(void);
-  float dbetai_dphii(void);
-  float dbetai_dpsii(void);
-  float dbetai_dthetai(void);
-  float dCd_dphii(void);
-  float dCd_dpsii(void);
-  float dCd_dthetai(void);
-  float dCl_dphii(void);
-  float dCl_dpsii(void);
-  float dCl_dthetai(void);
-  float dVx_dphii(void);
-  float dVx_dpsii(void);
-  float dVx_dthetai(void);
-  float dVxz_2_dphii(void);
-  float dVxz_2_dpsii(void);
-  float dVxz_2_dthetai(void);
-  float dVy_dphii(void);
-  float dVy_dthetai(void);
-  float dVz_dphii(void);
-  float dVz_dpsii(void);
-  float dVz_dthetai(void);
-  float Vxz_2_dalphai_dphii(void);
-  float Vxz_2_dalphai_dpsii(void);
-  float Vxz_2_dCd_dphii(void);
-  float Vxz_2_dCd_dpsii(void);
-  float Vxz_2_dCl_dphii(void);
-  float Vxz_2_dCl_dpsii(void);
-  
+void UpdateTrajectory(void);
+void LinAccCon(void);
+void get_increment(void);
+void SVDw(void);
+void get_dv(void);
+void get_G(void);
+void get_states(void);
+void print_states(void);
+// void print_matrix(float** ptr,int m, int n);
+// void print_row(float* ptr,int m);
 
-  void print_matrix(float **ptr,int m, int n);
-  void print_matrix_matlab(float **ptr,int m, int n);
-  // void print_eq(float **ptrA, float **ptrX, float **ptrB, int m, int n, int l);
-  void print_2darr(int row, int col, float* Data_00);
-  void print_row(float *ptr,int m);
-  void print_row_matlab(float *ptr,int m);
-
-  void UpdateTrajectory(void);
-  void LinAccCon(void);
-  void get_increment(void);
-  void SVDw(void);
-  void get_dv(void);
-  void get_G(void);
-  void get_states(void);
-  void print_states(void);
-  // void print_matrix(float** ptr,int m, int n);
-  // void print_row(float* ptr,int m);
-
-  void CalcNewTrajectory(void);
-  void TrajectoryScenario(void);
-//
+void CalcNewTrajectory(void);
+void TrajectoryScenario(void);
 
 
 //Guidance Module
-  void guidance_h_module_init(void)
-  {
+void guidance_h_module_init(void){
     guidance_aerobatic_init();
-  }
+}
 
-  void guidance_h_module_enter(void)
-  {
+void guidance_h_module_enter(void){
     guidance_aerobatic_enter();
-  }
+}
 
-  void guidance_h_module_read_rc(void)
-  {
+void guidance_h_module_read_rc(void){
     // // -MAX_PPRZ to MAX_PPRZ
     // ctrl_windtunnel.rc_throttle = radio_control.values[RADIO_THROTTLE];
     // ctrl_windtunnel.rc_roll = radio_control.values[RADIO_ROLL];
     // ctrl_windtunnel.rc_pitch = radio_control.values[RADIO_PITCH];
     // ctrl_windtunnel.rc_yaw = radio_control.values[RADIO_YAW];
-  }
+}
 
-  void guidance_h_module_run(UNUSED bool in_flight)
-  {
+void guidance_h_module_run(UNUSED bool in_flight){
     // Call full inner-/outerloop / horizontal-/vertical controller:
     guidance_aerobatic_run();
-  }
+}
 
-    void guidance_v_module_init(void)
-    {
+void guidance_v_module_init(void){ 
       // initialization of your custom vertical controller goes here
-    }
+}
 
     // Implement own Vertical loops
-    void guidance_v_module_enter(void)
-    {
+void guidance_v_module_enter(void){
       // your code that should be executed when entering this vertical mode goes here
-    }
+}
 
-    void guidance_v_module_run(UNUSED bool in_flight)
-    {
+void guidance_v_module_run(UNUSED bool in_flight){
       // your vertical controller goes here
-    }
+}
   
 
 //
 
 //Messages
-  static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev){
+static void send_aerobatic_indi(struct transport_tx *trans, struct link_device *dev){
     pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
                          &varset.max_vel,
                          &varset.max_acc,
                          &varset.p_gain,
                          &varset.d_gain,
                          &varset.mode);
-  }
+}
 
-  static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
+static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
     pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
                          3,&log_pos[0],
                          3,&log_vel[0],
@@ -373,11 +353,11 @@
                          3,&log_ref_vel[0],
                          3,&log_ref_acc[0],
                          2,&log_gains[0]);
-  }
+}
 //
 
 // Initialize function
- void guidance_aerobatic_init(void) {
+void guidance_aerobatic_init(void){
   debug_value = 0.0;
 
   // get_dv();
@@ -392,10 +372,8 @@
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_LOG, send_aerobatic_log);
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_indi);
  }
-//
-
 // Enter function
-  void guidance_aerobatic_enter(void) {
+void guidance_aerobatic_enter(void){
     t = -5.0;
     
     varset.max_vel = 1.0;
@@ -414,11 +392,10 @@
     ////printf("qi\tqx\tqy\tqz\t");
     ////printf("V_b_x\tV_b_y\tV_b_z\t");
     ////printf("G00\tG01\tG02\tG03\tG10\tG11\tG12\tG13\tG20\tG21\tG22\tG23\tdv_x\tdv_y\tdv_z\tdu_phi\tdu_theta\tdu_psi\tdu_T\n");
-  }
-//
-
+}
 // Periodic function
- void guidance_aerobatic_run() {
+void guidance_aerobatic_run(){
+  static int32_t counter = 0;
   t = t + 0.001953125;
   if (t > 360000){
     t = 0;
@@ -427,7 +404,7 @@
   guidance_indi_propagate_filters();
   guidance_indi_filter_thrust();
 
-  get_states(); // Filter Speed as well?
+  get_states();
 
   UpdateTrajectory();
   LinAccCon();
@@ -436,12 +413,13 @@
   get_increment();
   add_increment();
   print_states();
-  
- }
-//
-
+  if (counter%2){
+    update_sd_logger();
+  }
+  counter++;
+}
 // Controller functions
-  void get_states(void){
+void get_states(void){
 
     ////printf("\n\nget_states");
     q.qi = filt_quat[0].o[0];
@@ -513,6 +491,8 @@
       d_yaw = -5.0f/M_PI;
     }
 
+    aerolog.d_yaw = d_yaw;
+
     // q.qi = -q.qi;
     V_drone.x = -V_drone.x;
     V_drone.y = -V_drone.y;
@@ -533,72 +513,9 @@
     V[2] = V_inf.z;   
 
     // ////printf("\n\nV: %f \t %f \t %f\n",V[0],V[1],V[2]);   
-  }
+}
 
-  void TrajectoryScenario(){
-    traj_sec.number += 1;
-    if (traj_sec.number >= 4){
-      traj_sec.number = 0;
-    } 
-
-    traj_sec.pos_end.x =  y_coords[traj_sec.number];
-    traj_sec.pos_end.y =  x_coords[traj_sec.number];
-
-    traj_sec.vel_max = varset.max_vel; 
-    traj_sec.acc_max = varset.max_acc;
-
-    aerolog.max_vel = varset.max_vel;
-    aerolog.max_acc = varset.max_acc;
-
-  }
-
-  void CalcNewTrajectory(){
-    
-    // traj_sec.pos_beg.x = traj.pos.x;
-    // traj_sec.pos_beg.y = traj.pos.y;
-    // traj_sec.pos_beg.z = traj.pos.z;
-
-    traj_sec.pos_beg.x = traj_sec.pos_end.x;
-    traj_sec.pos_beg.y = traj_sec.pos_end.y;
-    traj_sec.pos_beg.z = traj_sec.pos_end.z;
-    
-    TrajectoryScenario(); //get pos_end, v_max, a_max based on scenario
-
-    // #ifdef SITL
-    // printf("\nPos_beg: %f \t %f \t %f",traj_sec.pos_beg.x,traj_sec.pos_beg.y,traj_sec.pos_beg.z);
-    // printf("\nPos_end: %f \t %f \t %f",traj_sec.pos_end.x,traj_sec.pos_end.y,traj_sec.pos_end.z);
-    // printf("\nv_lim: %f\na_lim: %f",traj_sec.vel_max, traj_sec.acc_max); 
-    // printf("\nv_lim: %f\na_lim: %f",varset.max_vel, varset.max_acc);
-    // #endif
-    
-    traj_sec.delta_pos = sqrtf(pow(traj_sec.pos_end.x-traj_sec.pos_beg.x,2) +  pow(traj_sec.pos_end.y-traj_sec.pos_beg.y,2) +  pow(traj_sec.pos_end.z-traj_sec.pos_beg.z,2));
-    traj_sec.dir.x = (traj_sec.pos_end.x-traj_sec.pos_beg.x)/traj_sec.delta_pos;
-    traj_sec.dir.y = (traj_sec.pos_end.y-traj_sec.pos_beg.y)/traj_sec.delta_pos;
-    traj_sec.dir.z = (traj_sec.pos_end.z-traj_sec.pos_beg.z)/traj_sec.delta_pos;
-
-    float time_v_constraint = 2.0*traj_sec.delta_pos/traj_sec.vel_max;
-    float time_a_constraint = sqrtf(2*M_PI*traj_sec.delta_pos/traj_sec.acc_max);
-
-    if(time_a_constraint>time_v_constraint){
-      traj_sec.type = 0;
-      traj_sec.t_end = time_a_constraint;
-      //printf("\ntimeline: %f -> %f",traj_sec.t_beg,traj_sec.t_end);
-    } else {
-      traj_sec.type = 1;
-      traj_sec.t_trans_beg =  M_PI * traj_sec.vel_max/traj_sec.acc_max/2.0;
-      traj_sec.d_x_trans = traj_sec.vel_max*traj_sec.t_trans_beg/2;
-      traj_sec.t_end = (traj_sec.delta_pos-2*traj_sec.d_x_trans)/traj_sec.vel_max + 2* traj_sec.t_trans_beg;
-      traj_sec.t_trans_end =  traj_sec.t_end-traj_sec.t_trans_beg;
-
-      //printf("\ntimeline: %f -> %f -> %f -> %f",traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
-      //printf("\ntransient distance: %f ",traj_sec.d_x_trans);
-    }
-
-
-
-  }
-
-  void UpdateTrajectory(){
+void UpdateTrajectory(){
     traj.t = t;
     aerolog.t = t;
     aerolog.mode = varset.mode;
@@ -771,10 +688,9 @@
 
     // }
 
-  }
+}
 
-
-  void LinAccCon(void){
+void LinAccCon(void){
     float PGain = varset.p_gain;
     float VGain = varset.d_gain;
     //PGain = PGain * VGain;
@@ -871,9 +787,33 @@
     // }
 
     // ////printf("\n\nCommanded Acceleration: %f \t %f \t %f \t [m/s^2]\n", ctrl_lin.cmdacc.x, ctrl_lin.cmdacc.y, ctrl_lin.cmdacc.z);
-  }
+}
 
-  void get_increment(void){
+void get_G(void){
+    if (ROWS_GUIDANCE > COLS_GUIDANCE){
+      G[0][0] =  da_wing_x_dphii(); 
+      G[0][1] =  da_wing_y_dphii() + 20.0 * thrust_in/MAX_PPRZ; 
+      G[0][2] =  da_wing_z_dphii(); 
+      G[1][0] =  da_wing_x_dthetai() - 20.0 * thrust_in/MAX_PPRZ; 
+      G[1][1] =  da_wing_y_dthetai(); 
+      G[1][2] =  da_wing_z_dthetai(); 
+      G[2][0] =  0.0f; 
+      G[2][1] =  0.0f; 
+      G[2][2] =  -20.0* thrust_in/MAX_PPRZ; 
+    } else {
+      G[0][0] =  da_wing_x_dphii(); 
+      G[1][0] =  da_wing_y_dphii()+ 20.0 * thrust_in/MAX_PPRZ; 
+      G[2][0] =  da_wing_z_dphii(); 
+      G[0][1] =  da_wing_x_dthetai() - 20.0* thrust_in/MAX_PPRZ; 
+      G[1][1] =  da_wing_y_dthetai(); 
+      G[2][1] =  da_wing_z_dthetai(); 
+      G[0][2] =  0.0f; 
+      G[1][2] =  0.0f; 
+      G[2][2] =  -20.0* thrust_in/MAX_PPRZ; 
+    }
+}
+
+void get_increment(void){
     float WGt[COLS_GUIDANCE][ROWS_GUIDANCE] = {0};
     float GWGt[ROWS_GUIDANCE][ROWS_GUIDANCE] = {0}; 
     float WiUv[ROWS_GUIDANCE] = {0};
@@ -970,42 +910,9 @@
       du[2] = du_max;
     }
 
+}
 
-  }
-
-  void get_G(void){
-    if (ROWS_GUIDANCE > COLS_GUIDANCE){
-      G[0][0] =  da_wing_x_dphii(); 
-      G[0][1] =  da_wing_y_dphii() + 20.0 * thrust_in/MAX_PPRZ; 
-      G[0][2] =  da_wing_z_dphii(); 
-      G[1][0] =  da_wing_x_dthetai() - 20.0 * thrust_in/MAX_PPRZ; 
-      G[1][1] =  da_wing_y_dthetai(); 
-      G[1][2] =  da_wing_z_dthetai(); 
-      G[2][0] =  0.0f; 
-      G[2][1] =  0.0f; 
-      G[2][2] =  -20.0* thrust_in/MAX_PPRZ; 
-    } else {
-      G[0][0] =  da_wing_x_dphii(); 
-      G[1][0] =  da_wing_y_dphii()+ 20.0 * thrust_in/MAX_PPRZ; 
-      G[2][0] =  da_wing_z_dphii(); 
-      G[0][1] =  da_wing_x_dthetai() - 20.0* thrust_in/MAX_PPRZ; 
-      G[1][1] =  da_wing_y_dthetai(); 
-      G[2][1] =  da_wing_z_dthetai(); 
-      G[0][2] =  0.0f; 
-      G[1][2] =  0.0f; 
-      G[2][2] =  -20.0* thrust_in/MAX_PPRZ; 
-    }
-  }
-
-  void get_dv(void){
-    // dv.x =  0.0;
-    // dv.y =  0.0;
-    // dv.z = -1;
-    LinAccCon();
-
-  }
-
-  void add_increment(void){
+void add_increment(void){
     AbiSendMsgTHRUST(THRUST_INCREMENT_ID, du[2]);
     // ////printf("thrust filt: %f", thrust_filt.o[0]);
     thrust_in = thrust_filt.o[0] + du[2];
@@ -1022,6 +929,12 @@
     struct FloatQuat dq;
     struct FloatQuat q_res = {0};
     struct Int32Quat q_i_res = {0};
+
+
+    aerolog.du0 = du[0];
+    aerolog.du1 = du[1];
+    aerolog.du1 = du[2];
+    aerolog.thrust_in = thrust_in;
 
     float magdu;
     magdu = sqrt(du[0]*du[0]+du[1]*du[1]+d_yaw*d_yaw);
@@ -1069,9 +982,50 @@
     // stabilization_attitude_set_rpy_setpoint_i(&rpyi);
     stabilization_indi_attitude_run(q_i_res,true);
 
-  }
+}
 
-  void print_states(void){
+void update_sd_logger(void){
+  sd_id = sd_id + 2;
+
+  sd_log[0] = (int32_t) 1000.0 * ctrl_lin.pos.x;
+  sd_log[1] = (int32_t) 1000.0 * ctrl_lin.pos.y;
+  sd_log[2] = (int32_t) 1000.0 * ctrl_lin.pos.z;
+  sd_log[3] = (int32_t) 1000.0 * ctrl_lin.vel.x;
+  sd_log[4] = (int32_t) 1000.0 * ctrl_lin.vel.y;
+  sd_log[5] = (int32_t) 1000.0 * ctrl_lin.vel.z;
+  sd_log[6] = (int32_t) 1000.0 * ctrl_lin.acc.x;
+  sd_log[7] = (int32_t) 1000.0 * ctrl_lin.acc.y;
+  sd_log[8] = (int32_t) 1000.0 * ctrl_lin.acc.z;
+
+  sd_log[9]  = (int32_t) 1000.0 * traj.pos.x;
+  sd_log[10] = (int32_t) 1000.0 * traj.pos.y;
+  sd_log[11] = (int32_t) 1000.0 * traj.pos.z;
+
+  sd_log[12] = (int32_t) 1000.0 * q.qi;
+  sd_log[13] = (int32_t) 1000.0 * q.qx;
+  sd_log[14] = (int32_t) 1000.0 * q.qy;
+  sd_log[15] = (int32_t) 1000.0 * q.qz;
+
+  sd_log[16] = (int32_t) 1000.0 * du[0];
+  sd_log[17] = (int32_t) 1000.0 * du[1];
+  sd_log[18] = (int32_t) 1000.0 * d_yaw;
+  sd_log[19] = (int32_t) 1000.0 * du[2];
+  sd_log[20] = (int32_t) 1000.0 * thrust_in;
+
+  sd_log[21] = stabilization_cmd[COMMAND_ROLL];
+  sd_log[22] = stabilization_cmd[COMMAND_PITCH];
+  sd_log[23] = stabilization_cmd[COMMAND_YAW];
+  sd_log[24] = stabilization_cmd[COMMAND_THRUST];
+
+
+  sd_log[25] = (int32_t) 10000 * 420;
+  sd_log[26] = (int32_t) 1000 * 420;
+  sd_log[27] = (int32_t) 100 * 420;
+  sd_log[28] = (int32_t) 10 * 420;
+  sd_log[29] = (int32_t) 420;
+}
+
+void print_states(void){
 
     ////printf("%f\t%f\t%f", ctrl_lin.pos.x, ctrl_lin.pos.y, ctrl_lin.pos.z);
     ////printf("\t%f\t%f\t%f", traj.pos.x, traj.pos.y, traj.pos.z);
@@ -1102,12 +1056,73 @@
     // G[2][0],G[2][1],G[2][2],G[2][3]);
     // ////printf("\ndv [m/s^2]: \t%f\t%f\t%f", dv.x, dv.y, dv.z);
     // ////printf("\ndu [ 3xrad | N ]: \t%f\t%f\t%f\t%f", du[0], du[1], du[2], du[3]);
-  }
-//
+}
+
+void CalcNewTrajectory(){
+    
+    // traj_sec.pos_beg.x = traj.pos.x;
+    // traj_sec.pos_beg.y = traj.pos.y;
+    // traj_sec.pos_beg.z = traj.pos.z;
+
+    traj_sec.pos_beg.x = traj_sec.pos_end.x;
+    traj_sec.pos_beg.y = traj_sec.pos_end.y;
+    traj_sec.pos_beg.z = traj_sec.pos_end.z;
+    
+    TrajectoryScenario(); //get pos_end, v_max, a_max based on scenario
+
+    // #ifdef SITL
+    // printf("\nPos_beg: %f \t %f \t %f",traj_sec.pos_beg.x,traj_sec.pos_beg.y,traj_sec.pos_beg.z);
+    // printf("\nPos_end: %f \t %f \t %f",traj_sec.pos_end.x,traj_sec.pos_end.y,traj_sec.pos_end.z);
+    // printf("\nv_lim: %f\na_lim: %f",traj_sec.vel_max, traj_sec.acc_max); 
+    // printf("\nv_lim: %f\na_lim: %f",varset.max_vel, varset.max_acc);
+    // #endif
+    
+    traj_sec.delta_pos = sqrtf(pow(traj_sec.pos_end.x-traj_sec.pos_beg.x,2) +  pow(traj_sec.pos_end.y-traj_sec.pos_beg.y,2) +  pow(traj_sec.pos_end.z-traj_sec.pos_beg.z,2));
+    traj_sec.dir.x = (traj_sec.pos_end.x-traj_sec.pos_beg.x)/traj_sec.delta_pos;
+    traj_sec.dir.y = (traj_sec.pos_end.y-traj_sec.pos_beg.y)/traj_sec.delta_pos;
+    traj_sec.dir.z = (traj_sec.pos_end.z-traj_sec.pos_beg.z)/traj_sec.delta_pos;
+
+    float time_v_constraint = 2.0*traj_sec.delta_pos/traj_sec.vel_max;
+    float time_a_constraint = sqrtf(2*M_PI*traj_sec.delta_pos/traj_sec.acc_max);
+
+    if(time_a_constraint>time_v_constraint){
+      traj_sec.type = 0;
+      traj_sec.t_end = time_a_constraint;
+      //printf("\ntimeline: %f -> %f",traj_sec.t_beg,traj_sec.t_end);
+    } else {
+      traj_sec.type = 1;
+      traj_sec.t_trans_beg =  M_PI * traj_sec.vel_max/traj_sec.acc_max/2.0;
+      traj_sec.d_x_trans = traj_sec.vel_max*traj_sec.t_trans_beg/2;
+      traj_sec.t_end = (traj_sec.delta_pos-2*traj_sec.d_x_trans)/traj_sec.vel_max + 2* traj_sec.t_trans_beg;
+      traj_sec.t_trans_end =  traj_sec.t_end-traj_sec.t_trans_beg;
+
+      //printf("\ntimeline: %f -> %f -> %f -> %f",traj_sec.t_beg,traj_sec.t_trans_beg,traj_sec.t_trans_end,traj_sec.t_end);
+      //printf("\ntransient distance: %f ",traj_sec.d_x_trans);
+    }
+
+
+
+}
+
+void TrajectoryScenario(){
+    traj_sec.number += 1;
+    if (traj_sec.number >= 4){
+      traj_sec.number = 0;
+    } 
+
+    traj_sec.pos_end.x =  y_coords[traj_sec.number];
+    traj_sec.pos_end.y =  x_coords[traj_sec.number];
+
+    traj_sec.vel_max = varset.max_vel; 
+    traj_sec.acc_max = varset.max_acc;
+
+    aerolog.max_vel = varset.max_vel;
+    aerolog.max_acc = varset.max_acc;
+
+}
 
 // FlightPlan
-
-  void setReferenceHere(uint8_t wp){
+void setReferenceHere(uint8_t wp){
     fix_pos.x = waypoint_get_x(wp);
     fix_pos.y = waypoint_get_y(wp);
     // fix_pos.z = waypoint_get_alt(wp);
@@ -1128,7 +1143,7 @@
     // printf("\nWP_REF: \t%f \t%f \t%f \nPOS: \t%f \t%f \t%f" , fix_pos.x, fix_pos.y, fix_pos.z, stateGetPositionNed_f()->x, stateGetPositionNed_f()->y, stateGetPositionNed_f()->z);
   }
 
-  void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
+void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
 
     x_coords[0] = waypoint_get_x(wp_1);
     x_coords[1] = waypoint_get_x(wp_2);
@@ -1141,9 +1156,9 @@
     y_coords[3] = waypoint_get_y(wp_4);
 
     // printf("\nWPs: \t%f \t %f\n \t%f \t%f\n \t%f \t%f\n \t%f \t%f" , x_coords[0], y_coords[0], x_coords[1], y_coords[1], x_coords[2], y_coords[2], x_coords[3], y_coords[3]);
-  }
+}
 
-  void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
+void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
 
     x_coords[0] = waypoint_get_x(wp_1);
     x_coords[1] = waypoint_get_x(wp_2);
@@ -1157,16 +1172,9 @@
     // printf("\nWPs: \t%f \t %f\n \t%f \t%f\n \t%f \t%f\n \t%f \t%f" , x_coords[0], y_coords[0], x_coords[1], y_coords[1], x_coords[2], y_coords[2], x_coords[3], y_coords[3]);
 
   }
-
-//
 
 // Filters
-
-  
-  /**
-  * Filter the thrust, such that it corresponds to the filtered acceleration
-  */
-  void filter_init(void){
+void filter_init(void){
     thrust_in = stabilization_cmd[COMMAND_THRUST];
     thrust_act = thrust_in;
 
@@ -1183,9 +1191,9 @@
     // init_butterworth_2_low_pass(&roll_filt, tau, sample_time, stateGetNedToBodyEulers_f()->phi);
     // init_butterworth_2_low_pass(&pitch_filt, tau, sample_time, stateGetNedToBodyEulers_f()->theta);
     init_butterworth_2_low_pass(&thrust_filt, tau, sample_time, thrust_in);
-  }
+}
 
-  void guidance_indi_filter_thrust(void){
+void guidance_indi_filter_thrust(void){
     // Actuator dynamics
     thrust_act = thrust_act + GUIDANCE_INDI_THRUST_DYNAMICS * (thrust_in - thrust_act);
     // ////printf('thrust act: %f',thrust_act);
@@ -1193,14 +1201,9 @@
     
     // ////printf("Thrust_act (input for filter): \t%f ",thrust_act);
     update_butterworth_2_low_pass(&thrust_filt, thrust_act);
-  }
+}
 
-  /**
-  * Low pass the accelerometer measurements to remove noise from vibrations.
-  * The roll and pitch also need to be filtered to synchronize them with the
-  * acceleration
-  */
-  void guidance_indi_propagate_filters(void){
+void guidance_indi_propagate_filters(void){
     struct NedCoor_f *accel = stateGetAccelNed_f();
     update_butterworth_2_low_pass(&filt_accel_ned[0], accel->x);
     update_butterworth_2_low_pass(&filt_accel_ned[1], accel->y);
@@ -1228,7 +1231,7 @@
 
     // update_butterworth_2_low_pass(&roll_filt, eulers->phi);
     // update_butterworth_2_low_pass(&pitch_filt, eulers->theta);
-  }
+}
 
 //
  

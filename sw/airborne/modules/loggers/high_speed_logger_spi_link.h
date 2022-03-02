@@ -31,22 +31,22 @@ extern void high_speed_logger_spi_link_periodic(void);
 #define PACKED __attribute__((__packed__))
 
 struct PACKED high_speed_logger_spi_link_data {
-  int32_t id;  // 1
-  int32_t qi;  // 2
-  int32_t qx;  // 3
-  int32_t qy;  // 4
-  int32_t qz;  // 5
-  int32_t ax;  // 6
-  int32_t ay;  // 7
-  int32_t az;  // 8
-  int32_t bx;  // 9
-  int32_t by;  //10
-  int32_t bz;  //11
-  int32_t cx;  //12
-  int32_t cy;  //13
-  int32_t cz;  //14
-  int32_t dx;  //15
-  int32_t dy;  //16
+  int32_t id;
+  int32_t d1;
+  int32_t d2;
+  int32_t d3;
+  int32_t d4;
+  int32_t d5;
+  int32_t d6;
+  int32_t d7;
+  int32_t d8;
+  int32_t d9;
+  int32_t d10;
+  int32_t d11;
+  int32_t d12;
+  int32_t d13;
+  int32_t d14;
+  int32_t d15;
 };
 
 

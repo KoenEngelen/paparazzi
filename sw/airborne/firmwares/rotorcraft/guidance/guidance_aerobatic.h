@@ -92,8 +92,15 @@ struct GuidanceLogStruct {
     float ref_acc_x;
     float ref_acc_y;
     float ref_acc_z;
-
+    float thrust_in;
+    float d_yaw;
+    float du0;
+    float du1;
+    float du2;
 };
+
+extern int32_t sd_id;
+extern int32_t sd_log[30];
 
 extern struct GuidanceLogStruct aerolog;
 extern struct AerobaticVariableSettings varset;
