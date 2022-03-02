@@ -987,30 +987,30 @@ void add_increment(void){
 void update_sd_logger(void){
   sd_id = sd_id + 2;
 
-  sd_log[0] = (int32_t) 1000.0 * ctrl_lin.pos.x;
-  sd_log[1] = (int32_t) 1000.0 * ctrl_lin.pos.y;
-  sd_log[2] = (int32_t) 1000.0 * ctrl_lin.pos.z;
-  sd_log[3] = (int32_t) 1000.0 * ctrl_lin.vel.x;
-  sd_log[4] = (int32_t) 1000.0 * ctrl_lin.vel.y;
-  sd_log[5] = (int32_t) 1000.0 * ctrl_lin.vel.z;
-  sd_log[6] = (int32_t) 1000.0 * ctrl_lin.acc.x;
-  sd_log[7] = (int32_t) 1000.0 * ctrl_lin.acc.y;
-  sd_log[8] = (int32_t) 1000.0 * ctrl_lin.acc.z;
+  sd_log[0]  = *(int*)&ctrl_lin.pos.x;
+  sd_log[1]  = *(int*)&ctrl_lin.pos.y;
+  sd_log[2]  = *(int*)&ctrl_lin.pos.z;
+  sd_log[3]  = *(int*)&ctrl_lin.vel.x;
+  sd_log[4]  = *(int*)&ctrl_lin.vel.y;
+  sd_log[5]  = *(int*)&ctrl_lin.vel.z;
+  sd_log[6]  = *(int*)&ctrl_lin.acc.x;
+  sd_log[7]  = *(int*)&ctrl_lin.acc.y;
+  sd_log[8]  = *(int*)&ctrl_lin.acc.z;
 
-  sd_log[9]  = (int32_t) 1000.0 * traj.pos.x;
-  sd_log[10] = (int32_t) 1000.0 * traj.pos.y;
-  sd_log[11] = (int32_t) 1000.0 * traj.pos.z;
+  sd_log[9]  = *(int*)&traj.pos.x;
+  sd_log[10] = *(int*)&traj.pos.y;
+  sd_log[11] = *(int*)&traj.pos.z;
 
-  sd_log[12] = (int32_t) 1000.0 * q.qi;
-  sd_log[13] = (int32_t) 1000.0 * q.qx;
-  sd_log[14] = (int32_t) 1000.0 * q.qy;
-  sd_log[15] = (int32_t) 1000.0 * q.qz;
+  sd_log[12] = *(int*)&q.qi;
+  sd_log[13] = *(int*)&q.qx;
+  sd_log[14] = *(int*)&q.qy;
+  sd_log[15] = *(int*)&q.qz;
 
-  sd_log[16] = (int32_t) 1000.0 * du[0];
-  sd_log[17] = (int32_t) 1000.0 * du[1];
-  sd_log[18] = (int32_t) 1000.0 * d_yaw;
-  sd_log[19] = (int32_t) 1000.0 * du[2];
-  sd_log[20] = (int32_t) 1000.0 * thrust_in;
+  sd_log[16] = *(int*)&du[0];
+  sd_log[17] = *(int*)&du[1];
+  sd_log[18] = *(int*)&d_yaw;
+  sd_log[19] = *(int*)&du[2];
+  sd_log[20] = *(int*)&thrust_in;
 
   sd_log[21] = stabilization_cmd[COMMAND_ROLL];
   sd_log[22] = stabilization_cmd[COMMAND_PITCH];
