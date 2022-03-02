@@ -41,10 +41,10 @@
 
   <command_laws>
     <call fun="motor_mixing_run(autopilot_get_motors_on(),FALSE,values)"/>
-    <set servo="A1" value="motor_mixing.commands[0]"/>
+    <!-- <set servo="A1" value="motor_mixing.commands[0]"/>
     <set servo="A2"  value="motor_mixing.commands[1]"/>
     <set servo="B1" value="motor_mixing.commands[2]"/>
-    <set servo="B2"  value="motor_mixing.commands[3]"/>
+    <set servo="B2"  value="motor_mixing.commands[3]"/> -->
 
     <!-- Mode dependent actuator laws for the elevons. The elevons act different in rc attitude flight mode-->
     <!-- First the correct feedback is stored in variables -->
@@ -214,7 +214,7 @@
     <define name="REF_RATE_Q" value="16.0"/>
     <define name="REF_RATE_R" value="12.0"/>
     <!-- second order filter parameters -->
-    <define name="FILT_CUTOFF" value="8.0"/>
+    <define name="FILT_CUTOFF" value="5.0"/>
     <define name="FILT_CUTOFF_R" value="3.2"/>
     <!-- first order actuator dynamics -->
     <define name="ACT_DYN_P" value="0.03"/>
@@ -354,7 +354,9 @@
     </load>
 
     <!-- <module name="ins"/> -->
-    <module name="ins"  type="hff"/>
+    <!-- <module name="ins"  type="hff"/> -->
+    <module name="ins"  type="float_invariant"/>
+
     <module name="airspeed_ms45xx_i2c">
       <define name="MS45XX_I2C_DEV" value="i2c1" />
       <define name="MS45XX_I2C_ADDR" value="0x50" />

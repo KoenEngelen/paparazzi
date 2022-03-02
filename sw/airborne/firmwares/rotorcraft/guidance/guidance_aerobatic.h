@@ -100,7 +100,8 @@ struct GuidanceLogStruct {
 };
 
 extern int32_t sd_id;
-extern int32_t sd_log[30];
+extern int32_t sd_log_i[4];
+extern float sd_log_f[26];
 
 extern struct GuidanceLogStruct aerolog;
 extern struct AerobaticVariableSettings varset;

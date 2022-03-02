@@ -176,7 +176,7 @@ float y_coords[4] = {0};
   #ifdef STABILIZATION_INDI_FILT_CUTOFF
     #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
   #else
-    #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+    #define GUIDANCE_INDI_FILTER_CUTOFF 4.0
   #endif
 #endif
 
@@ -203,7 +203,8 @@ float log_ref_acc[3] = {0};
 float log_gains[2] = {0};
 
 int32_t sd_id;
-int32_t sd_log[30];
+int32_t sd_log_i[4];
+float sd_log_f[26];
 
 //Declare all functions
 
@@ -384,6 +385,16 @@ void guidance_aerobatic_enter(void){
     traj_sec.t_beg = 0.0f;
     CalcNewTrajectory();
 
+    traj.pos.x = stateGetPositionNed_f()->x;
+    traj.pos.y = stateGetPositionNed_f()->y;
+    traj.pos.z = stateGetPositionNed_f()->z-0.05;
+    traj.vel.x = 0.0f;
+    traj.vel.y = 0.0f;
+    traj.vel.z = 0.0f;
+    traj.acc.x = 0.0f;
+    traj.acc.y = 0.0f;
+    traj.acc.z = 0.0f;
+
     filter_init();
     // thrust_in = stabilization_cmd[COMMAND_THRUST];
     // thrust_act = thrust_in;
@@ -406,7 +417,7 @@ void guidance_aerobatic_run(){
 
   get_states();
 
-  UpdateTrajectory();
+  // UpdateTrajectory();
   LinAccCon();
 
   get_G();
@@ -431,21 +442,14 @@ void get_states(void){
     V_drone.y = stateGetSpeedNed_f()->y;
     V_drone.z = stateGetSpeedNed_f()->z;
 
-    meas_acc.x = stateGetAccelNed_f()->x;
-    meas_acc.y = stateGetAccelNed_f()->y;
-    meas_acc.z = stateGetAccelNed_f()->z;
-
-
-
-
     aerolog.qi = q.qi;
     aerolog.qx = q.qx;
     aerolog.qy = q.qy;
     aerolog.qz = q.qz;
 
-    // meas_acc.x = filt_accel_ned[0].o[0];
-    // meas_acc.y = filt_accel_ned[1].o[0];
-    // meas_acc.z = filt_accel_ned[2].o[0];
+    meas_acc.x = filt_accel_ned[0].o[0];
+    meas_acc.y = filt_accel_ned[1].o[0];
+    meas_acc.z = filt_accel_ned[2].o[0];
 
     // ////printf("\n\npos_enu_i:\t%d\t%d\t%d\n", stateGetPositionEnu_i()->x,stateGetPositionEnu_i()->y,stateGetPositionEnu_i()->z);
 
@@ -987,42 +991,46 @@ void add_increment(void){
 void update_sd_logger(void){
   sd_id = sd_id + 2;
 
-  sd_log[0]  = *(int*)&ctrl_lin.pos.x;
-  sd_log[1]  = *(int*)&ctrl_lin.pos.y;
-  sd_log[2]  = *(int*)&ctrl_lin.pos.z;
-  sd_log[3]  = *(int*)&ctrl_lin.vel.x;
-  sd_log[4]  = *(int*)&ctrl_lin.vel.y;
-  sd_log[5]  = *(int*)&ctrl_lin.vel.z;
-  sd_log[6]  = *(int*)&ctrl_lin.acc.x;
-  sd_log[7]  = *(int*)&ctrl_lin.acc.y;
-  sd_log[8]  = *(int*)&ctrl_lin.acc.z;
+  sd_log_i[0] = stabilization_cmd[COMMAND_ROLL];
+  sd_log_i[1] = stabilization_cmd[COMMAND_PITCH];
+  sd_log_i[2] = stabilization_cmd[COMMAND_YAW];
+  sd_log_i[3] = stabilization_cmd[COMMAND_THRUST];
 
-  sd_log[9]  = *(int*)&traj.pos.x;
-  sd_log[10] = *(int*)&traj.pos.y;
-  sd_log[11] = *(int*)&traj.pos.z;
+  sd_log_f[0]  = ctrl_lin.pos.x;
+  sd_log_f[1]  = ctrl_lin.pos.y;
+  sd_log_f[2]  = ctrl_lin.pos.z;
+  sd_log_f[3]  = ctrl_lin.vel.x;
+  sd_log_f[4]  = ctrl_lin.vel.y;
+  sd_log_f[5]  = ctrl_lin.vel.z;
+  sd_log_f[6]  = ctrl_lin.acc.x;
+  sd_log_f[7]  = ctrl_lin.acc.y;
+  sd_log_f[8]  = ctrl_lin.acc.z;
 
-  sd_log[12] = *(int*)&q.qi;
-  sd_log[13] = *(int*)&q.qx;
-  sd_log[14] = *(int*)&q.qy;
-  sd_log[15] = *(int*)&q.qz;
+  sd_log_f[9]  = traj.pos.x;
+  sd_log_f[10] = traj.pos.y;
+  sd_log_f[11] = traj.pos.z;
 
-  sd_log[16] = *(int*)&du[0];
-  sd_log[17] = *(int*)&du[1];
-  sd_log[18] = *(int*)&d_yaw;
-  sd_log[19] = *(int*)&du[2];
-  sd_log[20] = *(int*)&thrust_in;
+  sd_log_f[12] = q.qi;
+  sd_log_f[13] = q.qx;
+  sd_log_f[14] = q.qy;
+  sd_log_f[15] = q.qz;
 
-  sd_log[21] = stabilization_cmd[COMMAND_ROLL];
-  sd_log[22] = stabilization_cmd[COMMAND_PITCH];
-  sd_log[23] = stabilization_cmd[COMMAND_YAW];
-  sd_log[24] = stabilization_cmd[COMMAND_THRUST];
+  sd_log_f[16] = du[0];
+  sd_log_f[17] = du[1];
+  sd_log_f[18] = d_yaw;
+  sd_log_f[19] = du[2];
+  sd_log_f[20] = thrust_in;
 
+  sd_log_f[21] = (int32_t) 999;
+  sd_log_f[22] = (int32_t) 999;
+  sd_log_f[23] = (int32_t) 999;
+  sd_log_f[24] = (int32_t) 999;
+  sd_log_f[25] = (int32_t) 999;
 
-  sd_log[25] = (int32_t) 10000 * 420;
-  sd_log[26] = (int32_t) 1000 * 420;
-  sd_log[27] = (int32_t) 100 * 420;
-  sd_log[28] = (int32_t) 10 * 420;
-  sd_log[29] = (int32_t) 420;
+  #ifdef SITL
+    printf("\n SD log: \t%d \t%d \t%d",sd_log_f[0],sd_log_f[1],sd_log_f[2]);
+    printf("\n SD log O: \t%f \t%f\t%f", ctrl_lin.pos.x, ctrl_lin.pos.y, ctrl_lin.pos.z);
+  #endif
 }
 
 void print_states(void){
