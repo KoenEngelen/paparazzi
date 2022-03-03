@@ -68,21 +68,21 @@ void high_speed_logger_spi_link_periodic(void)
 
     high_speed_logger_spi_link_data.id = sd_id + counter%2;
 
-    high_speed_logger_spi_link_data.d1  = sd_log_i[ 0+ 2*(counter%2)];
-    high_speed_logger_spi_link_data.d2  = sd_log_i[ 1+ 2*(counter%2)];
-    high_speed_logger_spi_link_data.d3  = sd_log_f[ 0+13*(counter%2)];
-    high_speed_logger_spi_link_data.d4  = sd_log_f[ 1+13*(counter%2)];
-    high_speed_logger_spi_link_data.d5  = sd_log_f[ 2+13*(counter%2)];
-    high_speed_logger_spi_link_data.d6  = sd_log_f[ 3+13*(counter%2)];
-    high_speed_logger_spi_link_data.d7  = sd_log_f[ 4+13*(counter%2)];
-    high_speed_logger_spi_link_data.d8  = sd_log_f[ 5+13*(counter%2)];
-    high_speed_logger_spi_link_data.d9  = sd_log_f[ 6+13*(counter%2)];
-    high_speed_logger_spi_link_data.d10 = sd_log_f[ 7+13*(counter%2)];
-    high_speed_logger_spi_link_data.d11 = sd_log_f[ 8+13*(counter%2)];
-    high_speed_logger_spi_link_data.d12 = sd_log_f[ 9+13*(counter%2)];
-    high_speed_logger_spi_link_data.d13 = sd_log_f[10+13*(counter%2)];
-    high_speed_logger_spi_link_data.d14 = sd_log_f[11+13*(counter%2)];
-    high_speed_logger_spi_link_data.d15 = sd_log_f[12+13*(counter%2)];
+    high_speed_logger_spi_link_data.d1  = sd_log[ 0+15*(counter%2)];
+    high_speed_logger_spi_link_data.d2  = sd_log[ 1+15*(counter%2)];
+    high_speed_logger_spi_link_data.d3  = sd_log[ 2+15*(counter%2)];
+    high_speed_logger_spi_link_data.d4  = sd_log[ 3+15*(counter%2)];
+    high_speed_logger_spi_link_data.d5  = sd_log[ 4+15*(counter%2)];
+    high_speed_logger_spi_link_data.d6  = sd_log[ 5+15*(counter%2)];
+    high_speed_logger_spi_link_data.d7  = sd_log[ 6+15*(counter%2)];
+    high_speed_logger_spi_link_data.d8  = sd_log[ 7+15*(counter%2)];
+    high_speed_logger_spi_link_data.d9  = sd_log[ 8+15*(counter%2)];
+    high_speed_logger_spi_link_data.d10 = sd_log[ 9+15*(counter%2)];
+    high_speed_logger_spi_link_data.d11 = sd_log[10+15*(counter%2)];
+    high_speed_logger_spi_link_data.d12 = sd_log[11+15*(counter%2)];
+    high_speed_logger_spi_link_data.d13 = sd_log[12+15*(counter%2)];
+    high_speed_logger_spi_link_data.d14 = sd_log[13+15*(counter%2)];
+    high_speed_logger_spi_link_data.d15 = sd_log[14+15*(counter%2)];
     
     counter ++;
   }

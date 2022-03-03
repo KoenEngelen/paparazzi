@@ -34,19 +34,19 @@ struct PACKED high_speed_logger_spi_link_data {
   int32_t id;
   int32_t d1;
   int32_t d2;
-  float d3;
-  float d4;
-  float d5;
-  float d6;
-  float d7;
-  float d8;
-  float d9;
-  float d10;
-  float d11;
-  float d12;
-  float d13;
-  float d14;
-  float d15;
+  int32_t d3;
+  int32_t d4;
+  int32_t d5;
+  int32_t d6;
+  int32_t d7;
+  int32_t d8;
+  int32_t d9;
+  int32_t d10;
+  int32_t d11;
+  int32_t d12;
+  int32_t d13;
+  int32_t d14;
+  int32_t d15;
 };
 
 

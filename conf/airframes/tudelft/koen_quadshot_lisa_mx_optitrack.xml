@@ -100,7 +100,8 @@
     <define name="ACCEL_Z_NEUTRAL" value="0"/>
     <define name="ACCEL_X_SENS" value="4.86487566223" integer="16"/>
     <define name="ACCEL_Y_SENS" value="4.89957269597" integer="16"/>
-    <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/><define name="MAG_X_NEUTRAL" value="-86"/>
+    <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/>
+    <define name="MAG_X_NEUTRAL" value="-86"/>
     <define name="MAG_Y_NEUTRAL" value="-36"/>
     <define name="MAG_Z_NEUTRAL" value="35"/>
     <define name="MAG_X_SENS" value="3.98639595061" integer="16"/>
@@ -296,11 +297,11 @@
       <!-- <define name="AOA_FILTER" value="0"/> -->
       <!-- <define name="USE_AOA"/> -->
       <!-- <define name="AOA_SENS" value="2.0*M_PI/1024/4"/> -->
-    <!-- </load> -->
-    <!-- <load name="airspeed_ets.xml"> -->
-      <!-- <define name="AIRSPEED_ETS_SYNC_SEND"/> -->
-    <!-- </load> -->
-  <!-- </modules> -->
+      <!-- </load> -->
+      <!-- <load name="airspeed_ets.xml"> -->
+          <!-- <define name="AIRSPEED_ETS_SYNC_SEND"/> -->
+      <!-- </load> -->
+      <!-- </modules> -->
 
   <firmware name="rotorcraft">
     <target name="ap" board="lisa_mx_2.1">
@@ -319,6 +320,7 @@
       <!--       <configure name="LISA_M_BARO" value="BARO_MS5611_SPI"/> -->
       <configure name="LISA_M_BARO" value="BARO_BOARD_BMP085"/>
     </target>
+    
     <target name="nps"          board="pc">
       <module name="fdm" type="jsbsim"/>
       <module name="udp"/>
