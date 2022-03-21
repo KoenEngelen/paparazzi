@@ -1,0 +1,9 @@
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\beamer@subsectionintoc {1}{1}{Features}{12}{0}{1}
+\beamer@subsectionintoc {1}{2}{History}{17}{0}{1}
+\beamer@sectionintoc {2}{Flight Presentation}{17}{0}{2}
+\beamer@sectionintoc {3}{Paparazzi Project}{17}{0}{3}
+\beamer@sectionintoc {4}{Hardware}{17}{0}{4}
+\beamer@sectionintoc {5}{Software}{17}{0}{5}
+\beamer@sectionintoc {6}{Applications}{17}{0}{6}
+\beamer@sectionintoc {7}{Conclusions}{22}{0}{7}

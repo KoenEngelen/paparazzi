@@ -355,9 +355,9 @@
           <define name="SAFETY_WARNING_LED" value="BODY"/>
     </load>
 
-    <!-- <module name="ins"/> -->
+    <module name="ins"/>
     <!-- <module name="ins"  type="hff"/> -->
-    <module name="ins"  type="float_invariant"/>
+    <!-- <module name="ins"  type="float_invariant"/> -->
 
     <module name="airspeed_ms45xx_i2c">
       <define name="MS45XX_I2C_DEV" value="i2c1" />

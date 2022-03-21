@@ -18,7 +18,6 @@
  * the Free Software Foundation, 59 Temple Place - Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 /**
  * @file firmwares/rotorcraft/guidance/guidance_module.h
  * Guidance in a module file.
@@ -47,58 +46,70 @@
  *
  */
 
-//#ifndef GUIDANCE_MODULE_H_
 #ifndef GUIDANCE_AEROBATIC_H_
-#define GUIDANCE_AEROBATIC_H_
+    #define GUIDANCE_AEROBATIC_H_
+    #define GUIDANCE_MODULE_H_
+    //#include "generated/modules.h"
+    #include "math/pprz_algebra_int.h"
+    #include "math/pprz_matrix_decomp_float.h"
 
-#define GUIDANCE_MODULE_H_
+    struct AerobaticVariableSettings {
+        float max_vel;  //maximum velocity used on trajectory
+        float max_acc;  //maximum acceleration used on trajectory
+        float p_gain;   //gain used on position control
+        float d_gain;   //gain used on velocity control
+        float mode;       // 0 = hover, 1 = trajectory, 2 = impulse
+    };
 
-//#include "generated/modules.h"
-#include "math/pprz_algebra_int.h"
-#include "math/pprz_matrix_decomp_float.h"
+    struct GuidanceLogStruct {
+        float t;
+        float mode;
+        float max_vel;
+        float max_acc;
+        float q[4];
+        float pos[3];
+        float vel[3];
+        float acc[3];
+        float ref_pos[3];
+        float ref_vel[3];
+        float ref_acc[3];
+        float gains[2];
+        float thrust_in;
+        float dyaw;
+        float du[3];
+    };
 
-struct AerobaticVariableSettings {
-    float max_vel;  //maximum velocity used on trajectory
-    float max_acc;  //maximum acceleration used on trajectory
-    float p_gain;   //gain used on position control
-    float d_gain;   //gain used on velocity control
-    float mode;       // 0 = hover, 1 = trajectory, 2 = impulse
-};
+    extern int32_t sd_id;
+    extern int32_t sd_log[30];
 
-struct GuidanceLogStruct {
-    float t;
-    float mode;
-    float max_vel;
-    float max_acc;
-    float q[4];
-    float pos[3];
-    float vel[3];
-    float acc[3];
-    float ref_pos[3];
-    float ref_vel[3];
-    float ref_acc[3];
-    float gains[2];
-    float thrust_in;
-    float dyaw;
-    float du[3];
-};
+    extern struct GuidanceLogStruct aerolog;
+    extern struct AerobaticVariableSettings varset;
 
-extern int32_t sd_id;
-extern int32_t sd_log[30];
-
-extern struct GuidanceLogStruct aerolog;
-extern struct AerobaticVariableSettings varset;
-
-extern float guidance_aerobatic_indi_gain;
+    extern float guidance_aerobatic_indi_gain;
 
 
-extern void setReferenceHere(uint8_t wp);
-extern void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
-extern void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
+    extern void setReferenceHere(uint8_t wp);
+    extern void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
+    extern void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
 
-void guidance_aerobatic_init(void);
-void guidance_aerobatic_run(void);
+    void guidance_aerobatic_init(void);
+    void guidance_aerobatic_enter(void);
+    void guidance_aerobatic_run(void);
 
-//#endif /* GUIDANCE_MODULE_H_ */
+    void filter_init(void);
+    void filter_run(void);
 
+    void YawControl(void);
+    void Controller(void);
+    void get_states(void);
+    void get_G(void);
+    void get_du(void);
+    void set_states(void);
+
+    void UpdateTrajectory(void);
+    void CalcNewTrajectory(void);
+    void TrajectoryScenario(void);
+
+    void update_sd_logger(void);
+    void message_log(void);
 #endif 
