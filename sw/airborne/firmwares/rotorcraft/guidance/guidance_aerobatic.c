@@ -428,7 +428,7 @@ void get_du(void){
   }
 }
 void set_states(void){
-  out.thrust = filt.thrust + ctrl.du.z;
+  out.thrust = in.thrust + ctrl.du.z;
   out.thrust_cmd = (int) (out.thrust*THRUST_TO_CMD);
   if (out.thrust_cmd > THRUST_MAX){
       out.thrust_cmd = THRUST_MAX;
