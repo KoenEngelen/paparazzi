@@ -379,13 +379,13 @@ void Controller(void){
     dz = -radio_control.values[2]/19200.0;
   }
   
-  da_p.x = PGain * (ref.pos.x+dx-filt.pos.x);
-  da_p.y = PGain * (ref.pos.y+dy-filt.pos.y);
-  da_p.z = PGain * (ref.pos.z+dz-filt.pos.z);
+  da_p.x = PGain * (ref.pos.x+dx-in.pos.x);
+  da_p.y = PGain * (ref.pos.y+dy-in.pos.y);
+  da_p.z = PGain * (ref.pos.z+dz-in.pos.z);
 
-  da_d.x = VGain * (ref.vel.x-filt.vel.x);
-  da_d.y = VGain * (ref.vel.y-filt.vel.y);
-  da_d.z = VGain * (ref.vel.z-filt.vel.z);
+  da_d.x = VGain * (ref.vel.x-in.vel.x);
+  da_d.y = VGain * (ref.vel.y-in.vel.y);
+  da_d.z = VGain * (ref.vel.z-in.vel.z);
 
   da.x = da_p.x + da_d.x + ref.acc.x - filt.acc.x;
   da.y = da_p.y + da_d.y + ref.acc.y - filt.acc.y;
