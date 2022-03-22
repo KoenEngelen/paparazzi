@@ -58,7 +58,8 @@
         float max_acc;  //maximum acceleration used on trajectory
         float p_gain;   //gain used on position control
         float d_gain;   //gain used on velocity control
-        float mode;       // 0 = hover, 1 = trajectory, 2 = impulse
+        float mode;   
+        // float min_thrust_eff;   // 0 = hover, 1 = trajectory, 2 = impulse
     };
 
     struct GuidanceLogStruct {

@@ -39,6 +39,7 @@
 #include "subsystems/abi.h"
 #include "subsystems/navigation/waypoints.h"
 #include "CEmainmain.h"
+#include "subsystems/radio_control.h"
 //Define
 #ifndef PPRZ_MSG_ID_AEROBATIC_INDI
   #define PPRZ_MSG_ID_AEROBATIC_INDI 158
@@ -59,7 +60,7 @@
 #define MAX_PPRZ_f 9600.0
 #define THRUST_MIN 1920 //0.20*MAX_PPRZ //TODO lower min thrust (Check)
 #define THRUST_MAX 8640 //0.90*MAX_PPRZ
-#define THRUST_DYNAMICS 0.1
+#define THRUST_DYNAMICS 0.03
 #define MIN_THRUST_EFFECTIVNESS 4.0
 
 #define ROWS_GUIDANCE 3 //Control Effectiveness Rows
@@ -131,7 +132,8 @@ struct AerobaticVariableSettings varset = {
     .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
     .p_gain  = GUIDANCE_AEROBATIC_P_GAIN,
     .d_gain  = GUIDANCE_AEROBATIC_D_GAIN,
-    .mode = GUIDANCE_AEROBATIC_MODE
+    .mode = GUIDANCE_AEROBATIC_MODE,
+    // .min_thrust_eff = GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT
 };
 
 struct GuidanceLogStruct aerolog = {
@@ -235,6 +237,7 @@ void guidance_aerobatic_enter(void){
     t = -5.0;
     ref_pos = *stateGetPositionNed_f();
     in.thrust = CMD_TO_THRUST*stabilization_cmd[COMMAND_THRUST];
+    out.thrust = in.thrust;
 
     varset.max_vel = 1.0;
     varset.max_acc = 1.0;
@@ -297,7 +300,7 @@ void get_states(void){
   // Actuator Dynamics 
   // float dthrust = ((float) out.thrust_cmd)*CMD_TO_THRUST -  filt.thrust;   
   // in.thrust = filt.thrust + THRUST_DYNAMICS * dthrust;
-  in.thrust = (1.0-THRUST_DYNAMICS)*in.thrust + THRUST_DYNAMICS*CMD_TO_THRUST*stabilization_cmd[COMMAND_THRUST];
+  in.thrust = (1.0-THRUST_DYNAMICS)*in.thrust + THRUST_DYNAMICS*out.thrust;
 
   filter_run();
 
@@ -365,14 +368,24 @@ void Controller(void){
   struct FloatVect3 da_p;
   struct FloatVect3 da_d;
   struct FloatVect3 da;
+  
+  float dx = 0.0;
+  float dy = 0.0;
+  float dz = 0.0;
+  if(varset.mode == 1){
+    dx = radio_control.values[2]/9600.0;
+    dy = radio_control.values[1]/9600.0;
+  }else if(varset.mode == 2){
+    dz = -radio_control.values[2]/19200.0;
+  }
+  
+  da_p.x = PGain * (ref.pos.x+dx-filt.pos.x);
+  da_p.y = PGain * (ref.pos.y+dy-filt.pos.y);
+  da_p.z = PGain * (ref.pos.z+dz-filt.pos.z);
 
-  da_p.x = PGain * (ref.pos.x-in.pos.x);
-  da_p.y = PGain * (ref.pos.y-in.pos.y);
-  da_p.z = PGain * (ref.pos.z-in.pos.z);
-
-  da_d.x = VGain * (ref.vel.x-in.vel.x);
-  da_d.y = VGain * (ref.vel.y-in.vel.y);
-  da_d.z = VGain * (ref.vel.z-in.vel.z);
+  da_d.x = VGain * (ref.vel.x-filt.vel.x);
+  da_d.y = VGain * (ref.vel.y-filt.vel.y);
+  da_d.z = VGain * (ref.vel.z-filt.vel.z);
 
   da.x = da_p.x + da_d.x + ref.acc.x - filt.acc.x;
   da.y = da_p.y + da_d.y + ref.acc.y - filt.acc.y;
@@ -386,15 +399,10 @@ void get_G(void){
   V[1] = in.air.y;
   V[2] = in.air.z;
 
-  float T = in.thrust;
-  if(T<MIN_THRUST_EFFECTIVNESS){
-    T = MIN_THRUST_EFFECTIVNESS;
-  }
-
   ctrl.G[0][0] =  0.0f * da_wing_x_dphii(V)  ; 
-  ctrl.G[1][0] =  0.0f * da_wing_y_dphii(V)   + T; 
+  ctrl.G[1][0] =  0.0f * da_wing_y_dphii(V)   + fmaxf(in.thrust,MIN_THRUST_EFFECTIVNESS); 
   ctrl.G[2][0] =  0.0f * da_wing_z_dphii(V)  ; 
-  ctrl.G[0][1] =  0.0f * da_wing_x_dthetai(V) - T; 
+  ctrl.G[0][1] =  0.0f * da_wing_x_dthetai(V) - fmaxf(in.thrust,MIN_THRUST_EFFECTIVNESS); 
   ctrl.G[1][1] =  0.0f * da_wing_y_dthetai() ; 
   ctrl.G[2][1] =  0.0f * da_wing_z_dthetai(V); 
   ctrl.G[0][2] =  0.0f; 
@@ -428,7 +436,7 @@ void get_du(void){
   }
 }
 void set_states(void){
-  out.thrust = in.thrust + ctrl.du.z;
+  out.thrust = filt.thrust + ctrl.du.z;
   out.thrust_cmd = (int) (out.thrust*THRUST_TO_CMD);
   if (out.thrust_cmd > THRUST_MAX){
       out.thrust_cmd = THRUST_MAX;
@@ -440,7 +448,6 @@ void set_states(void){
   }
     stabilization_cmd[COMMAND_THRUST] = out.thrust_cmd;
 
-    struct FloatEulers rpy;
     struct FloatQuat dq;
     struct FloatQuat q_res = {0};
     struct Int32Quat q_i_res = {0};
@@ -468,7 +475,6 @@ void set_states(void){
     q_res.qy = q_res.qy/magdu;
     q_res.qz = q_res.qz/magdu;
 
-    float_eulers_of_quat(&rpy, &q_res);
 
     QUAT_BFP_OF_REAL(q_i_res, q_res);
     stabilization_indi_attitude_run(q_i_res,true);
@@ -492,8 +498,11 @@ void filter_init(void){
     for (int8_t i = 0; i < 3; i++) {
       init_butterworth_2_low_pass(&filt.acc_filter[i], tau, sample_time, 0.0);
       init_butterworth_2_low_pass(&filt.vel_filter[i], tau, sample_time, 0.0);
-      init_butterworth_2_low_pass(&filt.pos_filter[i], tau, sample_time, 0.0);
     }
+    init_butterworth_2_low_pass(&filt.pos_filter[0], tau, sample_time, in.pos.x);
+    init_butterworth_2_low_pass(&filt.pos_filter[1], tau, sample_time, in.pos.y);
+    init_butterworth_2_low_pass(&filt.pos_filter[2], tau, sample_time, in.pos.z);   
+    
     init_butterworth_2_low_pass(&filt.q_filter[0], tau, sample_time, in.q.qi);
     init_butterworth_2_low_pass(&filt.q_filter[1], tau, sample_time, in.q.qx);
     init_butterworth_2_low_pass(&filt.q_filter[2], tau, sample_time, in.q.qy);
