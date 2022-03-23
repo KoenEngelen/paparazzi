@@ -369,22 +369,28 @@ void Controller(void){
   struct FloatVect3 da_d;
   struct FloatVect3 da;
   
+  float ddx = 0.0;
+  float ddy = 0.0;
   float dx = 0.0;
   float dy = 0.0;
   float dz = 0.0;
   if(varset.mode == 1){
-    dx = radio_control.values[2]/9600.0;
-    dy = radio_control.values[1]/9600.0;
-  }else if(varset.mode == 2){
+    dx = varset.max_acc * (radio_control.values[1]-radio_control.values[2])/9600.0;
+    dy = varset.max_acc * (radio_control.values[2]-radio_control.values[1])/9600.0;
+  }else if(varset.mode == 1.5){
     dz = -radio_control.values[2]/19200.0;
+  }else if(varset.mode == 2){
+    ddx =  varset.max_vel * (radio_control.values[1]-radio_control.values[2])/9600.0;
+    ddy =  varset.max_vel * (radio_control.values[2]-radio_control.values[1])/9600.0;
+    PGain = 0.0;
   }
   
   da_p.x = PGain * (ref.pos.x+dx-in.pos.x);
   da_p.y = PGain * (ref.pos.y+dy-in.pos.y);
   da_p.z = PGain * (ref.pos.z+dz-in.pos.z);
 
-  da_d.x = VGain * (ref.vel.x-in.vel.x);
-  da_d.y = VGain * (ref.vel.y-in.vel.y);
+  da_d.x = VGain * (ref.vel.x+ddx-in.vel.x);
+  da_d.y = VGain * (ref.vel.y+ddy-in.vel.y);
   da_d.z = VGain * (ref.vel.z-in.vel.z);
 
   da.x = da_p.x + da_d.x + ref.acc.x - filt.acc.x;
