@@ -51,6 +51,8 @@
       <message name="BEBOP_ACTUATORS"          period="0.2"/>
     </mode>
 
+    <mode name="no_data"/>
+
     <mode name="raw_sensors">
       <message name="ROTORCRAFT_STATUS" period="1.2"/>
       <message name="DL_VALUE"          period="0.5"/>
