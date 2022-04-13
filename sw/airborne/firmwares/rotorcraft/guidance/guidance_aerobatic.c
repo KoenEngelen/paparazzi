@@ -173,6 +173,7 @@ struct GuidanceLogStruct aerolog = {
 };
 
 float t = 0.0;
+int wp = 0;
 
 struct NedCoor_f ref_pos;
 
@@ -235,6 +236,9 @@ void guidance_aerobatic_init(void){
  }
 void guidance_aerobatic_enter(void){
     t = -5.0;
+
+    // getWaypoints()
+
     ref_pos = *stateGetPositionNed_f();
     in.thrust = CMD_TO_THRUST*stabilization_cmd[COMMAND_THRUST];
     out.thrust = in.thrust;
@@ -277,8 +281,15 @@ void guidance_aerobatic_run(){
     ref.pos.x = ref_pos.x;
     ref.pos.y = ref_pos.y;
   }else if(varset.mode == 1){
-    ref.pos.x = ref_pos.x + 1.0f;
-    ref.pos.y = ref_pos.y;
+    if(t > 10.0){
+      t = 0.0;
+      wp = wp + 1;
+      if(wp == 4){
+        wp = 0;
+      }
+      ref.pos.x = x_coords[wp];
+      ref.pos.y = y_coords[wp];
+    }
   }else if(varset.mode == 2){
     ref.pos.x = ref_pos.x;
     ref.pos.y = ref_pos.y + 1.0f;

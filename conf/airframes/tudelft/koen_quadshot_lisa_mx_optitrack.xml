@@ -28,7 +28,7 @@
     <servo name="A2" no="1" min="1000" neutral="1100" max="1600"/>
     <servo name="B1"  no="2" min="1000" neutral="1100" max="1600"/>
     <servo name="B2"  no="3" min="1000" neutral="1100" max="1600"/>
-    <servo name="ELEVON_LEFT" no="4" min="1500" neutral="1700" max="1900"/>
+    <servo name="ELEVON_LEFT" no="4" min="1300" neutral="1500" max="1700"/>
     <servo name="ELEVON_RIGHT" no="5" min="1300" neutral="1500" max="1700"/>
   </servos>
 
@@ -118,7 +118,7 @@
   <section name="AUTOPILOT">
     <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
-    <define name="MODE_AUTO2"  value="AP_MODE_NAV"/>
+    <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
   </section>
 
   <section name="BAT">
@@ -357,7 +357,9 @@
 
     <module name="ins"/>
     <!-- <module name="ins"  type="hff"/> -->
-    <!-- <module name="ins"  type="float_invariant"/> -->
+    <!-- <module name="ins"  type="float_invariant">
+      <configure name="USE_MAGNETOMETER" value="FALSE"/>   
+    </module> -->
 
     <module name="airspeed_ms45xx_i2c">
       <define name="MS45XX_I2C_DEV" value="i2c1" />
