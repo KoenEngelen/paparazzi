@@ -34,11 +34,11 @@
     <!-- Warning: unit conversion does not work in this section of airframe,
     so use the native units, or you'll have big trouble... -->
     <!-- The Autopilot self -->
-    <target name="ap" board="lisa_mx_2.1">
+    <target name="ap" board="lisa_m_2.0">
 
       <!-- enable those 2 lines ONLY if flashing via JTAG cable -->
-      <configure name="FLASH_MODE"   value="SWD"/>
-      <configure name="BMP_PORT" value="/dev/ttyACM0" />
+      <!-- <configure name="FLASH_MODE"   value="SWD"/> -->
+      <!-- <configure name="BMP_PORT" value="/dev/ttyACM0" /> -->
 
       <!-- To use an airspeed sensor on I2C, and enable I2C2 -->
       <!--
@@ -94,12 +94,12 @@
       </module>
       -->
 
-      <module name="telemetry" type="transparent">
+      <module name="telemetry" type="xbee_api">
         <configure name="MODEM_PORT" value="UART2"/>
         <configure name="MODEM_BAUD" value="B57600"/>
       </module>
 
-      <module name="imu" type="aspirin_v2.2"/>
+      <module name="imu" type="aspirin_v2.1"/>
 
       <!-- <module name="gps" type="datalink"/>--><!-- for Optitrac systems use type datalink -->
       <module name="gps" type="ublox">
@@ -111,7 +111,7 @@
       for ubx_ucenter one has can set it oneself since we have all kinds
       of nifty Galilleio setting begin 2020 we rather keep that, but for now...
       lazyness, so used ;) -->
-      <module name="gps" type="ubx_ucenter"/>
+      <!-- <module name="gps" type="ubx_ucenter"/> -->
       <!--<module name="mag_calib_ukf"/>--><!-- New, and needs more testing, be careful with testflights if enabled -->
 
       <!-- Analog output "lightfloating" potmeter with vane as AOA sensor -->
@@ -149,7 +149,7 @@
 
       <module name="gps" type="ublox"/>
 
-      <module name="imu" type="aspirin_v2.2"/>
+      <module name="imu" type="aspirin_v2.1"/>
       <module name="baro_sim"/>
 
       <!-- For various parameter info here  https://wiki.paparazziuav.org/wiki/Subsystem/ahrs -->
@@ -189,8 +189,9 @@
       <define name="GUIDANCE_INDI_SPECIFIC_FORCE_GAIN" value="-500.0"/>
     </module>--><!-- for later if classic works-->
 
-    <module name="stabilization" type="indi_simple"/>
-    <module name="guidance"      type="hybrid"/>
+    <!-- <module name="stabilization" type="indi_simple"/> -->
+    <module name="guidance"      type="aerobatic"/>
+    <!-- <module name="guidance"      type="hybrid"/> -->
     <!--
     <module name="Ranger" type="TFMini_I2C">
       <configure name=RANGER_TFMINI_I2C_DEV" value="i2c1"/>
@@ -420,6 +421,15 @@ The most crucial part for the magnetometer calibration:
 
   </section>
 
+
+  <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
+      <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
+      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
+      <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
+      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>
+      <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
+  </section>
+
   <section name="AIR_DATA" prefix="AIR_DATA_">
     <define name="CALC_AIRSPEED" value="FALSE"/>
     <define name="CALC_TAS_FACTOR" value="FALSE"/>
@@ -494,7 +504,7 @@ The most crucial part for the magnetometer calibration:
   </section>
 
   <!-- These gains are used when the gain scheduling module is enabled (by loading it in the modules section)-->
-  <section name ="GAIN_SETS">
+  <!-- <section name ="GAIN_SETS">
     <define name="NUMBER_OF_GAINSETS" value="2"/>
     <define name="SCHEDULING_VARIABLE" value="guidance_hybrid_norm_ref_airspeed"/>
     <define name="SCHEDULING_POINTS" value="{4, 10}"/>
@@ -514,7 +524,7 @@ The most crucial part for the magnetometer calibration:
     <define name="PSI_D" value="{150, 150}"/>
     <define name="PSI_I" value="{0, 0}"/>
     <define name="PSI_DD" value="{0, 0}"/>
-  </section>
+  </section> -->
 
   <section name="STABILIZATION_ATTITUDE" prefix="STABILIZATION_ATTITUDE_">
     <!-- setpoints -->
@@ -632,6 +642,8 @@ The most crucial part for the magnetometer calibration:
     <define name="KILL_MODE_DISTANCE" value="MAX_DIST_FROM_HOME*1.1+HOME_RADIUS" unit="m"/>  <!--  improve value by default turn radius calc -->
     <define name="DEFAULT_CIRCLE_RADIUS" value="10." unit="m"/><!-- for if you want to.... circle ;) -->
     <define name="CARROT" value="4." unit="s"/>
+    <!-- <define name="HYBRID_NAVIGATION" value="TRUE"/> -->
+    <!-- <define name="GUIDANCE_AEROBATIC" value="TRUE"/> -->
     <!-- UNLOCKED_HOME_MODE if set to TRUE means that HOME mode does not get stuck.
     If not set before when you would enter home mode you had to flip a bit via the GCS to get out. -->
     <define name="UNLOCKED_HOME_MODE" value="TRUE"/>
@@ -657,7 +669,7 @@ The most crucial part for the magnetometer calibration:
     <define name="THRESHOLD_GROUND_DETECT" value="25.0"/>
     <define name="KILL_ON_GROUND_DETECT" value="TRUE"/>
     <define name="FAILSAFE_GROUND_DETECT" value="TRUE"/>
-    <define name="HYBRID_NAVIGATION" value="TRUE"/>
+    <define name="HYBRID_NAVIGATION" value="FALSE"/>
     <define name="ADAPTIVE_INDI" value="FALSE"/>
   </section>
 

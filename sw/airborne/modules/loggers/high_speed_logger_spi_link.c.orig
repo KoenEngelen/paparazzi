@@ -1,0 +1,102 @@
+/*
+ * Copyright (C) 2005-2013 The Paparazzi Team
+ *
+ * This file is part of paparazzi.
+ *
+ * paparazzi is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * paparazzi is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with paparazzi; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ *
+ */
+
+#include "high_speed_logger_spi_link.h"
+<<<<<<< HEAD
+#include "guidance/guidance_aerobatic.h"
+#include "stabilization.h"
+#include "subsystems/imu.h"
+#include "modules/sensors/airspeed_ms45xx_i2c.h"
+#include "modules/sensors/aoa_adc.h"
+=======
+
+#include "modules/imu/imu.h"
+>>>>>>> dad9224d124e4b56eee174d6002cef17c7acfadd
+#include "mcu_periph/spi.h"
+#include "state.h"
+
+
+struct high_speed_logger_spi_link_data high_speed_logger_spi_link_data;
+struct spi_transaction high_speed_logger_spi_link_transaction;
+
+static volatile bool high_speed_logger_spi_link_ready = true;
+
+static void high_speed_logger_spi_link_trans_cb(struct spi_transaction *trans);
+
+void high_speed_logger_spi_link_init(void)
+{
+  high_speed_logger_spi_link_data.id = 0;
+
+  high_speed_logger_spi_link_transaction.select        = SPISelectUnselect;
+  high_speed_logger_spi_link_transaction.cpol          = SPICpolIdleHigh;
+  high_speed_logger_spi_link_transaction.cpha          = SPICphaEdge2;
+  high_speed_logger_spi_link_transaction.dss           = SPIDss8bit;
+  high_speed_logger_spi_link_transaction.bitorder      = SPIMSBFirst;
+  high_speed_logger_spi_link_transaction.cdiv          = SPIDiv64;
+  high_speed_logger_spi_link_transaction.slave_idx     = HIGH_SPEED_LOGGER_SPI_LINK_SLAVE_NUMBER;
+  high_speed_logger_spi_link_transaction.output_length = sizeof(high_speed_logger_spi_link_data);
+  high_speed_logger_spi_link_transaction.output_buf    = (uint8_t *) &high_speed_logger_spi_link_data;
+  high_speed_logger_spi_link_transaction.input_length  = 0;
+  high_speed_logger_spi_link_transaction.input_buf     = NULL;
+  high_speed_logger_spi_link_transaction.after_cb      = high_speed_logger_spi_link_trans_cb;
+}
+
+
+void high_speed_logger_spi_link_periodic(void)
+{
+  // Static counter to identify missing samples
+  static int32_t counter = 0;
+  // count all periodic steps
+
+  // only send a new message if the previous was completely sent
+  if (high_speed_logger_spi_link_ready) {
+    high_speed_logger_spi_link_ready = false;
+
+    high_speed_logger_spi_link_data.id = sd_id + counter%2;
+
+    high_speed_logger_spi_link_data.d1  = sd_log[ 0+15*(counter%2)];
+    high_speed_logger_spi_link_data.d2  = sd_log[ 1+15*(counter%2)];
+    high_speed_logger_spi_link_data.d3  = sd_log[ 2+15*(counter%2)];
+    high_speed_logger_spi_link_data.d4  = sd_log[ 3+15*(counter%2)];
+    high_speed_logger_spi_link_data.d5  = sd_log[ 4+15*(counter%2)];
+    high_speed_logger_spi_link_data.d6  = sd_log[ 5+15*(counter%2)];
+    high_speed_logger_spi_link_data.d7  = sd_log[ 6+15*(counter%2)];
+    high_speed_logger_spi_link_data.d8  = sd_log[ 7+15*(counter%2)];
+    high_speed_logger_spi_link_data.d9  = sd_log[ 8+15*(counter%2)];
+    high_speed_logger_spi_link_data.d10 = sd_log[ 9+15*(counter%2)];
+    high_speed_logger_spi_link_data.d11 = sd_log[10+15*(counter%2)];
+    high_speed_logger_spi_link_data.d12 = sd_log[11+15*(counter%2)];
+    high_speed_logger_spi_link_data.d13 = sd_log[12+15*(counter%2)];
+    high_speed_logger_spi_link_data.d14 = sd_log[13+15*(counter%2)];
+    high_speed_logger_spi_link_data.d15 = sd_log[14+15*(counter%2)];
+    
+    counter ++;
+  }
+  spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
+}
+
+static void high_speed_logger_spi_link_trans_cb(struct spi_transaction *trans __attribute__((unused)))
+{
+  high_speed_logger_spi_link_ready = true;
+}
+
+

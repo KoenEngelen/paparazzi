@@ -1,0 +1,21 @@
+{
+    "[c]": {
+        "editor.tabSize": 2,
+    },
+    "[cpp]": {
+        "editor.tabSize": 2,
+    },
+    "[python]": {
+        "editor.tabSize": 4,
+    },
+    "files.associations": {
+<<<<<<< HEAD
+        "stdbool.h": "c"
+=======
+        "mateksys_3901_l0x.h": "c",
+        "stdlib.h": "c",
+        "iterator": "cpp",
+        "tensor": "cpp"
+>>>>>>> dad9224d124e4b56eee174d6002cef17c7acfadd
+    },
+}
