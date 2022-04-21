@@ -174,7 +174,7 @@ struct GuidanceLogStruct aerolog = {
 };
 
 float t = 0.0;
-int wp = 0;
+int my_custom_wp = 0;
 
 struct NedCoor_f ref_pos;
 
@@ -286,12 +286,12 @@ void guidance_aerobatic_run(){
   }else if(varset.mode == 1){
     if(t > 10.0){
       t = 0.0;
-      wp = wp + 1;
-      if(wp == 4){
-        wp = 0;
+      my_custom_wp = my_custom_wp + 1;
+      if(my_custom_wp == 4){
+        my_custom_wp = 0;
       }
-      ref.pos.x = x_coords[wp];
-      ref.pos.y = y_coords[wp];
+      ref.pos.x = x_coords[my_custom_wp];
+      ref.pos.y = y_coords[my_custom_wp];
     }
   }else if(varset.mode == 2){
     ref.pos.x = ref_pos.x;
@@ -840,11 +840,11 @@ void TrajectoryScenario(void){
 
 }
 // FlightPlan
-void setReferenceHere(uint8_t wp){
+void setReferenceHere(uint8_t my_wp){
     struct NedCoor_f fix_pos;
-    fix_pos.x = waypoint_get_x(wp);
-    fix_pos.y = waypoint_get_y(wp);
-    // fix_pos.z = waypoint_get_alt(wp);
+    fix_pos.x = waypoint_get_x(my_wp);
+    fix_pos.y = waypoint_get_y(my_wp);
+    // fix_pos.z = waypoint_get_alt(my_wp);
     fix_pos.z = stateGetPositionNed_f()->z;
 
     traj.pos.x = fix_pos.x;

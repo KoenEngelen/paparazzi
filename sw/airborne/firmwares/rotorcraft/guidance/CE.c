@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
+
+
 // #include "dep.h"
 float rho = 1.225;
 float S = 0.2;

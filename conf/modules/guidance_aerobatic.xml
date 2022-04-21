@@ -33,11 +33,12 @@
   <!-- <init fun="guidance_aerobatic_enter()"/> -->
   <!-- <periodic fun="guidance_aerobatic_run()" freq="512" autorun="TRUE"/> -->
 
-  <makefile>
-    <file name="guidance_aerobatic.c" dir="$(SRC_FIRMWARE)/guidance"/>
-  </makefile>
+  <!-- <makefile>
+  </makefile> -->
 
   <makefile target="ap|nps" firmware="rotorcraft">
+    <file name="guidance_aerobatic.c" dir="$(SRC_FIRMWARE)/guidance"/>
+    <file name="CE.c" dir="$(SRC_FIRMWARE)/guidance"/>
     <!-- <file name="pprz_matrix_decomp_float.c" dir="math"/> -->
     <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
     <define name="GUIDANCE_V_MODE_MODULE_SETTING" value="GUIDANCE_V_MODE_MODULE"/>
