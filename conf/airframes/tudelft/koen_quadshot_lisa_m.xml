@@ -40,7 +40,7 @@
             <module name="imu"           type="aspirin_v2.1"/>
             
             <module name="gps" type="ublox">
-                <configure name="GPS_BAUD" value="B57600"/>
+                <configure name="GPS_BAUD" value="B115200"/>
             </module>
             
             <!-- ONLY if flashing via JTAG cable -->
