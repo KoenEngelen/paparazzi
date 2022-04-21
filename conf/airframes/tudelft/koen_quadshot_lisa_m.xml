@@ -25,8 +25,9 @@
 
     <firmware name="rotorcraft">
         <target name="ap" board="lisa_m_2.0">
-            <configure name="LISA_M_BARO" value="BARO_MS5611_SPI"/>
-            <configure name="USE_BARO_BOARD" value="TRUE"/>
+            <!-- <configure name="LISA_M_BARO" value="BARO_MS5611_SPI"/> -->
+            <configure name="LISA_M_BARO" value="BARO_BOARD_BMP085"/>
+            <!-- <configure name="USE_BARO_BOARD" value="TRUE"/> -->
 
             <!-- <configure name="USE_MAGNETOMETER" value="FALSE"/>  -->
             <!-- The the led_safety_status module will make the Quadshot LEDs blink in certain patterns when there are safety violations-->
@@ -199,12 +200,19 @@
     <section name="IMU" prefix="IMU_">
         <!-- Use default driver values for gyro -->
         <!-- IMU calibration, make sure to calibrate the IMU properly before flight, see the wiki for more info-->
-        <define name="ACCEL_X_NEUTRAL" value="0"/>
+        <define name="ACCEL_X_NEUTRAL" value="74"/>
+        <define name="ACCEL_Y_NEUTRAL" value="5"/>
+        <define name="ACCEL_Z_NEUTRAL" value="305"/>
+        <define name="ACCEL_X_SENS" value="4.912831688001522" integer="16"/>
+        <define name="ACCEL_Y_SENS" value="4.86693646539617" integer="16"/>
+        <define name="ACCEL_Z_SENS" value="4.790258466147205" integer="16"/>
+        
+        <!-- <define name="ACCEL_X_NEUTRAL" value="0"/>
         <define name="ACCEL_Y_NEUTRAL" value="0"/>
         <define name="ACCEL_Z_NEUTRAL" value="0"/>
         <define name="ACCEL_X_SENS" value="4.86487566223" integer="16"/>
         <define name="ACCEL_Y_SENS" value="4.89957269597" integer="16"/>
-        <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/>
+        <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/> -->
         <define name="MAG_X_NEUTRAL" value="-86"/>
         <define name="MAG_Y_NEUTRAL" value="-36"/>
         <define name="MAG_Z_NEUTRAL" value="35"/>
