@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
-
+#include "math/pprz_algebra_float.h"
 
 // #include "dep.h"
 float rho = 1.225;
