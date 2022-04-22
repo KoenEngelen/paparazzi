@@ -1,0 +1,105 @@
+<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
+
+<flight_plan alt="2.0" ground_alt="0"  lat0="51.990634" lon0="4.376789" max_dist_from_home="8" name="Quadshot Aerobatic Cyberzoo" security_height="0.5">
+    <header>
+        #include "modules/datalink/datalink.h"
+        #include "modules/energy/electrical.h"
+        #include "modules/radio_control/radio_control.h"
+        #include "firmwares/rotorcraft/guidance/guidance_h.h"
+        #include "autopilot.h"
+        #include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
+    </header>
+
+    <waypoints>
+        <waypoint lat="51.990631" lon="4.376796" name="HOME"/>
+        <waypoint name="CLIMB" x="1.9" y="1.0"/>
+        <waypoint name="STDBY" x="1.9" y="1.0"/>
+        <waypoint name="TD" x="0.8" y="-1.7"/>
+        <waypoint name="GOAL" x="1.9" y="1.0"/>
+        <waypoint name="TRAJECTORY" x="1.9" y="1.0"/>
+        <waypoint name="REF" x="0.0" y="0.0"/>
+        <waypoint name="T1" x="1.0" y="1.0"/>
+        <waypoint name="T2" x="1.0" y="-1.0"/>
+        <waypoint name="T3" x="-1.0" y="-1.0"/>
+        <waypoint name="T4" x="-1.0" y="1.0"/>
+        <waypoint lat="51.9905874" lon="4.3767766" name="_CZ1"/>
+        <waypoint lat="51.990644" lon="4.376721" name="_CZ2"/>
+        <waypoint lat="51.990676" lon="4.376805" name="_CZ3"/>
+        <waypoint lat="51.9906213" lon="4.3768628" name="_CZ4"/>
+    </waypoints>
+    
+    <sectors>
+        <sector color="red" name="CyberZoo">
+        <corner name="_CZ1"/>
+        <corner name="_CZ2"/>
+        <corner name="_CZ3"/>
+        <corner name="_CZ4"/>
+        </sector>
+    </sectors>
+
+    
+    <blocks>
+        <block name="Wait GPS">
+            <call_once fun="NavKillThrottle()"/>
+            <while cond="!GpsFixValid()"/>
+        </block>
+        <block name="Geo init">
+            <while cond="LessThan(NavBlockTime(), 10)"/>
+            <call_once fun="NavSetGroundReferenceHere()"/>
+        </block>
+        <block name="Holding point">
+            <call_once fun="NavKillThrottle()"/>
+            <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+        </block>
+        <block name="Start Engine">
+            <call_once fun="NavResurrect()"/>
+            <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+        </block>
+        <block name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
+            <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
+            <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
+        </block>
+        <block name="Standby" strip_button="Standby" strip_icon="home.png">
+            <stay wp="STDBY"/>
+        </block>
+        <block name="MAKE SQUARE">
+            <call_once fun="makeWaypointsSquare(WP_T1, WP_T2, WP_T3, WP_T4)"/>
+        </block>
+        <!-- <block name="START AEROBATIC">
+            <call_once fun="NavSetWaypointHere(WP_REF)"/>
+            <call_once fun="setReferenceHere(WP_REF)"/>
+            <call_once fun="getWaypoints(WP_T1, WP_T2, WP_T3, WP_T4)"/>
+            <call_once fun="setAerobatic()"/>
+            <stay wp="STDBY"/>
+        </block>
+        <block name="STOP AEROBATIC">
+            <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
+            <call_once fun="revertAerobatic()"/>
+            <stay wp="STDBY"/>
+        </block> -->
+        <block name="land here" strip_button="Land Here" strip_icon="land-right.png">
+            <call_once fun="NavSetWaypointHere(WP_TD)"/>
+        </block>
+        <block name="land">
+            <go wp="TD"/>
+        </block>
+        <block name="flare">
+            <exception cond="NavDetectGround()" deroute="Holding point"/>
+            <exception cond="!nav_is_in_flight()" deroute="landed"/>
+            <call_once fun="NavStartDetectGround()"/>
+            <stay climb="nav_descend_vspeed" vmode="climb" wp="TD"/>
+        </block>
+        <block name="landed">
+            <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+        </block>
+        <block name="ComeBackAndLand">
+            <go wp="HOME"/>
+            <deroute block="land here"/>
+        </block>
+        <block name="DatalinkLoss">
+            <call_once fun="NavSetWaypointHere(WP_TD)"/>
+            <stay until="stage_time>60" wp="TD"/>
+            <deroute block="ComeBackAndLand"/>
+        </block>
+    </blocks>
+</flight_plan>
