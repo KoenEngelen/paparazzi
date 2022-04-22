@@ -48,8 +48,8 @@
 
             <!-- Mode dependent actuator laws for the elevons. The elevons act different in rc attitude flight mode-->
             <!-- First the correct feedback is stored in variables -->
-            <let var="aileron_feedback_left"  value="-@YAW"/>
-            <let var="aileron_feedback_right" value="-@YAW"/>
+            <let var="aileron_feedback_left"  value="@YAW"/>
+            <let var="aileron_feedback_right" value="@YAW"/>
 
             <let var="elevator_feedback_left"  value="-@PITCH"/>
             <let var="elevator_feedback_right" value="+@PITCH"/>
@@ -95,12 +95,21 @@
     <section name="IMU" prefix="IMU_">
         <!-- Use default driver values for gyro -->
         <!-- IMU calibration, make sure to calibrate the IMU properly before flight, see the wiki for more info-->
-        <define name="ACCEL_X_NEUTRAL" value="0"/>
+        <define name="ACCEL_X_NEUTRAL" value="74"/>
+        <define name="ACCEL_Y_NEUTRAL" value="5"/>
+        <define name="ACCEL_Z_NEUTRAL" value="305"/>
+        <define name="ACCEL_X_SENS" value="4.912831688001522" integer="16"/>
+        <define name="ACCEL_Y_SENS" value="4.86693646539617" integer="16"/>
+        <define name="ACCEL_Z_SENS" value="4.790258466147205" integer="16"/>
+        
+        
+        <!-- <define name="ACCEL_X_NEUTRAL" value="0"/>
         <define name="ACCEL_Y_NEUTRAL" value="0"/>
         <define name="ACCEL_Z_NEUTRAL" value="0"/>
         <define name="ACCEL_X_SENS" value="4.86487566223" integer="16"/>
         <define name="ACCEL_Y_SENS" value="4.89957269597" integer="16"/>
-        <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/>
+        <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/> -->
+        
         <define name="MAG_X_NEUTRAL" value="-86"/>
         <define name="MAG_Y_NEUTRAL" value="-36"/>
         <define name="MAG_Z_NEUTRAL" value="35"/>
@@ -111,7 +120,7 @@
 
     <section name="IMU" prefix="IMU_">
         <define name="BODY_TO_IMU_PHI"   value="0." unit="deg"/>
-        <define name="BODY_TO_IMU_THETA" value="97." unit="deg"/>
+        <define name="BODY_TO_IMU_THETA" value="90." unit="deg"/>
         <define name="BODY_TO_IMU_PSI"   value="0." unit="deg"/>
     </section>
 
