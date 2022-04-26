@@ -40,6 +40,7 @@
 #include "subsystems/navigation/waypoints.h"
 #include "CEmainmain.h"
 #include "subsystems/radio_control.h"
+#include "firmwares/rotorcraft/stabilization/stabilization_indi_simple.h"
 //Define
 #ifndef PPRZ_MSG_ID_AEROBATIC_INDI
   #define PPRZ_MSG_ID_AEROBATIC_INDI 158
@@ -132,6 +133,8 @@ struct AerobaticVariableSettings varset = {
     .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
     .p_gain  = GUIDANCE_AEROBATIC_P_GAIN,
     .d_gain  = GUIDANCE_AEROBATIC_D_GAIN,
+    .z_p_factor  = GUIDANCE_AEROBATIC_Z_P_FACTOR,
+    .z_d_factor  = GUIDANCE_AEROBATIC_Z_D_FACTOR,
     .mode = GUIDANCE_AEROBATIC_MODE,
     // .min_thrust_eff = GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT
 };
@@ -173,7 +176,7 @@ struct GuidanceLogStruct aerolog = {
 };
 
 float t = 0.0;
-int wp = 0;
+int wp_id = 0;
 
 struct NedCoor_f ref_pos;
 
@@ -283,12 +286,12 @@ void guidance_aerobatic_run(){
   }else if(varset.mode == 1){
     if(t > 10.0){
       t = 0.0;
-      wp = wp + 1;
-      if(wp == 4){
-        wp = 0;
+      wp_id = wp_id + 1;
+      if(wp_id == 4){
+        wp_id = 0;
       }
-      ref.pos.x = x_coords[wp];
-      ref.pos.y = y_coords[wp];
+      ref.pos.x = x_coords[wp_id];
+      ref.pos.y = y_coords[wp_id];
     }
   }else if(varset.mode == 2){
     ref.pos.x = ref_pos.x;
@@ -375,6 +378,8 @@ void YawControl(void){
 void Controller(void){
   float PGain = varset.p_gain;
   float VGain = varset.d_gain;
+  float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR;
+  float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR;
 
   struct FloatVect3 da_p;
   struct FloatVect3 da_d;
@@ -385,24 +390,24 @@ void Controller(void){
   float dx = 0.0;
   float dy = 0.0;
   float dz = 0.0;
-  if(varset.mode == 1){
-    dx = varset.max_acc * (radio_control.values[1]-radio_control.values[2])/9600.0;
-    dy = varset.max_acc * (radio_control.values[2]-radio_control.values[1])/9600.0;
-  }else if(varset.mode == 1.5){
-    dz = -radio_control.values[2]/19200.0;
-  }else if(varset.mode == 2){
-    ddx =  varset.max_vel * (radio_control.values[1]-radio_control.values[2])/9600.0;
-    ddy =  varset.max_vel * (radio_control.values[2]-radio_control.values[1])/9600.0;
-    PGain = 0.0;
-  }
+  // if(varset.mode == 1){
+  //   dx = varset.max_acc * (radio_control.values[1]-radio_control.values[2])/9600.0;
+  //   dy = varset.max_acc * (radio_control.values[2]-radio_control.values[1])/9600.0;
+  // }else if(varset.mode == 1.5){
+  //   dz = -radio_control.values[2]/19200.0;
+  // }else if(varset.mode == 2){
+  //   ddx =  varset.max_vel * (radio_control.values[1]-radio_control.values[2])/9600.0;
+  //   ddy =  varset.max_vel * (radio_control.values[2]-radio_control.values[1])/9600.0;
+  //   PGain = 0.0;
+  // }
   
   da_p.x = PGain * (ref.pos.x+dx-in.pos.x);
   da_p.y = PGain * (ref.pos.y+dy-in.pos.y);
-  da_p.z = PGain * (ref.pos.z+dz-in.pos.z);
+  da_p.z = zPFactor *PGain * (ref.pos.z+dz-in.pos.z);
 
   da_d.x = VGain * (ref.vel.x+ddx-in.vel.x);
   da_d.y = VGain * (ref.vel.y+ddy-in.vel.y);
-  da_d.z = VGain * (ref.vel.z-in.vel.z);
+  da_d.z = zVFactor * VGain * (ref.vel.z-in.vel.z);
 
   da.x = da_p.x + da_d.x + ref.acc.x - filt.acc.x;
   da.y = da_p.y + da_d.y + ref.acc.y - filt.acc.y;
@@ -639,7 +644,7 @@ void update_sd_logger(void){
 
   sd_log[16] = *(int*)&ctrl.du.x;
   sd_log[17] = *(int*)&ctrl.du.y;
-  sd_log[18] = *(int*)&ctrl.dyaw;
+  sd_log[18] = *(int*)&LogFiltRate.r;
   sd_log[19] = *(int*)&ctrl.du.z;
   sd_log[20] = *(int*)&in.thrust;
 
@@ -648,12 +653,17 @@ void update_sd_logger(void){
   sd_log[23] = stabilization_cmd[COMMAND_YAW];
   sd_log[24] = stabilization_cmd[COMMAND_THRUST];
 
+  // sd_log[25] = *(int*)&varset.p_gain;
+  // sd_log[26] = *(int*)&varset.d_gain;
+  // sd_log[27] = (int32_t) 100 * 420;
+  // sd_log[28] = (int32_t) 10 * 420;
+  // sd_log[29] = (int32_t) 420;
 
-  sd_log[25] = *(int*)&varset.p_gain;
-  sd_log[26] = *(int*)&varset.d_gain;
-  sd_log[27] = (int32_t) 100 * 420;
-  sd_log[28] = (int32_t) 10 * 420;
-  sd_log[29] = (int32_t) 420;
+  sd_log[25] = *(int*)&LogRefRate.p;
+  sd_log[26] = *(int*)&LogRefRate.q;
+  sd_log[27] = *(int*)&LogRefRate.r;
+  sd_log[28] = *(int*)&LogFiltRate.p;
+  sd_log[29] = *(int*)&LogFiltRate.q;
 }
 // Trajectory
 void UpdateTrajectory(void){
@@ -773,8 +783,7 @@ void UpdateTrajectory(void){
     //   traj.pos.x = 15. * (t-20.0) + 7.5*20.0;
     //   traj.vel.x = 15. ;
     //   traj.acc.x = 0.0 ;
-    // }
-    
+    // }    
     // if (t<20){
     //   traj.pos.x = 10.0*(1-(1- (t-5)/15)*(1- (t-5)/15))*sin(t*2*M_PI/20.);
     //   traj.pos.y = 10.0*(1-(1- (t-5)/15)*(1- (t-5)/15))*cos(t*2*M_PI/20.);
@@ -783,10 +792,9 @@ void UpdateTrajectory(void){
     //   traj.pos.x = 10.0*sin(t*2*M_PI/20.);
     //   traj.pos.y = 10.0*cos(t*2*M_PI/20.);
     //   traj.pos.z = -40.0;
-
     // }
-
 }
+
 void CalcNewTrajectory(void){
     
     // traj_sec.pos_beg.x = traj.pos.x;
@@ -816,7 +824,6 @@ void CalcNewTrajectory(void){
       traj_sec.d_x_trans = traj_sec.vel_max*traj_sec.t_trans_beg/2;
       traj_sec.t_end = (traj_sec.delta_pos-2*traj_sec.d_x_trans)/traj_sec.vel_max + 2* traj_sec.t_trans_beg;
       traj_sec.t_trans_end =  traj_sec.t_end-traj_sec.t_trans_beg;
-
     }
 
 

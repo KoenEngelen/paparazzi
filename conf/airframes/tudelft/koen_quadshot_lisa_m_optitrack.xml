@@ -51,8 +51,8 @@
             <let var="aileron_feedback_left"  value="@YAW"/>
             <let var="aileron_feedback_right" value="@YAW"/>
 
-            <let var="elevator_feedback_left"  value="-@PITCH"/>
-            <let var="elevator_feedback_right" value="+@PITCH"/>
+            <let var="elevator_feedback_left"  value="+@PITCH"/>
+            <let var="elevator_feedback_right" value="-@PITCH"/>
 
             <!-- Here the gains are defined for the two feedback cases, hover and forward-->
             <let var="hover_left"  value="10*$aileron_feedback_left"/>
@@ -102,14 +102,6 @@
         <define name="ACCEL_Y_SENS" value="4.86693646539617" integer="16"/>
         <define name="ACCEL_Z_SENS" value="4.790258466147205" integer="16"/>
         
-        
-        <!-- <define name="ACCEL_X_NEUTRAL" value="0"/>
-        <define name="ACCEL_Y_NEUTRAL" value="0"/>
-        <define name="ACCEL_Z_NEUTRAL" value="0"/>
-        <define name="ACCEL_X_SENS" value="4.86487566223" integer="16"/>
-        <define name="ACCEL_Y_SENS" value="4.89957269597" integer="16"/>
-        <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/> -->
-        
         <define name="MAG_X_NEUTRAL" value="-86"/>
         <define name="MAG_Y_NEUTRAL" value="-36"/>
         <define name="MAG_Z_NEUTRAL" value="35"/>
@@ -127,7 +119,7 @@
     <section name="AUTOPILOT">
         <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
         <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
-        <define name="MODE_AUTO2"  value="AP_MODE_NAV"/>
+        <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
     </section>
 
     <section name="BAT">
@@ -199,7 +191,9 @@
       <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
       <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
       <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
-      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>
+      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>    
+      <define name="Z_P_FACTOR" value="1.0" description="Positional gain of the aerobatic controller"/>
+      <define name="Z_D_FACTOR" value="1.0" description="Velocity gain of the aerobatic controller"/>
       <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
   </section>
 
@@ -291,7 +285,7 @@
         <define name="ADAPTIVE_INDI" value="FALSE"/>
     </section>
 
-    <!-- <modules main_freq="512">  -->
+    <!-- <modules main_freq="512"> -->
         <!-- <module name="gps" type="ubx_ucenter"/> -->
         <!-- The the led_safety_status module will make the Quadshot LEDs blink in certain patterns when there are safety violations-->
         <!-- <load name="led_safety_status.xml"> -->
@@ -358,7 +352,6 @@
             <define name="AHRS_USE_GPS_HEADING" value="TRUE"/>
         </module> 
 
-
         <!-- Modules section (depricated modules main_frequency) -->
         <load name="led_safety_status.xml">
             <define name="USE_LED_BODY" value="1"/>
@@ -367,6 +360,10 @@
 
         <module name="ins"/>
         <!-- <module name="ins"  type="ekf2"/> -->
+    <!-- <module name="ins"  type="hff"/> -->
+    <!-- <module name="ins"  type="float_invariant">
+      <configure name="USE_MAGNETOMETER" value="FALSE"/>   
+    </module> -->
     
         <module name="airspeed_ms45xx_i2c">
             <define name="MS45XX_I2C_DEV" value="i2c1" />

@@ -101,6 +101,7 @@
     <define name="ACCEL_X_SENS" value="4.86487566223" integer="16"/>
     <define name="ACCEL_Y_SENS" value="4.89957269597" integer="16"/>
     <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/>
+    
     <define name="MAG_X_NEUTRAL" value="-86"/>
     <define name="MAG_Y_NEUTRAL" value="-36"/>
     <define name="MAG_Z_NEUTRAL" value="35"/>
@@ -190,7 +191,9 @@
       <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
       <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
       <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
-      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>
+      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>    
+      <define name="Z_P_FACTOR" value="1.0" description="Positional gain of the aerobatic controller"/>
+      <define name="Z_D_FACTOR" value="1.0" description="Velocity gain of the aerobatic controller"/>
       <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
   </section>
 
@@ -208,11 +211,11 @@
     <define name="G1_R" value="0.0095"/>
     <define name="G2_R" value="0.0"/>
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="70.0"/>
-    <define name="REF_ERR_Q" value="100.0"/> <!--try 100-->
-    <define name="REF_ERR_R" value="70.0"/>
-    <define name="REF_RATE_P" value="9.0"/>
-    <define name="REF_RATE_Q" value="16.0"/> <!-- 15.0 -->
+    <define name="REF_ERR_P" value="60.0"/>
+    <define name="REF_ERR_Q" value="150.0"/> <!--try 100-->
+    <define name="REF_ERR_R" value="60.0"/>
+    <define name="REF_RATE_P" value="8.0"/>
+    <define name="REF_RATE_Q" value="20.5"/> <!-- 15.0 -->
     <define name="REF_RATE_R" value="12.0"/>
     <!-- second order filter parameters -->
     <define name="FILT_CUTOFF" value="5.0"/>
@@ -356,6 +359,7 @@
     </load>
 
     <module name="ins"/>
+        <!-- <module name="ins"  type="ekf2"/> -->
     <!-- <module name="ins"  type="hff"/> -->
     <!-- <module name="ins"  type="float_invariant">
       <configure name="USE_MAGNETOMETER" value="FALSE"/>   

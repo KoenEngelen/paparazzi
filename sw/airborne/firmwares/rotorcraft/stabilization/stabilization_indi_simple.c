@@ -74,6 +74,9 @@
 struct Int32Eulers stab_att_sp_euler;
 struct Int32Quat   stab_att_sp_quat;
 
+struct FloatRates LogRefRate;
+struct FloatRates LogFiltRate;
+
 static inline void lms_estimation(void);
 static void indi_init_filters(void);
 
@@ -317,7 +320,12 @@ void stabilization_indi_rate_run(struct FloatRates rate_sp, bool in_flight __att
 
   //This separates the P and D controller and lets you impose a maximum yaw rate.
   BoundAbs(rate_sp.r, indi.attitude_max_yaw_rate);
-
+  LogRefRate.p = rate_sp.p;
+  LogRefRate.q = rate_sp.q;
+  LogRefRate.r = rate_sp.r;
+  LogFiltRate.p = rates_filt_fo.p;
+  LogFiltRate.q = rates_filt_fo.q;
+  LogFiltRate.r = rates_filt_fo.r;
   // Compute reference angular acceleration:
   indi.angular_accel_ref.p = (rate_sp.p - rates_filt_fo.p) * indi.gains.rate.p;
   indi.angular_accel_ref.q = (rate_sp.q - rates_filt_fo.q) * indi.gains.rate.q;
