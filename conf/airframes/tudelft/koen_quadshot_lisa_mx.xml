@@ -191,6 +191,8 @@
       <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>
       <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
       <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>
+      <define name="Z_P_FACTOR" value="1.0" description="Vertical positional gain factor of the aerobatic controller"/>
+      <define name="Z_D_FACTOR" value="1.0" description="Vertical velocity gain factor of the aerobatic controller"/>
       <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
   </section>
 
@@ -306,7 +308,7 @@
     <target name="ap" board="lisa_mx_2.1">
       <module name="radio_control" type="sbus">
         <configure name="SBUS_PORT" value="UART1"/>
-        <define name="RADIO_KILL_SWITCH" value="RADIO_AUX1"/>
+        <define name="RADIO_KILL_SWITCH" value="RADIO_GAIN1"/>
         <define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="FALSE"/>
       </module>
       <!-- ONLY if flashing via JTAG cable -->
