@@ -72,6 +72,11 @@
             <call_once fun="setAerobatic()"/>
             <stay wp="STDBY"/>
         </block>
+        <block name="getWaypoints">
+            <call_once fun="setReferenceHere(WP_REF)"/>
+            <call_once fun="getWaypoints(WP_T1, WP_T2, WP_T3, WP_T4)"/>
+            <stay wp="STDBY"/>
+        </block>
         <block name="STOP AEROBATIC">
             <call_once fun="NavSetWaypointHere(WP_STDBY)"/>
             <call_once fun="revertAerobatic()"/>

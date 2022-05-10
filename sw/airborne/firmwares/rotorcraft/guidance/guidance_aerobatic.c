@@ -180,6 +180,8 @@ int wp_id = 0;
 
 struct NedCoor_f ref_pos;
 
+struct NedCoor_f Home;
+
 float THRUST_TO_CMD = MAX_PPRZ_f/20.0;
 float CMD_TO_THRUST = 20.0/MAX_PPRZ_f;
 
@@ -283,16 +285,18 @@ void guidance_aerobatic_run(){
   if(varset.mode == 0){
     ref.pos.x = ref_pos.x;
     ref.pos.y = ref_pos.y;
-  }else if(varset.mode == 1){
+  }else if(varset.mode > 0.5){
     if(t > 10.0){
       t = 0.0;
       wp_id = wp_id + 1;
       if(wp_id == 4){
         wp_id = 0;
       }
-      ref.pos.x = x_coords[wp_id];
-      ref.pos.y = y_coords[wp_id];
+      ref.pos.x = x_coords[0];
+      ref.pos.y = y_coords[0];
     }
+    ref.pos.x = x_coords[wp_id];
+    ref.pos.y = y_coords[wp_id];
   }else if(varset.mode == 2){
     ref.pos.x = ref_pos.x;
     ref.pos.y = ref_pos.y + 1.0f;
@@ -343,8 +347,8 @@ void YawControl(void){
   struct FloatVect3 Yaw_proj;
   struct FloatVect3 Yaw_ref;
 
-  Yaw_b.x = 0.0f;
-  Yaw_b.y = 1.0f;
+  Yaw_b.x = 1.0f;
+  Yaw_b.y = 0.0f;
   Yaw_b.z = 0.0f;
   
   struct FloatQuat q_inv;
@@ -363,9 +367,17 @@ void YawControl(void){
   Yaw_ref.y = 1.0f/sqrt(2.0f);
   Yaw_ref.z = 0.0f;
 
-  Yaw_ref.x = 0.0f;
-  Yaw_ref.y = 1.0f;
-  Yaw_ref.z = 0.0f;
+  // Yaw_ref.x = 0.0f;
+  // Yaw_ref.y = 1.0f;
+  // Yaw_ref.z = 0.0f;
+
+  float dposx = Home.x - in.pos.x;
+  float dposy = Home.y - in.pos.y;
+
+  float dmag = sqrtf(powf(dposx,2.0) +  powf(dposx,2));
+
+  // Yaw_ref.x = dposx/dmag;
+  // Yaw_ref.y = dposy/dmag;
 
   ctrl.dyaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
 
@@ -390,6 +402,7 @@ void Controller(void){
   float dx = 0.0;
   float dy = 0.0;
   float dz = 0.0;
+
   // if(varset.mode == 1){
   //   dx = varset.max_acc * (radio_control.values[1]-radio_control.values[2])/9600.0;
   //   dy = varset.max_acc * (radio_control.values[2]-radio_control.values[1])/9600.0;
@@ -848,6 +861,8 @@ void setReferenceHere(uint8_t wp){
     struct NedCoor_f fix_pos;
     fix_pos.x = waypoint_get_x(wp);
     fix_pos.y = waypoint_get_y(wp);
+    Home.x = waypoint_get_x(wp);
+    Home.y = waypoint_get_y(wp);
     // fix_pos.z = waypoint_get_alt(wp);
     fix_pos.z = stateGetPositionNed_f()->z;
 
