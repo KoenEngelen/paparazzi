@@ -41,6 +41,7 @@
 #include "CEmainmain.h"
 #include "subsystems/radio_control.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_indi_simple.h"
+
 //Define
 #ifndef PPRZ_MSG_ID_AEROBATIC_INDI
   #define PPRZ_MSG_ID_AEROBATIC_INDI 158
@@ -182,6 +183,10 @@ struct NedCoor_f ref_pos;
 
 struct NedCoor_f Home;
 
+bool is_in_mode_2;
+float mode_2_radius;
+float mode_2_angle;
+
 float THRUST_TO_CMD = MAX_PPRZ_f/20.0;
 float CMD_TO_THRUST = 20.0/MAX_PPRZ_f;
 
@@ -241,7 +246,7 @@ void guidance_aerobatic_init(void){
  }
 void guidance_aerobatic_enter(void){
     t = -5.0;
-
+    is_in_mode_2 = false;
     // getWaypoints()
 
     ref_pos = *stateGetPositionNed_f();
@@ -283,9 +288,11 @@ void guidance_aerobatic_run(){
   set_states();
 
   if(varset.mode == 0){
+    is_in_mode_2 = false;
     ref.pos.x = ref_pos.x;
     ref.pos.y = ref_pos.y;
-  }else if(varset.mode > 0.5){
+  }else if(varset.mode == 1){
+    is_in_mode_2 = false;
     if(t > 10.0){
       t = 0.0;
       wp_id = wp_id + 1;
@@ -294,12 +301,20 @@ void guidance_aerobatic_run(){
       }
       ref.pos.x = x_coords[0];
       ref.pos.y = y_coords[0];
+      ref.pos.x = 0.0;
+      ref.pos.y = 0.0;
     }
     ref.pos.x = x_coords[wp_id];
     ref.pos.y = y_coords[wp_id];
   }else if(varset.mode == 2){
-    ref.pos.x = ref_pos.x;
-    ref.pos.y = ref_pos.y + 1.0f;
+    if (!is_in_mode_2){
+      mode_2_angle = atan2f(in.pos.x,in.pos.y);
+      mode_2_radius = 0.9 * sqrtf(powf(in.pos.x,2.0) + powf(in.pos.y,2.0));
+      is_in_mode_2 = true;
+    }
+    ref.pos.x = mode_2_radius * sinf(mode_2_angle);
+    ref.pos.y = mode_2_radius * cosf(mode_2_angle);
+    mode_2_angle += varset.max_vel/(2.0*M_PI*mode_2_radius*512.0);
   }
 
   message_log();
@@ -363,7 +378,7 @@ void YawControl(void){
   Yaw_proj.z = 0.0f;
 
 
-  Yaw_ref.x = 1.0f/sqrt(2.0f);
+  Yaw_ref.x = -1.0f/sqrt(2.0f);
   Yaw_ref.y = 1.0f/sqrt(2.0f);
   Yaw_ref.z = 0.0f;
 
@@ -636,47 +651,50 @@ void message_log(void){
 void update_sd_logger(void){
   sd_id = sd_id + 2;
 
-  sd_log[0]  = *(int*)&in.pos.x;
-  sd_log[1]  = *(int*)&in.pos.y;
-  sd_log[2]  = *(int*)&in.pos.z;
-  sd_log[3]  = *(int*)&in.vel.x;
-  sd_log[4]  = *(int*)&in.vel.y;
-  sd_log[5]  = *(int*)&in.vel.z;
-  sd_log[6]  = *(int*)&in.acc.x;
-  sd_log[7]  = *(int*)&in.acc.y;
-  sd_log[8]  = *(int*)&in.acc.z;
+  sd_log[0]  = *(int32_t*)&in.pos.x;
+  sd_log[1]  = *(int32_t*)&in.pos.y;
+  sd_log[2]  = *(int32_t*)&in.pos.z;
+  sd_log[3]  = *(int32_t*)&in.vel.x;
+  sd_log[4]  = *(int32_t*)&in.vel.y;
+  sd_log[5]  = *(int32_t*)&in.vel.z;
+  sd_log[6]  = *(int32_t*)&in.acc.x;
+  sd_log[7]  = *(int32_t*)&in.acc.y;
+  sd_log[8]  = *(int32_t*)&in.acc.z;
 
-  sd_log[9]  = *(int*)&ref.pos.x;
-  sd_log[10] = *(int*)&ref.pos.y;
-  sd_log[11] = *(int*)&ref.pos.z;
+  sd_log[9]  = *(int32_t*)&ref.pos.x;
+  sd_log[10] = *(int32_t*)&ref.pos.y;
+  sd_log[11] = *(int32_t*)&ref.pos.z;
 
-  sd_log[12] = *(int*)&in.q.qi;
-  sd_log[13] = *(int*)&in.q.qx;
-  sd_log[14] = *(int*)&in.q.qy;
-  sd_log[15] = *(int*)&in.q.qz;
+  sd_log[12] = *(int32_t*)&in.q.qi;
+  sd_log[13] = *(int32_t*)&in.q.qx;
+  sd_log[14] = *(int32_t*)&in.q.qy;
+  sd_log[15] = *(int32_t*)&in.q.qz;
 
-  sd_log[16] = *(int*)&ctrl.du.x;
-  sd_log[17] = *(int*)&ctrl.du.y;
-  sd_log[18] = *(int*)&LogFiltRate.r;
-  sd_log[19] = *(int*)&ctrl.du.z;
-  sd_log[20] = *(int*)&in.thrust;
+  sd_log[16] = *(int32_t*)&ctrl.du.x;
+  sd_log[17] = *(int32_t*)&ctrl.du.y;
+  sd_log[18] = *(int32_t*)&LogFiltRate.r;
+  sd_log[19] = *(int32_t*)&ctrl.du.z;
+  sd_log[20] = *(int32_t*)&in.thrust;
 
   sd_log[21] = stabilization_cmd[COMMAND_ROLL];
   sd_log[22] = stabilization_cmd[COMMAND_PITCH];
   sd_log[23] = stabilization_cmd[COMMAND_YAW];
   sd_log[24] = stabilization_cmd[COMMAND_THRUST];
 
-  // sd_log[25] = *(int*)&varset.p_gain;
-  // sd_log[26] = *(int*)&varset.d_gain;
+  // sd_log[25] = varset.p_gain;
+  // sd_log[26] = varset.d_gain;
   // sd_log[27] = (int32_t) 100 * 420;
   // sd_log[28] = (int32_t) 10 * 420;
   // sd_log[29] = (int32_t) 420;
 
-  sd_log[25] = *(int*)&LogRefRate.p;
-  sd_log[26] = *(int*)&LogRefRate.q;
-  sd_log[27] = *(int*)&LogRefRate.r;
-  sd_log[28] = *(int*)&LogFiltRate.p;
-  sd_log[29] = *(int*)&LogFiltRate.q;
+  sd_log[25] = *(int32_t*)&LogRefRate.p;
+  sd_log[26] = *(int32_t*)&LogRefRate.q;
+  sd_log[27] = *(int32_t*)&LogRefRate.r;
+  sd_log[28] = *(int32_t*)&LogFiltRate.p;
+  sd_log[29] = *(int32_t*)&LogFiltRate.q;
+  sd_log[27] = imu.accel.x;
+  sd_log[28] = imu.accel.y;
+  sd_log[29] = imu.accel.z;
 }
 // Trajectory
 void UpdateTrajectory(void){
