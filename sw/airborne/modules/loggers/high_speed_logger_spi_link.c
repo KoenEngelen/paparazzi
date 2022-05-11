@@ -62,11 +62,13 @@ void high_speed_logger_spi_link_periodic(void)
   static int32_t counter = 0;
   // count all periodic steps
 
+  counter ++;
+
   // only send a new message if the previous was completely sent
   if (high_speed_logger_spi_link_ready) {
     high_speed_logger_spi_link_ready = false;
 
-    high_speed_logger_spi_link_data.id = sd_id + counter%2;
+    high_speed_logger_spi_link_data.id = counter;
 
     high_speed_logger_spi_link_data.d1  = sd_log[ 0+15*(counter%2)];
     high_speed_logger_spi_link_data.d2  = sd_log[ 1+15*(counter%2)];
@@ -84,14 +86,11 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.d14 = sd_log[13+15*(counter%2)];
     high_speed_logger_spi_link_data.d15 = sd_log[14+15*(counter%2)];
     
-    counter ++;
+    spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }
-  spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
 }
 
 static void high_speed_logger_spi_link_trans_cb(struct spi_transaction *trans __attribute__((unused)))
 {
   high_speed_logger_spi_link_ready = true;
 }
-
-

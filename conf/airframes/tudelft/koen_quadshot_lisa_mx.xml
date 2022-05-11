@@ -307,7 +307,7 @@
   <firmware name="rotorcraft">
     <target name="ap" board="lisa_mx_2.1">
       <module name="radio_control" type="sbus">
-        <configure name="SBUS_PORT" value="UART1"/>
+        <configure name="SBUS_PORT" value="UART5"/>
         <define name="RADIO_KILL_SWITCH" value="RADIO_GAIN1"/>
         <define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="FALSE"/>
       </module>
