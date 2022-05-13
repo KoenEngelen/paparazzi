@@ -9,6 +9,7 @@
         "editor.tabSize": 4,
     },
     "files.associations": {
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "sf1efilter.h": "c"
     },
 }

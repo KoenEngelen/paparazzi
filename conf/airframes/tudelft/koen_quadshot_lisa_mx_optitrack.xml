@@ -190,8 +190,10 @@
   <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
       <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
       <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
-      <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
-      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>    
+      <!-- <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
+      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>       -->
+      <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
+      <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>    
       <define name="Z_P_FACTOR" value="1.0" description="Positional gain of the aerobatic controller"/>
       <define name="Z_D_FACTOR" value="1.0" description="Velocity gain of the aerobatic controller"/>
       <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
@@ -358,9 +360,9 @@
           <define name="SAFETY_WARNING_LED" value="BODY"/>
     </load>
 
-    <!-- <module name="ins"/> -->
+    <module name="ins"/>
         <!-- <module name="ins"  type="ekf2"/> -->
-    <module name="ins"  type="hff"/>
+    <!-- <module name="ins"  type="hff"/> -->
     <!-- <module name="ins"  type="float_invariant">
       <configure name="USE_MAGNETOMETER" value="FALSE"/>   
     </module> -->

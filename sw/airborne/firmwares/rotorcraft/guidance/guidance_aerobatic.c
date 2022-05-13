@@ -41,7 +41,8 @@
 #include "CEmainmain.h"
 #include "subsystems/radio_control.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_indi_simple.h"
-
+// #include "SF1eFilter.h"
+// #include "SF1eFilter.c"
 //Define
 #ifndef PPRZ_MSG_ID_AEROBATIC_INDI
   #define PPRZ_MSG_ID_AEROBATIC_INDI 158
@@ -196,6 +197,16 @@ float y_coords[4] = {0};
 int32_t sd_id = 0;
 int32_t sd_log[30];
 
+// SF1eFilter f_acc_x;
+// SF1eFilter f_acc_y;
+// SF1eFilter f_acc_z;
+// SF1eFilter f2_acc_x;
+// SF1eFilter f2_acc_y;
+// SF1eFilter f2_acc_z;
+
+// struct FloatVect3 f_acc;
+// struct FloatVect3 f2_acc;
+
 // Guidance V Module: UNUSED
 void guidance_v_module_init(void){}
 void guidance_v_module_enter(void){}
@@ -291,6 +302,8 @@ void guidance_aerobatic_run(){
     is_in_mode_2 = false;
     ref.pos.x = ref_pos.x;
     ref.pos.y = ref_pos.y;
+    ref.vel.x = 0.0;
+    ref.vel.y = 0.0;
   }else if(varset.mode == 1){
     is_in_mode_2 = false;
     if(t > 10.0){
@@ -312,8 +325,10 @@ void guidance_aerobatic_run(){
       mode_2_radius = 0.9 * sqrtf(powf(in.pos.x,2.0) + powf(in.pos.y,2.0));
       is_in_mode_2 = true;
     }
-    ref.pos.x = mode_2_radius * sinf(mode_2_angle);
-    ref.pos.y = mode_2_radius * cosf(mode_2_angle);
+    ref.pos.x =  mode_2_radius * sinf(mode_2_angle);
+    ref.pos.y =  mode_2_radius * cosf(mode_2_angle);
+    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
     mode_2_angle += varset.max_vel/(2.0*M_PI*mode_2_radius*512.0);
   }
 
@@ -378,8 +393,8 @@ void YawControl(void){
   Yaw_proj.z = 0.0f;
 
 
-  Yaw_ref.x = -1.0f/sqrt(2.0f);
-  Yaw_ref.y = 1.0f/sqrt(2.0f);
+  Yaw_ref.x = 1.0f/sqrt(2.0f);
+  Yaw_ref.y = -1.0f/sqrt(2.0f);
   Yaw_ref.z = 0.0f;
 
   // Yaw_ref.x = 0.0f;
@@ -559,6 +574,44 @@ void filter_init(void){
     init_butterworth_2_low_pass(&filt.q_filter[3], tau, sample_time, in.q.qz);
     
     init_butterworth_2_low_pass(&filt.thrust_filter, tau, sample_time, in.thrust);
+
+    // float freq = 256;
+    // float beta = 1.000000;
+    // float mincutoff = 8.000000;
+    // float dcutoff = 0.1;
+
+
+    // f_acc_x.config.frequency = freq;
+    // f_acc_x.config.cutoffSlope = beta;
+    // f_acc_x.config.derivativeCutoffFrequency = dcutoff;
+    // f_acc_x.config.minCutoffFrequency = mincutoff;    
+    // SF1eFilterInit(&f_acc_x);
+    // f_acc_y.config.frequency = freq;
+    // f_acc_y.config.cutoffSlope = beta;
+    // f_acc_y.config.derivativeCutoffFrequency = dcutoff;
+    // f_acc_y.config.minCutoffFrequency = mincutoff;    
+    // SF1eFilterInit(&f_acc_y);
+    // f_acc_z.config.frequency = freq;
+    // f_acc_z.config.cutoffSlope = beta;
+    // f_acc_z.config.derivativeCutoffFrequency = dcutoff;
+    // f_acc_z.config.minCutoffFrequency = mincutoff;    
+    // SF1eFilterInit(&f_acc_z);
+    // f2_acc_x.config.frequency = freq;
+    // f2_acc_x.config.cutoffSlope = beta;
+    // f2_acc_x.config.derivativeCutoffFrequency = dcutoff;
+    // f2_acc_x.config.minCutoffFrequency = mincutoff;    
+    // SF1eFilterInit(&f2_acc_x);
+    // f2_acc_y.config.frequency = freq;
+    // f2_acc_y.config.cutoffSlope = beta;
+    // f2_acc_y.config.derivativeCutoffFrequency = dcutoff;
+    // f2_acc_y.config.minCutoffFrequency = mincutoff;    
+    // SF1eFilterInit(&f2_acc_y);
+    // f2_acc_z.config.frequency = freq;
+    // f2_acc_z.config.cutoffSlope = beta;
+    // f2_acc_z.config.derivativeCutoffFrequency = dcutoff;
+    // f2_acc_z.config.minCutoffFrequency = mincutoff;    
+    // SF1eFilterInit(&f2_acc_z);
+
 }
 void filter_run(void){
   // same filter as for the acceleration
@@ -604,6 +657,16 @@ void filter_run(void){
   filt.q.qx = filt.q_filter[1].o[0]/length;
   filt.q.qy = filt.q_filter[2].o[0]/length;
   filt.q.qz = filt.q_filter[3].o[0]/length;
+
+
+  // float time = 1.0 / PERIODIC_FREQUENCY;
+  // f_acc.x = SF1eFilterDoAtTime(&f_acc_x, in.acc.x, time);
+  // f_acc.y = SF1eFilterDoAtTime(&f_acc_y, in.acc.y, time);
+  // f_acc.z = SF1eFilterDoAtTime(&f_acc_z, in.acc.z, time);
+  // f2_acc.x = SF1eFilterDoAtTime(&f2_acc_x, f_acc.x, time);
+  // f2_acc.y = SF1eFilterDoAtTime(&f2_acc_y, f_acc.y, time);
+  // f2_acc.z = SF1eFilterDoAtTime(&f2_acc_z, f_acc.z, time);
+
 }
 // Loggers
 void message_log(void){
@@ -687,9 +750,9 @@ void update_sd_logger(void){
   // sd_log[28] = (int32_t) 10 * 420;
   // sd_log[29] = (int32_t) 420;
 
-  sd_log[25] = *(int32_t*)&LogRefRate.p;
-  sd_log[26] = *(int32_t*)&LogRefRate.q;
-  sd_log[27] = *(int32_t*)&LogRefRate.r;
+  // sd_log[25] = *(int32_t*)&f2_acc.x;
+  // sd_log[26] = *(int32_t*)&f2_acc.y;
+  // sd_log[27] = *(int32_t*)&f2_acc.z;
   sd_log[28] = *(int32_t*)&LogFiltRate.p;
   sd_log[29] = *(int32_t*)&LogFiltRate.q;
   sd_log[27] = imu.accel.x;
