@@ -342,8 +342,14 @@ void get_states(void){
   in.vel = *stateGetSpeedNed_f();
   in.acc = *stateGetAccelNed_f();
 
-  in.AoA = aoa_adc.angle;
-  in.V = ms45xx.airspeed;
+  in.AoA = 0.0;
+  if (!isnan(aoa_adc.angle)){
+    in.AoA = aoa_adc.angle;
+  }
+  in.V = 0.0;
+  if (!isnan(ms45xx.airspeed)){
+    in.V = ms45xx.airspeed;
+  }
   in.ay = ACCEL_FLOAT_OF_BFP(imu.accel.y);
 
   // Actuator Dynamics 
