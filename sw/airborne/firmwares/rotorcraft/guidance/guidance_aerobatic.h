@@ -60,7 +60,10 @@
         float d_gain;   //gain used on velocity control
         float z_p_factor;
         float z_d_factor;
-        float mode;   
+        int32_t mode; 
+        uint8_t use_feedforward;
+        uint8_t use_alt_gains;  
+        uint8_t use_filtered_output;
         // float min_thrust_eff;   // 0 = hover, 1 = trajectory, 2 = impulse
     };
 
@@ -109,6 +112,7 @@
     void get_du(void);
     void set_states(void);
 
+    void get_mode(void);
     void UpdateTrajectory(void);
     void CalcNewTrajectory(void);
     void TrajectoryScenario(void);

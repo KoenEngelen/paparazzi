@@ -70,6 +70,10 @@ void high_speed_logger_spi_link_periodic(void)
 
     high_speed_logger_spi_link_data.id = counter;
 
+
+
+
+    if ((counter%2) == 1 ){
     high_speed_logger_spi_link_data.d1  = sd_log[ 0+15*(counter%2)];
     high_speed_logger_spi_link_data.d2  = sd_log[ 1+15*(counter%2)];
     high_speed_logger_spi_link_data.d3  = sd_log[ 2+15*(counter%2)];
@@ -79,6 +83,26 @@ void high_speed_logger_spi_link_periodic(void)
     high_speed_logger_spi_link_data.d7  = sd_log[ 6+15*(counter%2)];
     high_speed_logger_spi_link_data.d8  = sd_log[ 7+15*(counter%2)];
     high_speed_logger_spi_link_data.d9  = sd_log[ 8+15*(counter%2)];
+    } else {
+      
+      struct NedCoor_f pos;
+      struct NedCoor_f vel;
+      struct NedCoor_f acc;
+
+      pos = *stateGetPositionNed_f();
+      vel = *stateGetSpeedNed_f();
+      acc = *stateGetAccelNed_f();
+
+      high_speed_logger_spi_link_data.d1  = *(int32_t*)&pos.x;
+      high_speed_logger_spi_link_data.d2  = *(int32_t*)&pos.y;
+      high_speed_logger_spi_link_data.d3  = *(int32_t*)&pos.z;
+      high_speed_logger_spi_link_data.d4  = *(int32_t*)&vel.x;
+      high_speed_logger_spi_link_data.d5  = *(int32_t*)&vel.y;
+      high_speed_logger_spi_link_data.d6  = *(int32_t*)&vel.z;
+      high_speed_logger_spi_link_data.d7  = *(int32_t*)&acc.x;
+      high_speed_logger_spi_link_data.d8  = *(int32_t*)&acc.y;
+      high_speed_logger_spi_link_data.d9  = *(int32_t*)&acc.z;
+    }
     high_speed_logger_spi_link_data.d10 = sd_log[ 9+15*(counter%2)];
     high_speed_logger_spi_link_data.d11 = sd_log[10+15*(counter%2)];
     high_speed_logger_spi_link_data.d12 = sd_log[11+15*(counter%2)];

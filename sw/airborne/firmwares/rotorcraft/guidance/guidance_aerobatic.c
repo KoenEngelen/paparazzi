@@ -41,18 +41,28 @@
 #include "CEmainmain.h"
 #include "subsystems/radio_control.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_indi_simple.h"
+#include "modules/sensors/airspeed_ms45xx_i2c.h"
+#include "modules/sensors/aoa_adc.h"
+#include "subsystems/imu.h"
 // #include "SF1eFilter.h"
 // #include "SF1eFilter.c"
 //Define
 #ifndef PPRZ_MSG_ID_AEROBATIC_INDI
-  #define PPRZ_MSG_ID_AEROBATIC_INDI 158
+#define PPRZ_MSG_ID_AEROBATIC_INDI 158
 #endif
+
 #ifndef PPRZ_MSG_ID_AEROBATIC_LOG
-  #define PPRZ_MSG_ID_AEROBATIC_LOG 172
+#define PPRZ_MSG_ID_AEROBATIC_LOG 172
 #endif
+
 #ifndef PERIODIC_FREQUENCY
-  #define PERIODIC_FREQUENCY 512
+#define PERIODIC_FREQUENCY 512
 #endif
+
+// #ifndef GUIDANCE_AEROBATIC_USE_FEEDFORWARD
+// #define GUIDANCE_AEROBATIC_USE_FEEDFORWARD FALSE
+// #endif
+
 #ifndef GUIDANCE_INDI_FILTER_CUTOFF
   #ifdef STABILIZATION_INDI_FILT_CUTOFF
     #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
@@ -60,6 +70,7 @@
     #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
   #endif
 #endif
+
 #define MAX_PPRZ_f 9600.0
 #define THRUST_MIN 1920 //0.20*MAX_PPRZ //TODO lower min thrust (Check)
 #define THRUST_MAX 8640 //0.90*MAX_PPRZ
@@ -74,12 +85,20 @@ struct filter_struct{
   Butterworth2LowPass vel_filter[3];
   Butterworth2LowPass pos_filter[3];
   Butterworth2LowPass q_filter[4];
+  Butterworth2LowPass qout_filter[4];
   Butterworth2LowPass thrust_filter;
+  Butterworth2LowPass AoA_filter;
+  Butterworth2LowPass ay_filter;
+  Butterworth2LowPass V_filter;
   struct NedCoor_f pos;
   struct NedCoor_f vel;
   struct NedCoor_f acc;
   struct FloatQuat q;
+  struct FloatQuat qout;
   float thrust;
+  float V;
+  float ay;
+  float AoA;
 } filt;
 struct input_states {
     struct NedCoor_f pos;
@@ -88,6 +107,9 @@ struct input_states {
     struct NedCoor_f air;
     struct FloatQuat q;
     float thrust;
+    float AoA;
+    float V;
+    float ay;
     int32_t thrust_cmd;
 } in;
 struct reference_states {
@@ -138,6 +160,9 @@ struct AerobaticVariableSettings varset = {
     .z_p_factor  = GUIDANCE_AEROBATIC_Z_P_FACTOR,
     .z_d_factor  = GUIDANCE_AEROBATIC_Z_D_FACTOR,
     .mode = GUIDANCE_AEROBATIC_MODE,
+    .use_feedforward = GUIDANCE_AEROBATIC_USE_FEEDFORWARD,
+    .use_alt_gains = GUIDANCE_AEROBATIC_USE_ALT_GAINS,
+    .use_filtered_output = GUIDANCE_AEROBATIC_USE_FILTERED_OUTPUT
     // .min_thrust_eff = GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT
 };
 
@@ -184,7 +209,11 @@ struct NedCoor_f ref_pos;
 
 struct NedCoor_f Home;
 
-bool is_in_mode_2;
+bool mode_disabled_altitude_gains = false;
+bool mode_disabled_Kp = false;
+bool mode_disabled_Kd = false;
+int8_t active_mode = 0;
+
 float mode_2_radius;
 float mode_2_angle;
 
@@ -256,16 +285,15 @@ void guidance_aerobatic_init(void){
   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_INDI);
  }
 void guidance_aerobatic_enter(void){
-    t = -5.0;
-    is_in_mode_2 = false;
+    t = 0.0;
     // getWaypoints()
 
     ref_pos = *stateGetPositionNed_f();
     in.thrust = CMD_TO_THRUST*stabilization_cmd[COMMAND_THRUST];
     out.thrust = in.thrust;
 
-    varset.max_vel = 1.0;
-    varset.max_acc = 1.0;
+    // varset.max_vel = 1.0;
+    // varset.max_acc = 1.0;
 
     traj_sec.type = 0;
     traj_sec.number = -1;
@@ -274,7 +302,7 @@ void guidance_aerobatic_enter(void){
 
     ref.pos.x = stateGetPositionNed_f()->x;
     ref.pos.y = stateGetPositionNed_f()->y;
-    ref.pos.z = stateGetPositionNed_f()->z-0.05;
+    ref.pos.z = stateGetPositionNed_f()->z;
     ref.vel.x = 0.0f;
     ref.vel.y = 0.0f;
     ref.vel.z = 0.0f;
@@ -292,45 +320,14 @@ void guidance_aerobatic_run(){
     t = 0;
   }
   get_states();
+  get_mode();
   YawControl();
   Controller();
   get_G();
   get_du();
   set_states();
 
-  if(varset.mode == 0){
-    is_in_mode_2 = false;
-    ref.pos.x = ref_pos.x;
-    ref.pos.y = ref_pos.y;
-    ref.vel.x = 0.0;
-    ref.vel.y = 0.0;
-  }else if(varset.mode == 1){
-    is_in_mode_2 = false;
-    if(t > 10.0){
-      t = 0.0;
-      wp_id = wp_id + 1;
-      if(wp_id == 4){
-        wp_id = 0;
-      }
-      ref.pos.x = x_coords[0];
-      ref.pos.y = y_coords[0];
-      ref.pos.x = 0.0;
-      ref.pos.y = 0.0;
-    }
-    ref.pos.x = x_coords[wp_id];
-    ref.pos.y = y_coords[wp_id];
-  }else if(varset.mode == 2){
-    if (!is_in_mode_2){
-      mode_2_angle = atan2f(in.pos.x,in.pos.y);
-      mode_2_radius = 0.9 * sqrtf(powf(in.pos.x,2.0) + powf(in.pos.y,2.0));
-      is_in_mode_2 = true;
-    }
-    ref.pos.x =  mode_2_radius * sinf(mode_2_angle);
-    ref.pos.y =  mode_2_radius * cosf(mode_2_angle);
-    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
-    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
-    mode_2_angle += varset.max_vel/(2.0*M_PI*mode_2_radius*512.0);
-  }
+ 
 
   message_log();
   if (counter%2){
@@ -344,6 +341,10 @@ void get_states(void){
   in.pos = *stateGetPositionNed_f();
   in.vel = *stateGetSpeedNed_f();
   in.acc = *stateGetAccelNed_f();
+
+  in.AoA = aoa_adc.angle;
+  in.V = ms45xx.airspeed;
+  in.ay = ACCEL_FLOAT_OF_BFP(imu.accel.y);
 
   // Actuator Dynamics 
   // float dthrust = ((float) out.thrust_cmd)*CMD_TO_THRUST -  filt.thrust;   
@@ -416,12 +417,27 @@ void YawControl(void){
   } else if (ctrl.dyaw < -5.0f/M_PI){
       ctrl.dyaw = -5.0f/M_PI;
   }
+  ctrl.dyaw = 0.0;
 }
 void Controller(void){
   float PGain = varset.p_gain;
+  if (mode_disabled_Kp){
+    float PGain = 0.0;
+  }
   float VGain = varset.d_gain;
-  float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR;
-  float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR;
+  if (mode_disabled_Kd){
+    float VGain = 0.0;
+  }
+  float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR * PGain;
+  float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR * VGain;
+  if (!mode_disabled_altitude_gains){
+    if (mode_disabled_Kp){
+      float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR;
+    }
+    if (mode_disabled_Kd){
+      float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR;
+    }
+  }
 
   struct FloatVect3 da_p;
   struct FloatVect3 da_d;
@@ -446,11 +462,11 @@ void Controller(void){
   
   da_p.x = PGain * (ref.pos.x+dx-in.pos.x);
   da_p.y = PGain * (ref.pos.y+dy-in.pos.y);
-  da_p.z = zPFactor *PGain * (ref.pos.z+dz-in.pos.z);
+  da_p.z = zPFactor * (ref.pos.z+dz-in.pos.z);
 
   da_d.x = VGain * (ref.vel.x+ddx-in.vel.x);
   da_d.y = VGain * (ref.vel.y+ddy-in.vel.y);
-  da_d.z = zVFactor * VGain * (ref.vel.z-in.vel.z);
+  da_d.z = zVFactor * (ref.vel.z-in.vel.z);
 
   da.x = da_p.x + da_d.x + ref.acc.x - filt.acc.x;
   da.y = da_p.y + da_d.y + ref.acc.y - filt.acc.y;
@@ -464,15 +480,15 @@ void get_G(void){
   V[1] = in.air.y;
   V[2] = in.air.z;
 
-  ctrl.G[0][0] =  0.0f * da_wing_x_dphii(V)  ; 
-  ctrl.G[1][0] =  0.0f * da_wing_y_dphii(V)   + fmaxf(in.thrust,MIN_THRUST_EFFECTIVNESS); 
-  ctrl.G[2][0] =  0.0f * da_wing_z_dphii(V)  ; 
-  ctrl.G[0][1] =  0.0f * da_wing_x_dthetai(V) - fmaxf(in.thrust,MIN_THRUST_EFFECTIVNESS); 
-  ctrl.G[1][1] =  0.0f * da_wing_y_dthetai() ; 
-  ctrl.G[2][1] =  0.0f * da_wing_z_dthetai(V); 
+  ctrl.G[0][0] =  0.0f * varset.max_acc * da_wing_x_dphii(V)  ; 
+  ctrl.G[1][0] =  0.0f * varset.max_acc * da_wing_y_dphii(V)   + varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl.G[2][0] =  0.0f * varset.max_acc * da_wing_z_dphii(V)  ; 
+  ctrl.G[0][1] =  0.0f * varset.max_acc * da_wing_x_dthetai(V) - varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl.G[1][1] =  0.0f * varset.max_acc * da_wing_y_dthetai() ; 
+  ctrl.G[2][1] =  0.0f * varset.max_acc * da_wing_z_dthetai(V); 
   ctrl.G[0][2] =  0.0f; 
   ctrl.G[1][2] =  0.0f; 
-  ctrl.G[2][2] = -1.0f; 
+  ctrl.G[2][2] = -1.0f * varset.max_acc; 
 }
 void get_du(void){
   struct FloatMat33 Ga;
@@ -540,7 +556,24 @@ void set_states(void){
     q_res.qy = q_res.qy/magdu;
     q_res.qz = q_res.qz/magdu;
 
+    update_butterworth_2_low_pass(&filt.qout_filter[0], q_res.qi);
+    update_butterworth_2_low_pass(&filt.qout_filter[1], q_res.qx);
+    update_butterworth_2_low_pass(&filt.qout_filter[2], q_res.qy);
+    update_butterworth_2_low_pass(&filt.qout_filter[3], q_res.qz);
 
+    float sum = 0.0;
+    for (int i = 0; i < 4; i++){
+      sum += powf(filt.qout_filter[i].o[0],2);
+    }
+    float length = sqrtf(sum);
+    filt.qout.qi = filt.qout_filter[0].o[0]/length;
+    filt.qout.qx = filt.qout_filter[1].o[0]/length;
+    filt.qout.qy = filt.qout_filter[2].o[0]/length;
+    filt.qout.qz = filt.qout_filter[3].o[0]/length;
+
+    if (varset.use_filtered_output){
+      q_res = filt.qout;
+    }
     QUAT_BFP_OF_REAL(q_i_res, q_res);
     stabilization_indi_attitude_run(q_i_res,true);
 }
@@ -572,8 +605,18 @@ void filter_init(void){
     init_butterworth_2_low_pass(&filt.q_filter[1], tau, sample_time, in.q.qx);
     init_butterworth_2_low_pass(&filt.q_filter[2], tau, sample_time, in.q.qy);
     init_butterworth_2_low_pass(&filt.q_filter[3], tau, sample_time, in.q.qz);
+
+    init_butterworth_2_low_pass(&filt.qout_filter[0], 1.0 / (2.0 * M_PI), sample_time, in.q.qi);
+    init_butterworth_2_low_pass(&filt.qout_filter[1], 1.0 / (2.0 * M_PI), sample_time, in.q.qx);
+    init_butterworth_2_low_pass(&filt.qout_filter[2], 1.0 / (2.0 * M_PI), sample_time, in.q.qy);
+    init_butterworth_2_low_pass(&filt.qout_filter[3], 1.0 / (2.0 * M_PI), sample_time, in.q.qz);
     
     init_butterworth_2_low_pass(&filt.thrust_filter, tau, sample_time, in.thrust);
+
+
+    init_butterworth_2_low_pass(&filt.V_filter, tau, sample_time, in.V);
+    init_butterworth_2_low_pass(&filt.AoA_filter, tau, sample_time, in.AoA);
+    init_butterworth_2_low_pass(&filt.ay_filter, tau, sample_time, in.ay);
 
     // float freq = 256;
     // float beta = 1.000000;
@@ -613,6 +656,7 @@ void filter_init(void){
     // SF1eFilterInit(&f2_acc_z);
 
 }
+
 void filter_run(void){
   // same filter as for the acceleration
   update_butterworth_2_low_pass(&filt.thrust_filter, in.thrust);
@@ -634,7 +678,16 @@ void filter_run(void){
   update_butterworth_2_low_pass(&filt.q_filter[2], in.q.qy);
   update_butterworth_2_low_pass(&filt.q_filter[3], in.q.qz);
 
+
+  update_butterworth_2_low_pass(&filt.AoA_filter, in.AoA);
+  update_butterworth_2_low_pass(&filt.ay_filter, in.ay);
+  update_butterworth_2_low_pass(&filt.V_filter, in.V);
+
   filt.thrust = filt.thrust_filter.o[0];
+
+  filt.AoA = filt.AoA_filter.o[0];
+  filt.ay = filt.ay_filter.o[0];
+  filt.V = filt.V_filter.o[0];
   
   filt.pos.x = filt.pos_filter[0].o[0];
   filt.pos.y = filt.pos_filter[1].o[0];
@@ -760,6 +813,100 @@ void update_sd_logger(void){
   sd_log[29] = imu.accel.z;
 }
 // Trajectory
+void get_mode(void){
+  bool switched_mode = false;
+  if(active_mode != varset.mode){
+    t = 0.0;
+    switched_mode = true;
+    active_mode = varset.mode;
+  }
+  //Precaution set all references to zero to prevent values from 'sticking'
+  ref.pos.x = 0.0;
+  ref.pos.y = 0.0;
+  ref.vel.x = 0.0;
+  ref.vel.y = 0.0;
+  ref.vel.z = 0.0;
+  ref.acc.x = 0.0;
+  ref.acc.y = 0.0;
+  ref.acc.y = 0.0;
+  //Precaution enable Kp and Kd
+  mode_disabled_Kp = false;
+  mode_disabled_Kd = false;
+  mode_disabled_altitude_gains = !varset.use_alt_gains;
+  
+  switch (varset.mode)
+  {
+  // Stay at reference position
+  case 0:
+    ref.pos.x = ref_pos.x;
+    ref.pos.y = ref_pos.y;
+    break;
+  // Fly in square
+  case 1:
+    if(t > 10.0){
+      t = 0.0;
+      wp_id = wp_id + 1;
+      if(wp_id == 4){
+        wp_id = 0;
+      }
+    }
+    ref.pos.x = x_coords[wp_id];
+    ref.pos.y = y_coords[wp_id];
+    break;
+  // Fly in circle
+  case 2:
+    if (switched_mode){
+      mode_2_angle = atan2f(in.pos.x,in.pos.y);
+      mode_2_radius = sqrtf(powf(in.pos.x,2.0) + powf(in.pos.y,2.0));
+    }
+    ref.pos.x =  mode_2_radius * sinf(mode_2_angle);
+    ref.pos.y =  mode_2_radius * cosf(mode_2_angle);
+    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+    if (varset.use_feedforward){
+      ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
+      ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
+    }
+    mode_2_angle += varset.max_vel/(2.0*M_PI*mode_2_radius*512.0);
+    break;
+  // Acceleration tracking test
+  case 3:
+    mode_disabled_Kp = true;
+    mode_disabled_Kd = true;
+    float sqrt2i = 1.0/sqrtf(2.0);
+    if (t < 1.0){
+      ref.acc.x =  sqrt2i;
+      ref.acc.y = -sqrt2i;
+    }else if (t < 2.0){
+      ref.acc.x = -sqrt2i;
+      ref.acc.y =  sqrt2i;
+    }else{
+      varset.mode = 0;
+      ref.pos.x = ref_pos.x;
+      ref.pos.y = ref_pos.y;
+    }
+    break;
+  // Acceleration tracking test
+  case 4:
+    mode_disabled_Kp = true;
+    mode_disabled_Kd = true;
+    if (t < 1.0){
+      ref.acc.z = -1.0;
+    }else if (t < 2.0){
+      ref.acc.z = 1.0;
+    }else{
+      varset.mode = 0;
+      ref.acc.z = 0.0;
+    }
+    break;
+  // Default stay at reference position
+  default:
+    ref.pos.x = ref_pos.x;
+    ref.pos.y = ref_pos.y;
+    break;
+  }
+}
+
 void UpdateTrajectory(void){
     traj.t = t;
 

@@ -48,7 +48,7 @@
 #endif
 /// Default sensitivity (2*pi on a 10 bit ADC)
 #ifndef AOA_SENS
-#define AOA_SENS ((2.0*M_PI)/1024)
+#define AOA_SENS ((2.0*M_PI)/4000)
 #endif
 
 
