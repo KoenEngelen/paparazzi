@@ -16,14 +16,14 @@
       <define name="USE_FEEDFORWARD" value="FALSE|TRUE" description="enable feedforward acceleration"/>
       <define name="USE_ALT_GAINS" value="FALSE|TRUE" description="enable altitude gains if horizontal gains are disabled"/>
       <define name="USE_FILTERED_OUTPUT" value="FALSE|TRUE" description="use a filter on quaternion output"/>
-      <define name="CE_MODE" value="3" description="enable altitude gains if horizontal gains are disabled"/>
+      <define name="CE_MODE" value="2" description="enable altitude gains if horizontal gains are disabled"/>
       <!-- <define name="MIN_THRUST_EFFECT" value="4.0" description="Minimum value for effectivness"/> -->
     </section>
   </doc>
   <settings>
     <dl_settings>
       <dl_settings NAME="guidance_aerobatic">
-        <dl_setting var="varset.max_vel" min="0" step="0.25" max="15.0" shortname="Vmax" param="GUIDANCE_AEROBATIC_MAX_VEL" persistent="true" module="guidance/guidance_aerobatic"/>
+        <dl_setting var="varset.max_vel" min="0" step="0.25" max="50.0" shortname="Vmax" param="GUIDANCE_AEROBATIC_MAX_VEL" persistent="true" module="guidance/guidance_aerobatic"/>
         <dl_setting var="varset.max_acc" min="0" step="0.25" max="10.0" shortname="Amax" param="GUIDANCE_AEROBATIC_MAX_ACC" persistent="true"/>
         <dl_setting var="varset.p_gain"  min="0" step="0.25" max="20.0" shortname="Kp"   param="GUIDANCE_AEROBATIC_P_GAIN"  persistent="true"/>
         <dl_setting var="varset.d_gain"  min="0" step="0.25" max="20.0" shortname="Kd"   param="GUIDANCE_AEROBATIC_D_GAIN"  persistent="true"/>
@@ -33,7 +33,7 @@
         <dl_setting var="varset.use_feedforward" min="0" step="1" max="1" shortname="feedforward" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_FEEDFORWARD" type="uint8" persistent="true"/>
         <dl_setting var="varset.use_alt_gains" min="0" step="1" max="1" shortname="alt gains" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_ALT_GAINS" type="uint8" persistent="true"/>
         <dl_setting var="varset.use_filtered_output" min="0" step="1" max="1" shortname="filter output" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_FILTERED_OUTPUT" type="uint8" persistent="true"/>
-        <dl_setting var="varset.ce_mode" min="1" step="1" max="3" shortname="CE mode" values="3x3|4x4" param="GUIDANCE_AEROBATIC_CE_MODE" type="uint8" persistent="true"/>
+        <dl_setting var="varset.ce_mode" min="1" step="1" max="2" shortname="CE mode" values="3x3|4x4" param="GUIDANCE_AEROBATIC_CE_MODE" type="uint8" persistent="true"/>
         <!-- <dl_setting var="varset.min_thrust_eff"    min="1.0" step="0.1" max="10.0"  shortname="min_eff" param="GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT"    persistent="true"/> -->
       </dl_settings>
     </dl_settings>

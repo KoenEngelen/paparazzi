@@ -348,13 +348,13 @@ void get_states(void){
   in.acc = *stateGetAccelNed_f();
 
   in.AoA = 0.0;
-  // if (!isnan(aoa_adc.angle)){
-  //   in.AoA = aoa_adc.angle;
-  // }
+  if (!isnan(aoa_adc.angle)){
+    in.AoA = aoa_adc.angle;
+  }
   in.V = 0.0;
-  // if (!isnan(ms45xx.airspeed)){
-  //   in.V = ms45xx.airspeed;
-  // }
+  if (!isnan(ms45xx.airspeed)){
+    in.V = ms45xx.airspeed;
+  }
   in.ay = ACCEL_FLOAT_OF_BFP(imu.accel.y);
 
   // Actuator Dynamics 
@@ -363,6 +363,31 @@ void get_states(void){
   in.thrust = (1.0-THRUST_DYNAMICS)*in.thrust + THRUST_DYNAMICS*out.thrust;
 
   filter_run();
+
+
+
+  struct FloatVect3 ab;
+  struct FloatVect3 ag;
+  ag.x = 0.0;
+  ag.y = 0.0;
+  ag.z = 9.81;
+  float_quat_vmult(&ab, &filt.q, &ag);
+  float aymg = filt.ay - ab.y;
+
+
+
+  float_quat_vmult(&ab, &filt.q, &filt.acc);
+  float Vy = sqrtf(5.0*aymg);
+  float Vxz = filt.V * powf(cosf(filt.AoA),2.0) + powf(sinf(filt.AoA),2.0) * sqrtf(5.0*sqrtf(ab.x*ab.x + ab.z*ab.z));
+
+  float Vz = cosf(filt.AoA)*Vxz;
+  float Vx = sinf(filt.AoA)*Vxz;
+
+  in.air.x = Vx ;
+  in.air.y = Vy ;
+  in.air.z = Vz ;
+
+
 
   struct FloatVect3 V_drone;
   V_drone.x = in.vel.x;
@@ -379,9 +404,9 @@ void get_states(void){
   V_drone.y = -V_drone.y;
   V_drone.z = -V_drone.z;
 
-  in.air.x = V_inf.x;
-  in.air.y = V_inf.y;
-  in.air.z = V_inf.z;   
+  // in.air.x = V_inf.x;
+  // in.air.y = V_inf.y;
+  // in.air.z = V_inf.z;   
 }
 void YawControl(void){
   struct FloatVect3 Yaw_bE;
