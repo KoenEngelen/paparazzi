@@ -1,0 +1,4 @@
+<map file="ValkenburgMap.png" projection="Mercator">
+  <point x="0" y="0" geo="WGS84 52.1746155	4.4077153"/>
+  <point x="1297" y="1019" geo="WGS84 52.1642909	4.4291415"/>
+</map>

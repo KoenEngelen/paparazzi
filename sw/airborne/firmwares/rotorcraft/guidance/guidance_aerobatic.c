@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2015
- *
- * This file is part of paparazzi.
- *
- * paparazzi is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * paparazzi is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with paparazzi; see the file COPYING.  If not, write to
- * the Free Software Foundation, 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- */
 /** @file firmwares/rotorcraft/guidance/guidance_aerobatic.c
  *  Reference generation for horizontal guidance.
  *
@@ -122,12 +102,34 @@ struct output_states {
   float thrust;
   int32_t thrust_cmd;
 } out;
-struct ctrl_struct {
-  float G[ROWS_GUIDANCE][COLS_GUIDANCE];
+struct ctrl_struct3 {
+  float G[3][3];
   struct FloatVect3 dv; 
   struct FloatVect3 du;
   float dyaw;
+} ctrl3;
+
+struct ctrl_struct4 {
+  float G[16];
+  float dv[4]; 
+  float du[4];
+} ctrl4;
+
+struct ctrl_struct {
+  float dphi;
+  float dtheta;
+  float dpsi;
+  float dT;
 } ctrl;
+
+struct wp_struct {
+  uint8_t stay_wp;
+  uint8_t circle;
+  uint8_t start;
+  uint8_t dir;
+} wps;
+
+
 struct trajectory {
     float t;
     struct NedCoor_f pos;
@@ -162,7 +164,8 @@ struct AerobaticVariableSettings varset = {
     .mode = GUIDANCE_AEROBATIC_MODE,
     .use_feedforward = GUIDANCE_AEROBATIC_USE_FEEDFORWARD,
     .use_alt_gains = GUIDANCE_AEROBATIC_USE_ALT_GAINS,
-    .use_filtered_output = GUIDANCE_AEROBATIC_USE_FILTERED_OUTPUT
+    .use_filtered_output = GUIDANCE_AEROBATIC_USE_FILTERED_OUTPUT,
+    .ce_mode = GUIDANCE_AEROBATIC_CE_MODE
     // .min_thrust_eff = GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT
 };
 
@@ -321,7 +324,9 @@ void guidance_aerobatic_run(){
   }
   get_states();
   get_mode();
-  YawControl();
+  if (varset.ce_mode == 1){
+    YawControl();
+  }
   Controller();
   get_G();
   get_du();
@@ -343,13 +348,13 @@ void get_states(void){
   in.acc = *stateGetAccelNed_f();
 
   in.AoA = 0.0;
-  if (!isnan(aoa_adc.angle)){
-    in.AoA = aoa_adc.angle;
-  }
+  // if (!isnan(aoa_adc.angle)){
+  //   in.AoA = aoa_adc.angle;
+  // }
   in.V = 0.0;
-  if (!isnan(ms45xx.airspeed)){
-    in.V = ms45xx.airspeed;
-  }
+  // if (!isnan(ms45xx.airspeed)){
+  //   in.V = ms45xx.airspeed;
+  // }
   in.ay = ACCEL_FLOAT_OF_BFP(imu.accel.y);
 
   // Actuator Dynamics 
@@ -416,14 +421,14 @@ void YawControl(void){
   // Yaw_ref.x = dposx/dmag;
   // Yaw_ref.y = dposy/dmag;
 
-  ctrl.dyaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
+  ctrl3.dyaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
 
-  if (ctrl.dyaw > 5.0f/M_PI){
-      ctrl.dyaw = 5.0f/M_PI;
-  } else if (ctrl.dyaw < -5.0f/M_PI){
-      ctrl.dyaw = -5.0f/M_PI;
+  if (ctrl3.dyaw > 5.0f/M_PI){
+      ctrl3.dyaw = 5.0f/M_PI;
+  } else if (ctrl3.dyaw < -5.0f/M_PI){
+      ctrl3.dyaw = -5.0f/M_PI;
   }
-  ctrl.dyaw = 0.0;
+  ctrl3.dyaw = 0.0;
 }
 void Controller(void){
   float PGain = varset.p_gain;
@@ -478,7 +483,7 @@ void Controller(void){
   da.y = da_p.y + da_d.y + ref.acc.y - filt.acc.y;
   da.z = da_p.z + da_d.z + ref.acc.z - filt.acc.z;
 
-  float_quat_vmult(&ctrl.dv, &filt.q, &da);
+  float_quat_vmult(&ctrl3.dv, &filt.q, &da);
 }
 void get_G(void){ 
   float V[3];
@@ -486,44 +491,126 @@ void get_G(void){
   V[1] = in.air.y;
   V[2] = in.air.z;
 
-  ctrl.G[0][0] =  0.0f * varset.max_acc * da_wing_x_dphii(V)  ; 
-  ctrl.G[1][0] =  0.0f * varset.max_acc * da_wing_y_dphii(V)   + varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-  ctrl.G[2][0] =  0.0f * varset.max_acc * da_wing_z_dphii(V)  ; 
-  ctrl.G[0][1] =  0.0f * varset.max_acc * da_wing_x_dthetai(V) - varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-  ctrl.G[1][1] =  0.0f * varset.max_acc * da_wing_y_dthetai() ; 
-  ctrl.G[2][1] =  0.0f * varset.max_acc * da_wing_z_dthetai(V); 
-  ctrl.G[0][2] =  0.0f; 
-  ctrl.G[1][2] =  0.0f; 
-  ctrl.G[2][2] = -1.0f * varset.max_acc; 
+  float dbdt = -in.air.y*in.air.x;
+  float dbdp = -in.air.x*in.air.z;
+  float V2yz = powf(in.air.y,2.0)+powf(in.air.z,2.0);
+  if (V2yz > 1.0f){
+    dbdt = dbdt/V2yz;
+    dbdp = dbdp/V2yz;
+  }
+  if (isnan(dbdt)){
+    dbdt = 0.0f;
+  }
+  if (isnan(dbdp)){
+    dbdp = 0.0f;
+  }
+
+  switch (varset.ce_mode)
+  {
+  case 1:
+    ctrl3.G[0][0] =  0.0f * varset.max_acc * da_wing_x_dphii(V)  ; 
+    ctrl3.G[1][0] =  0.0f * varset.max_acc * da_wing_y_dphii(V)   + varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+    ctrl3.G[2][0] =  0.0f * varset.max_acc * da_wing_z_dphii(V)  ; 
+    ctrl3.G[0][1] =  0.0f * varset.max_acc * da_wing_x_dthetai(V) - varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+    ctrl3.G[1][1] =  0.0f * varset.max_acc * da_wing_y_dthetai() ; 
+    ctrl3.G[2][1] =  0.0f * varset.max_acc * da_wing_z_dthetai(V); 
+    ctrl3.G[0][2] =  0.0f; 
+    ctrl3.G[1][2] =  0.0f; 
+    ctrl3.G[2][2] = -1.0f * varset.max_acc; 
+    break;
+  
+  case 2:
+    ctrl4.G[ 0] =  da_wing_x_dphii(V)  ; 
+    ctrl4.G[ 1] =  da_wing_y_dphii(V)  + fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+    ctrl4.G[ 2] =  da_wing_z_dphii(V)  ; 
+    ctrl4.G[ 3] =  1.0;
+    ctrl4.G[ 4] =  da_wing_x_dthetai(V)- fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+    ctrl4.G[ 5] =  da_wing_y_dthetai() ; 
+    ctrl4.G[ 6] =  da_wing_z_dthetai(V); 
+    ctrl4.G[ 7] =  dbdt;
+    ctrl4.G[ 8] =  da_wing_x_dpsii(V)  ;  
+    ctrl4.G[ 9] =  da_wing_y_dpsii(V)  ; 
+    ctrl4.G[10] =  da_wing_z_dpsii(V)  ; 
+    ctrl4.G[11] =  dbdp;
+    ctrl4.G[12] =  0.0f;
+    ctrl4.G[13] =  0.0f;
+    ctrl4.G[14] = -1.0f;
+    ctrl4.G[15] =  0.0f;
+    break;
+  
+  default:
+    break;
+  }
+  
 }
 void get_du(void){
-  struct FloatMat33 Ga;
-  struct FloatMat33 Ga_inv;
-  
-  for (int r = 0; r < ROWS_GUIDANCE; r++){
-    for (int c = 0; c < COLS_GUIDANCE; c++){
-      Ga.m[3*r+c] = ctrl.G[r][c];
-      Ga_inv.m[3*r+c] = 0.0f;
-    }
-  }    
-  
-  MAT33_INV(Ga_inv, Ga); 
-  MAT33_VECT3_MUL(ctrl.du, Ga_inv, ctrl.dv);
-
   // in.thrust = 20*CMD_Thrust/9600
   // min = 0 
   // max = 20
   float du_min = THRUST_MIN*CMD_TO_THRUST - filt.thrust; 
   float du_max = THRUST_MAX*CMD_TO_THRUST - filt.thrust; 
+  switch (varset.ce_mode)
+  {
+  case 1: ; 
+    struct FloatMat33 Ga;
+    struct FloatMat33 Ga_inv;
+    
+    for (int r = 0; r < ROWS_GUIDANCE; r++){
+      for (int c = 0; c < COLS_GUIDANCE; c++){
+        Ga.m[3*r+c] = ctrl3.G[r][c];
+        Ga_inv.m[3*r+c] = 0.0f;
+      }
+    }    
+    
+    MAT33_INV(Ga_inv, Ga); 
+    MAT33_VECT3_MUL(ctrl3.du, Ga_inv, ctrl3.dv);
 
-  if (ctrl.du.z < du_min){
-    ctrl.du.z = du_min;
-  }else if (ctrl.du.z > du_max){
-    ctrl.du.z = du_max;
+    if (ctrl3.du.z < du_min){
+      ctrl3.du.z = du_min;
+    }else if (ctrl3.du.z > du_max){
+      ctrl3.du.z = du_max;
+    }
+
+    ctrl.dphi   = ctrl3.du.x;
+    ctrl.dtheta = ctrl3.du.y;
+    ctrl.dpsi   = ctrl3.dyaw;
+    ctrl.dT     = ctrl3.du.z;
+
+    break;
+  
+  case 2: ;
+    float G_inv[16];
+    if (Mat44Inv(ctrl4.G, G_inv)){
+        ctrl4.dv[0] = ctrl3.dv.x;
+        ctrl4.dv[1] = ctrl3.dv.y;
+        ctrl4.dv[2] = ctrl3.dv.z;
+        ctrl4.dv[3] = 0.0;
+        Mat44Vect4Mul(ctrl4.du,G_inv,ctrl4.dv);
+    } else {
+        ctrl4.du[0] = 0.0f;
+        ctrl4.du[1] = 0.0f;
+        ctrl4.du[2] = 0.0f;
+        ctrl4.du[3] = 0.0f;
+    }
+
+    if (ctrl4.du[3] < du_min){
+      ctrl4.du[3] = du_min;
+    }else if (ctrl4.du[3] > du_max){
+      ctrl4.du[3] = du_max;
+    }
+    ctrl.dphi   = ctrl4.du[0];
+    ctrl.dtheta = ctrl4.du[1];
+    ctrl.dpsi   = ctrl4.du[2];
+    ctrl.dT     = ctrl4.du[3];
+
+    break;
+
+  default:
+    break;
   }
 }
 void set_states(void){
-  out.thrust = filt.thrust + ctrl.du.z;
+  out.thrust = filt.thrust + ctrl.dT;
   out.thrust_cmd = (int) (out.thrust*THRUST_TO_CMD);
   if (out.thrust_cmd > THRUST_MAX){
       out.thrust_cmd = THRUST_MAX;
@@ -541,7 +628,7 @@ void set_states(void){
 
 
     float magdu;
-    magdu = sqrt(ctrl.du.x*ctrl.du.x+ctrl.du.y*ctrl.du.y+ctrl.dyaw*ctrl.dyaw);
+    magdu = sqrt(ctrl.dphi*ctrl.dphi+ctrl.dtheta*ctrl.dtheta+ctrl.dpsi*ctrl.dpsi);
     if (magdu < 1e-10){
       dq.qi = 1.0;
       dq.qx = 0.0;
@@ -549,9 +636,9 @@ void set_states(void){
       dq.qz = 0.0;
     }else{
       dq.qi = cos(magdu/2.0);
-      dq.qx = sin(magdu/2.0)*ctrl.du.x/magdu;
-      dq.qy = sin(magdu/2.0)*ctrl.du.y/magdu;
-      dq.qz = sin(magdu/2.0)*ctrl.dyaw/magdu;
+      dq.qx = sin(magdu/2.0)*ctrl.dphi/magdu;
+      dq.qy = sin(magdu/2.0)*ctrl.dtheta/magdu;
+      dq.qz = sin(magdu/2.0)*ctrl.dpsi/magdu;
     }
     float_quat_comp(&q_res, &filt.q, &dq);
 
@@ -754,7 +841,7 @@ void message_log(void){
     aerolog.q[2] = filt.q.qy;
     aerolog.q[3] = filt.q.qz;
 
-    aerolog.dyaw = ctrl.dyaw;
+    aerolog.dyaw = ctrl.dpsi;
 
     aerolog.t = t;
     aerolog.mode = varset.mode;
@@ -762,9 +849,9 @@ void message_log(void){
     aerolog.max_vel = varset.max_vel;
     aerolog.max_acc = varset.max_acc;
 
-    aerolog.du[0] = ctrl.du.x;
-    aerolog.du[1] = ctrl.du.y;
-    aerolog.du[2] = ctrl.du.z;
+    aerolog.du[0] = ctrl.dphi;
+    aerolog.du[1] = ctrl.dtheta;
+    aerolog.du[2] = ctrl.dT;
     aerolog.thrust_in = in.thrust;
 
     aerolog.gains[0] = varset.p_gain;
@@ -792,10 +879,10 @@ void update_sd_logger(void){
   sd_log[14] = *(int32_t*)&in.q.qy;
   sd_log[15] = *(int32_t*)&in.q.qz;
 
-  sd_log[16] = *(int32_t*)&ctrl.du.x;
-  sd_log[17] = *(int32_t*)&ctrl.du.y;
-  sd_log[18] = *(int32_t*)&LogFiltRate.r;
-  sd_log[19] = *(int32_t*)&ctrl.du.z;
+  sd_log[16] = *(int32_t*)&ctrl.dphi;
+  sd_log[17] = *(int32_t*)&ctrl.dtheta;
+  sd_log[18] = *(int32_t*)&ctrl.dpsi;
+  sd_log[19] = *(int32_t*)&ctrl.dT;
   sd_log[20] = *(int32_t*)&in.thrust;
 
   sd_log[21] = stabilization_cmd[COMMAND_ROLL];
@@ -1126,6 +1213,10 @@ void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4)
 
 }
 void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
+    wps.stay_wp = wp_1;
+    wps.circle = wp_2;
+    wps.start = wp_3;
+    wps.dir = wp_4;
 
     x_coords[0] = waypoint_get_x(wp_1);
     x_coords[1] = waypoint_get_x(wp_2);
@@ -1136,5 +1227,174 @@ void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
     y_coords[1] = waypoint_get_y(wp_2);
     y_coords[2] = waypoint_get_y(wp_3);
     y_coords[3] = waypoint_get_y(wp_4);
+}
+void updateWaypoints(void){
+  switch (varset.mode)
+  {
+  case 0: ; // Hover
+    float x0 = waypoint_get_x(wps.start);
+    float y0 = waypoint_get_y(wps.start);
+    float x1 = waypoint_get_x(wps.dir);
+    float y1 = waypoint_get_y(wps.dir);
 
+    float head = atan2f(y1-y0,x1-x0);
+    printf('\nHeading: %f\n', head);
+    waypoint_set_here_2d(wps.start);
+
+    waypoints[wps.dir].enu_f.x = x0 + sinf(head) * 150.0;
+    waypoints[wps.dir].enu_f.y = y0 + cosf(head) * 150.0;
+    waypoint_globalize(wps.dir);
+    break;
+  
+  case 1: ; // Waypoint
+    break;
+
+  case 2: ; // Circle
+    break;
+
+  case 3: ; // Transition straight, pause, back.
+    break;
+
+  case 4: ; // Trajectory extreme
+    break;
+
+  default:
+    break;
   }
+}
+
+bool Mat44Inv(const float m[16], float invOut[16])
+{
+    float inv[16], det;
+    int i;
+
+    inv[0] = m[5]  * m[10] * m[15] - 
+             m[5]  * m[11] * m[14] - 
+             m[9]  * m[6]  * m[15] + 
+             m[9]  * m[7]  * m[14] +
+             m[13] * m[6]  * m[11] - 
+             m[13] * m[7]  * m[10];
+
+    inv[4] = -m[4]  * m[10] * m[15] + 
+              m[4]  * m[11] * m[14] + 
+              m[8]  * m[6]  * m[15] - 
+              m[8]  * m[7]  * m[14] - 
+              m[12] * m[6]  * m[11] + 
+              m[12] * m[7]  * m[10];
+
+    inv[8] = m[4]  * m[9] * m[15] - 
+             m[4]  * m[11] * m[13] - 
+             m[8]  * m[5] * m[15] + 
+             m[8]  * m[7] * m[13] + 
+             m[12] * m[5] * m[11] - 
+             m[12] * m[7] * m[9];
+
+    inv[12] = -m[4]  * m[9] * m[14] + 
+               m[4]  * m[10] * m[13] +
+               m[8]  * m[5] * m[14] - 
+               m[8]  * m[6] * m[13] - 
+               m[12] * m[5] * m[10] + 
+               m[12] * m[6] * m[9];
+
+    inv[1] = -m[1]  * m[10] * m[15] + 
+              m[1]  * m[11] * m[14] + 
+              m[9]  * m[2] * m[15] - 
+              m[9]  * m[3] * m[14] - 
+              m[13] * m[2] * m[11] + 
+              m[13] * m[3] * m[10];
+
+    inv[5] = m[0]  * m[10] * m[15] - 
+             m[0]  * m[11] * m[14] - 
+             m[8]  * m[2] * m[15] + 
+             m[8]  * m[3] * m[14] + 
+             m[12] * m[2] * m[11] - 
+             m[12] * m[3] * m[10];
+
+    inv[9] = -m[0]  * m[9] * m[15] + 
+              m[0]  * m[11] * m[13] + 
+              m[8]  * m[1] * m[15] - 
+              m[8]  * m[3] * m[13] - 
+              m[12] * m[1] * m[11] + 
+              m[12] * m[3] * m[9];
+
+    inv[13] = m[0]  * m[9] * m[14] - 
+              m[0]  * m[10] * m[13] - 
+              m[8]  * m[1] * m[14] + 
+              m[8]  * m[2] * m[13] + 
+              m[12] * m[1] * m[10] - 
+              m[12] * m[2] * m[9];
+
+    inv[2] = m[1]  * m[6] * m[15] - 
+             m[1]  * m[7] * m[14] - 
+             m[5]  * m[2] * m[15] + 
+             m[5]  * m[3] * m[14] + 
+             m[13] * m[2] * m[7] - 
+             m[13] * m[3] * m[6];
+
+    inv[6] = -m[0]  * m[6] * m[15] + 
+              m[0]  * m[7] * m[14] + 
+              m[4]  * m[2] * m[15] - 
+              m[4]  * m[3] * m[14] - 
+              m[12] * m[2] * m[7] + 
+              m[12] * m[3] * m[6];
+
+    inv[10] = m[0]  * m[5] * m[15] - 
+              m[0]  * m[7] * m[13] - 
+              m[4]  * m[1] * m[15] + 
+              m[4]  * m[3] * m[13] + 
+              m[12] * m[1] * m[7] - 
+              m[12] * m[3] * m[5];
+
+    inv[14] = -m[0]  * m[5] * m[14] + 
+               m[0]  * m[6] * m[13] + 
+               m[4]  * m[1] * m[14] - 
+               m[4]  * m[2] * m[13] - 
+               m[12] * m[1] * m[6] + 
+               m[12] * m[2] * m[5];
+
+    inv[3] = -m[1] * m[6] * m[11] + 
+              m[1] * m[7] * m[10] + 
+              m[5] * m[2] * m[11] - 
+              m[5] * m[3] * m[10] - 
+              m[9] * m[2] * m[7] + 
+              m[9] * m[3] * m[6];
+
+    inv[7] = m[0] * m[6] * m[11] - 
+             m[0] * m[7] * m[10] - 
+             m[4] * m[2] * m[11] + 
+             m[4] * m[3] * m[10] + 
+             m[8] * m[2] * m[7] - 
+             m[8] * m[3] * m[6];
+
+    inv[11] = -m[0] * m[5] * m[11] + 
+               m[0] * m[7] * m[9] + 
+               m[4] * m[1] * m[11] - 
+               m[4] * m[3] * m[9] - 
+               m[8] * m[1] * m[7] + 
+               m[8] * m[3] * m[5];
+
+    inv[15] = m[0] * m[5] * m[10] - 
+              m[0] * m[6] * m[9] - 
+              m[4] * m[1] * m[10] + 
+              m[4] * m[2] * m[9] + 
+              m[8] * m[1] * m[6] - 
+              m[8] * m[2] * m[5];
+
+    det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+
+    if (det == 0)
+        return false;
+
+    det = 1.0 / det;
+
+    for (i = 0; i < 16; i++)
+        invOut[i] = inv[i] * det;
+
+    return true;
+}
+void Mat44Vect4Mul(float du[4], const float G_inv[16], const float dv[4]){
+  du[0] = G_inv[0]  * dv[0] + G_inv[1]  * dv[1] + G_inv[2]  * dv[2] + G_inv[3]  * dv[3];
+  du[1] = G_inv[4]  * dv[0] + G_inv[5]  * dv[1] + G_inv[6]  * dv[2] + G_inv[7]  * dv[3];
+  du[2] = G_inv[8]  * dv[0] + G_inv[9]  * dv[1] + G_inv[10] * dv[2] + G_inv[11] * dv[3];
+  du[3] = G_inv[12] * dv[0] + G_inv[13] * dv[1] + G_inv[14] * dv[2] + G_inv[15] * dv[3];
+}

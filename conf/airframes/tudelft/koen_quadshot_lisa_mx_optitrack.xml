@@ -200,6 +200,7 @@
       <define name="USE_FEEDFORWARD" value="FALSE" description="enable feedforward acceleration"/>
       <define name="USE_ALT_GAINS" value="TRUE" description="enable feedforward acceleration"/>
       <define name="USE_FILTERED_OUTPUT" value="FALSE" description="enable feedforward acceleration"/>
+      <define name="CE_MODE" value="3" description="enable feedforward acceleration"/>
   </section>
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">

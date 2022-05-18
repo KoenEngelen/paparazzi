@@ -187,13 +187,19 @@
   </section>
 
   <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
-      <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
-      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>
+      <define name="MAX_VEL" value="3.0" description="Maximum velocity allowed during trajectory tracking"/>
+      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
+      <!-- <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
+      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>       -->
       <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
-      <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>
-      <define name="Z_P_FACTOR" value="1.0" description="Vertical positional gain factor of the aerobatic controller"/>
-      <define name="Z_D_FACTOR" value="1.0" description="Vertical velocity gain factor of the aerobatic controller"/>
+      <define name="D_GAIN" value="2.0" description="Velocity gain of the aerobatic controller"/>    
+      <define name="Z_P_FACTOR" value="2.0" description="Positional gain of the aerobatic controller"/>
+      <define name="Z_D_FACTOR" value="3.0" description="Velocity gain of the aerobatic controller"/>
       <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
+      <define name="USE_FEEDFORWARD" value="FALSE" description="enable feedforward acceleration"/>
+      <define name="USE_ALT_GAINS" value="TRUE" description="enable feedforward acceleration"/>
+      <define name="USE_FILTERED_OUTPUT" value="FALSE" description="enable feedforward acceleration"/>
+      <define name="CE_MODE" value="3" description="enable feedforward acceleration"/>
   </section>
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
@@ -342,7 +348,7 @@
     <module name="telemetry"     type="xbee_api"/>
     <module name="imu"           type="lisa_mx_v2.1"/>
     <module name="gps"           type="ublox">
-        <!-- <define name="UBX_GPS_PORT" value="UART3"/> -->
+        <define name="UBX_GPS_PORT" value="UART3"/>
         <define name="UBX_GPS_BAUD" value="B460800"/>
     </module>
     <module name="stabilization" type="indi_simple"/>

@@ -64,6 +64,7 @@
         uint8_t use_feedforward;
         uint8_t use_alt_gains;  
         uint8_t use_filtered_output;
+        uint8_t ce_mode;
         // float min_thrust_eff;   // 0 = hover, 1 = trajectory, 2 = impulse
     };
 
@@ -97,6 +98,7 @@
     extern void setReferenceHere(uint8_t wp);
     extern void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
     extern void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
+    extern void updateWaypoints(void);
 
     void guidance_aerobatic_init(void);
     void guidance_aerobatic_enter(void);
@@ -119,4 +121,7 @@
 
     void update_sd_logger(void);
     void message_log(void);
+
+    bool Mat44Inv(const float m[16], float invOut[16]);
+    void Mat44Vect4Mul(float du[4], const float G_inv[16], const float dv[4]);
 #endif 
