@@ -1238,7 +1238,6 @@ void updateWaypoints(void){
     float y1 = waypoint_get_y(wps.dir);
 
     float head = atan2f(y1-y0,x1-x0);
-    printf('\nHeading: %f\n', head);
     waypoint_set_here_2d(wps.start);
 
     waypoints[wps.dir].enu_f.x = x0 + sinf(head) * 150.0;

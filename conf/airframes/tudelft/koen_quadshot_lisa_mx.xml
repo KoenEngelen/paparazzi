@@ -348,8 +348,7 @@
     <module name="telemetry"     type="xbee_api"/>
     <module name="imu"           type="lisa_mx_v2.1"/>
     <module name="gps"           type="ublox">
-        <define name="UBX_GPS_PORT" value="UART3"/>
-        <define name="UBX_GPS_BAUD" value="B460800"/>
+        <configure name="GPS_BAUD" value="B460800"/>
     </module>
     <module name="stabilization" type="indi_simple"/>
     <module name="guidance"      type="aerobatic"/>
@@ -369,7 +368,7 @@
     <module name="airspeed_ms45xx_i2c">
       <define name="MS45XX_I2C_DEV" value="i2c1" />
       <define name="MS45XX_I2C_ADDR" value="0x50" />
-      <define name="MS45XX_SYNC_SEND" value="TRUE" />
+      <define name="MS45XX_SYNC_SEND" value="FALSE" />
       <define name="MS45XX_LOWPASS_TAU" value="0.15" />
       <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
     </module>
