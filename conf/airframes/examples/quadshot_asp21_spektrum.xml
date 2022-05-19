@@ -97,12 +97,19 @@
 <!--     <define name="MAG_Y_SENS" value="3.54049742843" integer="16"/> -->
 <!--     <define name="MAG_Z_SENS" value="4.0620533034" integer="16"/> -->
 
-	<define name="MAG_X_NEUTRAL" value="-86"/>
+  <define name="MAG_X_NEUTRAL" value="-21"/>
+  <define name="MAG_Y_NEUTRAL" value="91"/>
+  <define name="MAG_Z_NEUTRAL" value="56"/>
+  <define name="MAG_X_SENS" value="3.7557395411182743" integer="16"/>
+  <define name="MAG_Y_SENS" value="3.6193943040674297" integer="16"/>
+  <define name="MAG_Z_SENS" value="4.189378077233518" integer="16"/>
+
+	<!-- <define name="MAG_X_NEUTRAL" value="-86"/>
 	<define name="MAG_Y_NEUTRAL" value="-36"/>
 	<define name="MAG_Z_NEUTRAL" value="35"/>
 	<define name="MAG_X_SENS" value="3.98639595061" integer="16"/>
 	<define name="MAG_Y_SENS" value="4.00632407649" integer="16"/>
-	<define name="MAG_Z_SENS" value="4.17946082997" integer="16"/>
+	<define name="MAG_Z_SENS" value="4.17946082997" integer="16"/> -->
   </section>
 
   <section name="IMU" prefix="IMU_">
@@ -114,7 +121,7 @@
   <section name="AUTOPILOT">
     <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
     <define name="MODE_AUTO1" value="AP_MODE_FORWARD"/>
-    <define name="MODE_AUTO2"  value="AP_MODE_NAV"/>
+    <define name="MODE_AUTO2" value="AP_MODE_MODULE"/>
 
 <!--     <define name="USE_YAW_FOR_MOTOR_ARMING" value="TRUE"/> -->
   </section>

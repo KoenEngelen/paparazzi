@@ -212,13 +212,15 @@ struct NedCoor_f ref_pos;
 
 struct NedCoor_f Home;
 
+bool is_killed = false;
+
 bool mode_disabled_altitude_gains = false;
 bool mode_disabled_Kp = false;
 bool mode_disabled_Kd = false;
 int8_t active_mode = 0;
 
-float mode_2_radius;
-float mode_2_angle;
+float mode_2_radius = 0.0f;
+float mode_2_angle = 0.0f;
 
 float THRUST_TO_CMD = MAX_PPRZ_f/20.0;
 float CMD_TO_THRUST = 20.0/MAX_PPRZ_f;
@@ -349,7 +351,7 @@ void get_states(void){
 
   in.AoA = 0.0;
   if (!isnan(aoa_adc.angle)){
-    in.AoA = aoa_adc.angle;
+    in.AoA = -aoa_adc.angle;
   }
   in.V = 0.0;
   if (!isnan(ms45xx.airspeed)){
@@ -381,7 +383,7 @@ void get_states(void){
   float Vxz = filt.V * powf(cosf(filt.AoA),2.0) + powf(sinf(filt.AoA),2.0) * sqrtf(5.0*sqrtf(ab.x*ab.x + ab.z*ab.z));
 
   float Vz = cosf(filt.AoA)*Vxz;
-  float Vx = sinf(filt.AoA)*Vxz;
+  float Vx = - sinf(filt.AoA)*Vxz;
 
   in.air.x = Vx ;
   in.air.y = Vy ;
@@ -645,7 +647,11 @@ void set_states(void){
       out.thrust_cmd = THRUST_MIN;
       out.thrust = THRUST_MIN*CMD_TO_THRUST;
   }
-    stabilization_cmd[COMMAND_THRUST] = out.thrust_cmd;
+    if (!is_killed){
+      stabilization_cmd[COMMAND_THRUST] = out.thrust_cmd;
+    } else {
+      stabilization_cmd[COMMAND_THRUST] = out.thrust_cmd;
+    }
 
     struct FloatQuat dq;
     struct FloatQuat q_res = {0};
@@ -693,7 +699,16 @@ void set_states(void){
       q_res = filt.qout;
     }
     QUAT_BFP_OF_REAL(q_i_res, q_res);
-    stabilization_indi_attitude_run(q_i_res,true);
+    if (!is_killed){
+      stabilization_indi_attitude_run(q_i_res,true);
+    } else{
+      q_res.qi = 1.0f;
+      q_res.qx = 0.0f;
+      q_res.qy = 0.0f;
+      q_res.qz = 0.0f;
+      QUAT_BFP_OF_REAL(q_i_res, q_res);
+      stabilization_indi_attitude_run(q_i_res,true);
+    }
 }
 // Filters
 void filter_init(void){
@@ -926,9 +941,9 @@ void update_sd_logger(void){
   // sd_log[27] = *(int32_t*)&f2_acc.z;
   sd_log[28] = *(int32_t*)&LogFiltRate.p;
   sd_log[29] = *(int32_t*)&LogFiltRate.q;
-  sd_log[27] = imu.accel.x;
-  sd_log[28] = imu.accel.y;
-  sd_log[29] = imu.accel.z;
+  sd_log[27] = in.AoA;
+  sd_log[28] = in.ay;
+  sd_log[29] = in.V;
 }
 // Trajectory
 void get_mode(void){
@@ -941,6 +956,7 @@ void get_mode(void){
   //Precaution set all references to zero to prevent values from 'sticking'
   ref.pos.x = 0.0;
   ref.pos.y = 0.0;
+  ref.pos.z = ref_pos.z;
   ref.vel.x = 0.0;
   ref.vel.y = 0.0;
   ref.vel.z = 0.0;
@@ -960,22 +976,17 @@ void get_mode(void){
     ref.pos.y = ref_pos.y;
     break;
   // Fly in square
-  case 1:
-    if(t > 10.0){
-      t = 0.0;
-      wp_id = wp_id + 1;
-      if(wp_id == 4){
-        wp_id = 0;
-      }
-    }
-    ref.pos.x = x_coords[wp_id];
-    ref.pos.y = y_coords[wp_id];
+  case 1: ;
+    ref.pos.x = waypoint_get_x(wps.stay_wp);
+    ref.pos.y = waypoint_get_x(wps.stay_wp);
     break;
   // Fly in circle
   case 2:
     if (switched_mode){
-      mode_2_angle = atan2f(in.pos.x,in.pos.y);
-      mode_2_radius = sqrtf(powf(in.pos.x,2.0) + powf(in.pos.y,2.0));
+      float x0 = waypoint_get_x(wps.circle);
+      float y0 = waypoint_get_y(wps.circle);
+      mode_2_angle = atan2f(x0,y0);
+      mode_2_radius = sqrtf(powf(x0,2.0) + powf(y0,2.0));
     }
     ref.pos.x =  mode_2_radius * sinf(mode_2_angle);
     ref.pos.y =  mode_2_radius * cosf(mode_2_angle);
@@ -1286,7 +1297,9 @@ void updateWaypoints(void){
     break;
   }
 }
-
+void setModeKill(void){
+  is_killed = true;
+}
 bool Mat44Inv(const float m[16], float invOut[16])
 {
     float inv[16], det;

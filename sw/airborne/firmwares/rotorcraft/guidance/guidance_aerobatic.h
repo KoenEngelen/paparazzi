@@ -99,6 +99,7 @@
     extern void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
     extern void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
     extern void updateWaypoints(void);
+    extern void setModeKill(void);
 
     void guidance_aerobatic_init(void);
     void guidance_aerobatic_enter(void);
