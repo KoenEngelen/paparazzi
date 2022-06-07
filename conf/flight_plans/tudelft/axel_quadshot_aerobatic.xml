@@ -1,0 +1,136 @@
+<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
+
+<flight_plan alt="40" ground_alt="0" lat0="51.278601" lon0="3.955033" max_dist_from_home="1000" name="Valkenburg Basic" security_height="2">
+  <header>
+    #include "autopilot.h"
+    #include "subsystems/datalink/datalink.h"
+    #include "subsystems/electrical.h"
+    #include "subsystems/radio_control.h"
+    #include "firmwares/rotorcraft/guidance/guidance_h.h"
+    #include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
+</header>
+  <waypoints>
+    <waypoint name="HOME" x="-1.2" y="-10.3"/>
+    <waypoint name="CLIMB" x="-420.1" y="81.5"/>
+    <waypoint name="STDBY" x="-419.7" y="83.1"/>
+    <waypoint name="TD" x="-420.7" y="83.6"/>
+    <waypoint lat="51.274700" lon="3.947875" name="KILL1"/>
+    <waypoint lat="51.275694" lon="3.949918" name="KILL2"/>
+    <waypoint lat="51.277131" lon="3.950813" name="KILL3"/>
+    <waypoint lat="51.279861" lon="3.956167" name="KILL4"/>
+    <waypoint lat="51.280122" lon="3.959156" name="KILL5"/>
+    <waypoint lat="51.277038" lon="3.963680" name="KILL6"/>
+    <waypoint lat="51.273376" lon="3.957677" name="KILL7"/>
+    <waypoint lat="51.273131" lon="3.950224" name="KILL8"/>
+    <waypoint lat="51.275922" lon="3.950890" name="WARN1"/>
+    <waypoint lat="51.277031" lon="3.952442" name="WARN2"/>
+    <waypoint lat="51.277376" lon="3.952292" name="WARN3"/>
+    <waypoint lat="51.279573" lon="3.956566" name="WARN4"/>
+    <waypoint lat="51.279612" lon="3.958008" name="WARN5"/>
+    <waypoint lat="51.276907" lon="3.961928" name="WARN6"/>
+    <waypoint lat="51.274348" lon="3.957469" name="WARN7"/>
+    <waypoint lat="51.274469" lon="3.953040" name="WARN8"/>
+    <waypoint lat="51.279384" lon="3.949027" name="TR_START"/>
+    <waypoint lat="51.279394" lon="3.949010" name="WP"/>
+    <waypoint lat="51.279384" lon="3.949005" name="CIRC"/>
+  </waypoints>
+  <sectors>
+    <sector color="red" name="Kill">
+      <corner name="KILL1"/>
+      <corner name="KILL2"/>
+      <corner name="KILL3"/>
+      <corner name="KILL4"/>
+      <corner name="KILL5"/>
+      <corner name="KILL6"/>
+      <corner name="KILL7"/>
+      <corner name="KILL8"/>
+    </sector>
+    <sector color="orange" name="Warn">
+      <corner name="WARN1"/>
+      <corner name="WARN2"/>
+      <corner name="WARN3"/>
+      <corner name="WARN4"/>
+      <corner name="WARN5"/>
+      <corner name="WARN6"/>
+      <corner name="WARN7"/>
+      <corner name="WARN8"/>
+    </sector>
+  </sectors>
+  <exceptions>
+    <exception cond="(!InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
+    <exception cond="(InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="ComeBackAndLand"/>
+    <exception cond="(!GpsFixValid() && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
+    <exception cond="(!InsideKill(GetPosX(), GetPosY()) && !(IndexOfBlock('Holding point') > nav_block) )" deroute="DatalinkLoss"/>
+    <exception cond="((radio_control.status == RC_REALLY_LOST) &&
+      !(IndexOfBlock('Takeoff') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
+    <exception cond="(datalink_time > 60 &&
+      !(datalink_time > 120) &&
+      !(IndexOfBlock('Takeoff') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="DatalinkLoss"/>
+    <exception cond="(electrical.bat_low &&
+      !(IndexOfBlock('Holding point') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
+    <exception cond="(electrical.bat_critical &&
+      !(IndexOfBlock('Holding point') > nav_block) &&
+      !(nav_block >= IndexOfBlock('land here')) &&
+      (autopilot_in_flight() == true) )" deroute="land here"/>
+  </exceptions>
+  <blocks>
+    <block name="Wait GPS">
+      <call_once fun="NavKillThrottle()"/>
+      <while cond="!GpsFixValid()"/>
+    </block>
+    <block name="Geo init">
+      <while cond="LessThan(NavBlockTime(), 10)"/>
+      <call_once fun="NavSetGroundReferenceHere()"/>
+    </block>
+    <block name="Holding point">
+      <call_once fun="setModeKill()"/>
+      <call_once fun="NavKillThrottle()"/>
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block name="Start Engine">
+      <call_once fun="NavResurrect()"/>
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
+      <exception cond="stateGetPositionEnu_f()->z > 2.0" deroute="Standby"/>
+      <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
+      <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
+    </block>
+    <block name="Standby" strip_button="Standby" strip_icon="home.png">
+      <stay wp="STDBY"/>
+    </block>
+    <block name="stay_wp">
+      <stay wp="WP"/>
+    </block>
+    <block name="land here" strip_button="Land Here" strip_icon="land-right.png">
+      <call_once fun="NavSetWaypointHere(WP_TD)"/>
+    </block>
+    <block name="land">
+      <go wp="TD"/>
+    </block>
+    <block name="flare">
+      <exception cond="NavDetectGround()" deroute="Holding point"/>
+      <exception cond="!nav_is_in_flight()" deroute="landed"/>
+      <call_once fun="NavStartDetectGround()"/>
+      <stay climb="nav_descend_vspeed" vmode="climb" wp="TD"/>
+    </block>
+    <block name="landed">
+      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
+    </block>
+    <block name="ComeBackAndLand">
+      <go wp="HOME"/>
+      <deroute block="land here"/>
+    </block>
+    <block name="DatalinkLoss">
+      <call_once fun="NavSetWaypointHere(WP_TD)"/>
+      <stay until="stage_time>60" wp="TD"/>
+      <deroute block="ComeBackAndLand"/>
+    </block>
+  </blocks>
+</flight_plan>

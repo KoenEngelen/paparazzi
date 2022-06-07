@@ -1398,6 +1398,8 @@
       <field name="p_gain" type="float"/>
       <field name="d_gain" type="float"/>
       <field name="mode" type="float"/>
+      <field name="ce_mode" type="float"/>
+      <field name="air" type="float[]"/>
     </message>
 
 
@@ -1548,6 +1550,7 @@
       <field name="ref_pos" type="float[]"/>
       <field name="ref_vel" type="float[]"/>
       <field name="ref_acc" type="float[]"/>
+      <field name="air" type="float[]"/>
       <field name="gains" type="float[]"/>
     </message>
 

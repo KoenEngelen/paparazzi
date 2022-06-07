@@ -80,6 +80,7 @@
         float ref_pos[3];
         float ref_vel[3];
         float ref_acc[3];
+        float air[3];
         float gains[2];
         float thrust_in;
         float dyaw;
