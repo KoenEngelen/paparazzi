@@ -333,10 +333,8 @@ void guidance_aerobatic_run(){
     t = 0;
   }
   get_states();
-  get_mode();
-  if (varset.ce_mode == 1){
-    YawControl();
-  }
+  // get_mode();
+  YawControl();
   Controller();
   get_G();
   get_du();
@@ -498,11 +496,17 @@ void Controller(void){
   struct FloatVect3 da_d;
   struct FloatVect3 da;
   
-  float ddx = 0.0;
-  float ddy = 0.0;
-  float dx = 0.0;
-  float dy = 0.0;
-  float dz = 0.0;
+  ref.pos.x = -20.0;
+  ref.pos.y =  20.0;
+  ref.pos.z = -40.0;
+
+  ref.vel.x = 0.0;
+  ref.vel.y = 0.0;
+  ref.vel.z = 0.0;
+
+  ref.acc.x = 0.0;
+  ref.acc.y = 0.0;
+  ref.acc.z = 0.0;
 
   // if(varset.mode == 1){
   //   dx = varset.max_acc * (radio_control.values[1]-radio_control.values[2])/9600.0;
@@ -530,144 +534,46 @@ void Controller(void){
   float_quat_vmult(&ctrl3.dv, &filt.q, &da);
 }
 void get_G(void){ 
-  float V[3];
-  V[0] = in.air.x;
-  V[1] = in.air.y;
-  V[2] = in.air.z;
-
-  float dbdt = -in.air.y*in.air.x;
-  float dbdp = -in.air.x*in.air.z;
-  float V2yz = powf(in.air.y,2.0)+powf(in.air.z,2.0);
-  if (V2yz > 1.0f){
-    dbdt = dbdt/V2yz;
-    dbdp = dbdp/V2yz;
-  }
-  if (isnan(dbdt)){
-    dbdt = 0.0f;
-  }
-  if (isnan(dbdp)){
-    dbdp = 0.0f;
-  }
-
-  switch (varset.ce_mode)
-  {
-  case 1:
-    ctrl3.G[0][0] =  0.0f * varset.max_acc * da_wing_x_dphii(V)  ; 
-    ctrl3.G[1][0] =  0.0f * varset.max_acc * da_wing_y_dphii(V)   + varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-    ctrl3.G[2][0] =  0.0f * varset.max_acc * da_wing_z_dphii(V)  ; 
-    ctrl3.G[0][1] =  0.0f * varset.max_acc * da_wing_x_dthetai(V) - varset.max_acc * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-    ctrl3.G[1][1] =  0.0f * varset.max_acc * da_wing_y_dthetai() ; 
-    ctrl3.G[2][1] =  0.0f * varset.max_acc * da_wing_z_dthetai(V); 
-    ctrl3.G[0][2] =  0.0f; 
-    ctrl3.G[1][2] =  0.0f; 
-    ctrl3.G[2][2] = -1.0f * varset.max_acc; 
-    break;
-  
-  case 2:
-    ctrl4.G[ 0] =  da_wing_x_dphii(V)  ; 
-    ctrl4.G[ 1] =  da_wing_y_dphii(V)  + fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-    ctrl4.G[ 2] =  da_wing_z_dphii(V)  ; 
-    ctrl4.G[ 3] =  1.0;
-    ctrl4.G[ 4] =  da_wing_x_dthetai(V)- fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-    ctrl4.G[ 5] =  da_wing_y_dthetai() ; 
-    ctrl4.G[ 6] =  da_wing_z_dthetai(V); 
-    ctrl4.G[ 7] =  dbdt;
-    ctrl4.G[ 8] =  da_wing_x_dpsii(V)  ;  
-    ctrl4.G[ 9] =  da_wing_y_dpsii(V)  ; 
-    ctrl4.G[10] =  da_wing_z_dpsii(V)  ; 
-    ctrl4.G[11] =  dbdp;
-    ctrl4.G[12] =  0.0f;
-    ctrl4.G[13] =  0.0f;
-    ctrl4.G[14] = -1.0f;
-    ctrl4.G[15] =  0.0f;
-    break;
-  
-  default:
-    ctrl4.G[ 0] =  da_wing_x_dphii(V)  ; 
-    ctrl4.G[ 1] =  da_wing_y_dphii(V)  + fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-    ctrl4.G[ 2] =  da_wing_z_dphii(V)  ; 
-    ctrl4.G[ 3] =  1.0;
-    ctrl4.G[ 4] =  da_wing_x_dthetai(V)- fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
-    ctrl4.G[ 5] =  da_wing_y_dthetai() ; 
-    ctrl4.G[ 6] =  da_wing_z_dthetai(V); 
-    ctrl4.G[ 7] =  dbdt;
-    ctrl4.G[ 8] =  da_wing_x_dpsii(V)  ;  
-    ctrl4.G[ 9] =  da_wing_y_dpsii(V)  ; 
-    ctrl4.G[10] =  da_wing_z_dpsii(V)  ; 
-    ctrl4.G[11] =  dbdp;
-    ctrl4.G[12] =  0.0f;
-    ctrl4.G[13] =  0.0f;
-    ctrl4.G[14] = -1.0f;
-    ctrl4.G[15] =  0.0f;
-    break;
-  }
-  
+  ctrl3.G[0][0] =  0.0f; 
+  ctrl3.G[1][0] =  fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl3.G[2][0] =  0.0f; 
+  ctrl3.G[0][1] = -fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl3.G[1][1] =  0.0f; 
+  ctrl3.G[2][1] =  0.0f; 
+  ctrl3.G[0][2] =  0.0f; 
+  ctrl3.G[1][2] =  0.0f; 
+  ctrl3.G[2][2] = -1.0f;   
 }
 void get_du(void){
+  struct FloatMat33 Ga;
+  struct FloatMat33 Ga_inv;
+  
+  for (int r = 0; r < ROWS_GUIDANCE; r++){
+    for (int c = 0; c < COLS_GUIDANCE; c++){
+      Ga.m[3*r+c] = ctrl3.G[r][c];
+      Ga_inv.m[3*r+c] = 0.0f;
+    }
+  }    
+  
+  MAT33_INV(Ga_inv, Ga); 
+  MAT33_VECT3_MUL(ctrl3.du, Ga_inv, ctrl3.dv);
+
   // in.thrust = 20*CMD_Thrust/9600
   // min = 0 
   // max = 20
   float du_min = THRUST_MIN*CMD_TO_THRUST - filt.thrust; 
   float du_max = THRUST_MAX*CMD_TO_THRUST - filt.thrust; 
-  switch (varset.ce_mode)
-  {
-  case 1: ; 
-    struct FloatMat33 Ga;
-    struct FloatMat33 Ga_inv;
-    
-    for (int r = 0; r < ROWS_GUIDANCE; r++){
-      for (int c = 0; c < COLS_GUIDANCE; c++){
-        Ga.m[3*r+c] = ctrl3.G[r][c];
-        Ga_inv.m[3*r+c] = 0.0f;
-      }
-    }    
-    
-    MAT33_INV(Ga_inv, Ga); 
-    MAT33_VECT3_MUL(ctrl3.du, Ga_inv, ctrl3.dv);
 
-    if (ctrl3.du.z < du_min){
-      ctrl3.du.z = du_min;
-    }else if (ctrl3.du.z > du_max){
-      ctrl3.du.z = du_max;
-    }
-
-    ctrl.dphi   = ctrl3.du.x;
-    ctrl.dtheta = ctrl3.du.y;
-    ctrl.dpsi   = ctrl3.dyaw;
-    ctrl.dT     = ctrl3.du.z;
-
-    break;
-  
-  case 2: ;
-    float G_inv[16];
-    if (Mat44Inv(ctrl4.G, G_inv)){
-        ctrl4.dv[0] = ctrl3.dv.x;
-        ctrl4.dv[1] = ctrl3.dv.y;
-        ctrl4.dv[2] = ctrl3.dv.z;
-        ctrl4.dv[3] = 0.0;
-        Mat44Vect4Mul(ctrl4.du,G_inv,ctrl4.dv);
-    } else {
-        ctrl4.du[0] = 0.0f;
-        ctrl4.du[1] = 0.0f;
-        ctrl4.du[2] = 0.0f;
-        ctrl4.du[3] = 0.0f;
-    }
-
-    if (ctrl4.du[3] < du_min){
-      ctrl4.du[3] = du_min;
-    }else if (ctrl4.du[3] > du_max){
-      ctrl4.du[3] = du_max;
-    }
-    ctrl.dphi   = ctrl4.du[0];
-    ctrl.dtheta = ctrl4.du[1];
-    ctrl.dpsi   = ctrl4.du[2];
-    ctrl.dT     = ctrl4.du[3];
-
-    break;
-
-  default:
-    break;
+  if (ctrl3.du.z < du_min){
+    ctrl3.du.z = du_min;
+  }else if (ctrl3.du.z > du_max){
+    ctrl3.du.z = du_max;
   }
+
+  ctrl.dphi   = ctrl3.du.x;
+  ctrl.dtheta = ctrl3.du.y;
+  ctrl.dpsi   = ctrl3.dyaw;
+  ctrl.dT     = ctrl3.du.z;
 }
 void set_states(void){
   out.thrust = filt.thrust + ctrl.dT;
@@ -680,12 +586,6 @@ void set_states(void){
       out.thrust_cmd = THRUST_MIN;
       out.thrust = THRUST_MIN*CMD_TO_THRUST;
   }
-    if (!is_killed){
-      stabilization_cmd[COMMAND_THRUST] = out.thrust_cmd;
-    } else {
-      stabilization_cmd[COMMAND_THRUST] = out.thrust_cmd;
-    }
-
     struct FloatQuat dq;
     struct FloatQuat q_res = {0};
     struct Int32Quat q_i_res = {0};
@@ -728,20 +628,8 @@ void set_states(void){
     filt.qout.qy = filt.qout_filter[2].o[0]/length;
     filt.qout.qz = filt.qout_filter[3].o[0]/length;
 
-    if (varset.use_filtered_output){
-      q_res = filt.qout;
-    }
     QUAT_BFP_OF_REAL(q_i_res, q_res);
-    if (!is_killed){
-      stabilization_indi_attitude_run(q_i_res,true);
-    } else{
-      q_res.qi = 1.0f;
-      q_res.qx = 0.0f;
-      q_res.qy = 0.0f;
-      q_res.qz = 0.0f;
-      QUAT_BFP_OF_REAL(q_i_res, q_res);
-      stabilization_indi_attitude_run(q_i_res,true);
-    }
+    stabilization_indi_attitude_run(q_i_res,true);
 }
 // Filters
 void filter_init(void){
