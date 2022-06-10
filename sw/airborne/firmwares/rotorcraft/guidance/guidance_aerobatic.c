@@ -322,6 +322,14 @@ void guidance_aerobatic_enter(void){
     ref.acc.x = 0.0f;
     ref.acc.y = 0.0f;
     ref.acc.z = 0.0f;
+    
+    circ_pos.x = ref.pos.x - 20.0;
+    circ_pos.y = ref.pos.y + 20.0;
+    circ_pos.z = ref.pos.z;
+
+
+    mode_2_angle = atan2f(20.0,-20.0);
+    mode_2_radius = sqrtf(2.0*powf(20.0,2.0));
 
     filter_init();
 
@@ -468,6 +476,21 @@ void YawControl(void){
   ctrl3.dyaw = 0.0;
 }
 void Controller(void){
+
+    ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
+    ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
+    ref.pos.z = circ_pos.z;
+    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+    ref.vel.z = 0.0;
+    if (varset.use_feedforward){
+      ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
+      ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
+      ref.acc.z = 0.0;
+    }
+    mode_2_angle += varset.max_vel/(mode_2_radius*512.0);
+
+
   // float PGain = varset.p_gain;
   // if (mode_disabled_Kp){
   //   float PGain = 0.0;
