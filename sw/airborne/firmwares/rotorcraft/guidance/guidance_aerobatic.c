@@ -442,8 +442,8 @@ void YawControl(void){
   Yaw_proj.z = 0.0f;
 
 
-  Yaw_ref.x = 1.0f/sqrt(2.0f);
-  Yaw_ref.y = -1.0f/sqrt(2.0f);
+  Yaw_ref.x = -1.0f/sqrt(2.0f);
+  Yaw_ref.y = 1.0f/sqrt(2.0f);
   Yaw_ref.z = 0.0f;
 
   // Yaw_ref.x = 0.0f;
@@ -496,9 +496,9 @@ void Controller(void){
   struct FloatVect3 da_d;
   struct FloatVect3 da;
   
-  ref.pos.x = -20.0;
-  ref.pos.y =  20.0;
-  ref.pos.z = -40.0;
+  // ref.pos.x = -20.0;
+  // ref.pos.y =  20.0;
+  // ref.pos.z = -40.0;
 
   ref.vel.x = 0.0;
   ref.vel.y = 0.0;
