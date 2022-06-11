@@ -560,9 +560,9 @@ void Controller(void){
 }
 void get_G(void){ 
   ctrl3.G[0][0] =  0.0f; 
-  ctrl3.G[1][0] =  2.0 * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl3.G[1][0] =  5.0 * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
   ctrl3.G[2][0] =  0.0f; 
-  ctrl3.G[0][1] = -2.0 * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl3.G[0][1] = -5.0 * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
   ctrl3.G[1][1] =  0.0f; 
   ctrl3.G[2][1] =  0.0f; 
   ctrl3.G[0][2] =  0.0f; 
