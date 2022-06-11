@@ -314,9 +314,9 @@ void guidance_aerobatic_enter(void){
     traj_sec.t_beg = 0.0f;
     CalcNewTrajectory();
 
-    ref.pos.x = stateGetPositionNed_f()->x;
-    ref.pos.y = stateGetPositionNed_f()->y;
-    ref.pos.z = stateGetPositionNed_f()->z + 1.0;
+    ref.pos.x = stateGetPositionNed_f()->x + 30;
+    ref.pos.y = stateGetPositionNed_f()->y + 30;
+    ref.pos.z = stateGetPositionNed_f()->z;
     ref.vel.x = 0.0f;
     ref.vel.y = 0.0f;
     ref.vel.z = 0.0f;
@@ -324,7 +324,7 @@ void guidance_aerobatic_enter(void){
     ref.acc.y = 0.0f;
     ref.acc.z = 0.0f;
     
-    circ_pos.x = ref.pos.x - 40.0;
+    circ_pos.x = ref.pos.x + 40.0;
     circ_pos.y = ref.pos.y + 40.0;
     circ_pos.z = ref.pos.z;
 
@@ -479,18 +479,18 @@ void YawControl(void){
 }
 void Controller(void){
 
-    ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
-    ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
-    ref.pos.z = circ_pos.z;
-    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * 10.0/(mode_2_radius);
-    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * 10.0/(mode_2_radius);
-    ref.vel.z = 0.0;
-    if (varset.use_feedforward){
-      ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
-      ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
-      ref.acc.z = 0.0;
-    }
-    mode_2_angle += 10.0/(mode_2_radius*512.0);
+    // ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
+    // ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
+    // ref.pos.z = circ_pos.z;
+    // ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * 10.0/(mode_2_radius);
+    // ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * 10.0/(mode_2_radius);
+    // ref.vel.z = 0.0;
+    // if (varset.use_feedforward){
+    //   ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
+    //   ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
+    //   ref.acc.z = 0.0;
+    // }
+    // mode_2_angle += 10.0/(mode_2_radius*512.0);
 
 
   // float PGain = varset.p_gain;
