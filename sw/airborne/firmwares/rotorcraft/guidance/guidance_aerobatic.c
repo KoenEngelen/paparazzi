@@ -324,8 +324,8 @@ void guidance_aerobatic_enter(void){
     ref.acc.y = 0.0f;
     ref.acc.z = 0.0f;
     
-    circ_pos.x = ref.pos.x - 20.0;
-    circ_pos.y = ref.pos.y + 20.0;
+    circ_pos.x = ref.pos.x - 40.0;
+    circ_pos.y = ref.pos.y + 40.0;
     circ_pos.z = ref.pos.z;
 
 
@@ -482,15 +482,15 @@ void Controller(void){
     ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
     ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
     ref.pos.z = circ_pos.z;
-    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * 3.0/(mode_2_radius);
-    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * 3.0/(mode_2_radius);
+    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * 6.0/(mode_2_radius);
+    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * 6.0/(mode_2_radius);
     ref.vel.z = 0.0;
     if (varset.use_feedforward){
       ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
       ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
       ref.acc.z = 0.0;
     }
-    mode_2_angle += 3.0/(mode_2_radius*512.0);
+    mode_2_angle += 6.0/(mode_2_radius*512.0);
 
 
   // float PGain = varset.p_gain;
@@ -622,8 +622,8 @@ void set_states(void){
     float dtheta_perc = ctrl.dtheta/magdu;
     float dpsi_perc = ctrl.dpsi/magdu;
 
-    if (magdu > 2.0*M_PI/4.0){
-      magdu = 2.0*M_PI/4.0;
+    if (magdu > 2.0*M_PI/8.0){
+      magdu = 2.0*M_PI/8.0;
     }
     if (magdu < 1e-10){
       dq.qi = 1.0;
