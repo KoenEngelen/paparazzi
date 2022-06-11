@@ -235,6 +235,7 @@ float y_coords[4] = {0};
 
 int32_t sd_id = 0;
 int32_t sd_log[30];
+int32_t aerobatic_active;
 
 // SF1eFilter f_acc_x;
 // SF1eFilter f_acc_y;
@@ -315,7 +316,7 @@ void guidance_aerobatic_enter(void){
 
     ref.pos.x = stateGetPositionNed_f()->x;
     ref.pos.y = stateGetPositionNed_f()->y;
-    ref.pos.z = stateGetPositionNed_f()->z;
+    ref.pos.z = stateGetPositionNed_f()->z + 1.0;
     ref.vel.x = 0.0f;
     ref.vel.y = 0.0f;
     ref.vel.z = 0.0f;
@@ -336,6 +337,7 @@ void guidance_aerobatic_enter(void){
 }
 void guidance_aerobatic_run(){
   static int32_t counter = 0;
+  aerobatic_active = 1;
   t = t + 0.001953125;
   if (t > 360000){
     t = 0;
@@ -480,15 +482,15 @@ void Controller(void){
     ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
     ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
     ref.pos.z = circ_pos.z;
-    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
-    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * 3.0/(mode_2_radius);
+    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * 3.0/(mode_2_radius);
     ref.vel.z = 0.0;
     if (varset.use_feedforward){
       ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
       ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
       ref.acc.z = 0.0;
     }
-    mode_2_angle += varset.max_vel/(mode_2_radius*512.0);
+    mode_2_angle += 3.0/(mode_2_radius*512.0);
 
 
   // float PGain = varset.p_gain;
@@ -615,17 +617,24 @@ void set_states(void){
 
 
     float magdu;
-    magdu = sqrt(ctrl.dphi*ctrl.dphi+ctrl.dtheta*ctrl.dtheta+ctrl.dpsi*ctrl.dpsi);
+    magdu = sqrtf(ctrl.dphi*ctrl.dphi+ctrl.dtheta*ctrl.dtheta+ctrl.dpsi*ctrl.dpsi);
+    float dphi_perc = ctrl.dphi/magdu;
+    float dtheta_perc = ctrl.dtheta/magdu;
+    float dpsi_perc = ctrl.dpsi/magdu;
+
+    if (magdu > 2.0*M_PI/4.0){
+      magdu = 2.0*M_PI/4.0;
+    }
     if (magdu < 1e-10){
       dq.qi = 1.0;
       dq.qx = 0.0;
       dq.qy = 0.0;
       dq.qz = 0.0;
     }else{
-      dq.qi = cos(magdu/2.0);
-      dq.qx = sin(magdu/2.0)*ctrl.dphi/magdu;
-      dq.qy = sin(magdu/2.0)*ctrl.dtheta/magdu;
-      dq.qz = sin(magdu/2.0)*ctrl.dpsi/magdu;
+      dq.qi = cosf(magdu/2.0);
+      dq.qx = sinf(magdu/2.0)*dphi_perc/magdu;
+      dq.qy = sinf(magdu/2.0)*dtheta_perc/magdu;
+      dq.qz = sinf(magdu/2.0)*dpsi_perc/magdu;
     }
     float_quat_comp(&q_res, &filt.q, &dq);
 

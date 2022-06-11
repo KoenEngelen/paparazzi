@@ -74,24 +74,42 @@ void high_speed_logger_spi_link_periodic(void)
 
 
     if ((counter%2) == 1 ){
-    high_speed_logger_spi_link_data.d1  = sd_log[ 0+15*(counter%2)];
-    high_speed_logger_spi_link_data.d2  = sd_log[ 1+15*(counter%2)];
-    high_speed_logger_spi_link_data.d3  = sd_log[ 2+15*(counter%2)];
-    high_speed_logger_spi_link_data.d4  = sd_log[ 3+15*(counter%2)];
-    high_speed_logger_spi_link_data.d5  = sd_log[ 4+15*(counter%2)];
-    high_speed_logger_spi_link_data.d6  = sd_log[ 5+15*(counter%2)];
-    high_speed_logger_spi_link_data.d7  = sd_log[ 6+15*(counter%2)];
-    high_speed_logger_spi_link_data.d8  = sd_log[ 7+15*(counter%2)];
-    high_speed_logger_spi_link_data.d9  = sd_log[ 8+15*(counter%2)];
+      float AoA = -aoa_adc.angle;
+      float Voo = ms45xx.airspeed;
+      float dp = ms45xx.pressure;
+      struct NedCoor_f acc_body;
+      struct FloatRates pqr = *stateGetBodyRates_f();
+      acc_body.x = ACCEL_FLOAT_OF_BFP(imu.accel.x);
+      acc_body.y = ACCEL_FLOAT_OF_BFP(imu.accel.y);
+      acc_body.z = ACCEL_FLOAT_OF_BFP(imu.accel.z);
+
+      high_speed_logger_spi_link_data.d1  = *(int32_t*)&AoA;
+      high_speed_logger_spi_link_data.d2  = *(int32_t*)&Voo;
+      high_speed_logger_spi_link_data.d3  = *(int32_t*)&dp;
+      high_speed_logger_spi_link_data.d4  = *(int32_t*)&pqr.p;
+      high_speed_logger_spi_link_data.d5  = *(int32_t*)&pqr.q;
+      high_speed_logger_spi_link_data.d6  = *(int32_t*)&pqr.r;
+      high_speed_logger_spi_link_data.d7  = *(int32_t*)&acc_body.x;
+      high_speed_logger_spi_link_data.d8  = *(int32_t*)&acc_body.y;
+      high_speed_logger_spi_link_data.d9  = *(int32_t*)&acc_body.z;
+      high_speed_logger_spi_link_data.d10 = 0;
+      high_speed_logger_spi_link_data.d11 = 0;
+      high_speed_logger_spi_link_data.d12 = 0;
+      high_speed_logger_spi_link_data.d13 = aerobatic_active;
+      high_speed_logger_spi_link_data.d14 = stabilization_cmd[COMMAND_ROLL];
+      high_speed_logger_spi_link_data.d15 = stabilization_cmd[COMMAND_PITCH];
+      aerobatic_active = 0;
     } else {
       
       struct NedCoor_f pos;
       struct NedCoor_f vel;
       struct NedCoor_f acc;
+      struct FloatQuat q;
 
       pos = *stateGetPositionNed_f();
       vel = *stateGetSpeedNed_f();
       acc = *stateGetAccelNed_f();
+      q   = *stateGetNedToBodyQuat_f();
 
       high_speed_logger_spi_link_data.d1  = *(int32_t*)&pos.x;
       high_speed_logger_spi_link_data.d2  = *(int32_t*)&pos.y;
@@ -102,13 +120,13 @@ void high_speed_logger_spi_link_periodic(void)
       high_speed_logger_spi_link_data.d7  = *(int32_t*)&acc.x;
       high_speed_logger_spi_link_data.d8  = *(int32_t*)&acc.y;
       high_speed_logger_spi_link_data.d9  = *(int32_t*)&acc.z;
+      high_speed_logger_spi_link_data.d10 = *(int32_t*)&q.qi;
+      high_speed_logger_spi_link_data.d11 = *(int32_t*)&q.qx;
+      high_speed_logger_spi_link_data.d12 = *(int32_t*)&q.qy;
+      high_speed_logger_spi_link_data.d13 = *(int32_t*)&q.qz;
+      high_speed_logger_spi_link_data.d14 = stabilization_cmd[COMMAND_YAW];
+      high_speed_logger_spi_link_data.d15 = stabilization_cmd[COMMAND_THRUST];
     }
-    high_speed_logger_spi_link_data.d10 = sd_log[ 9+15*(counter%2)];
-    high_speed_logger_spi_link_data.d11 = sd_log[10+15*(counter%2)];
-    high_speed_logger_spi_link_data.d12 = sd_log[11+15*(counter%2)];
-    high_speed_logger_spi_link_data.d13 = sd_log[12+15*(counter%2)];
-    high_speed_logger_spi_link_data.d14 = sd_log[13+15*(counter%2)];
-    high_speed_logger_spi_link_data.d15 = sd_log[14+15*(counter%2)];
     
     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
   }

@@ -88,6 +88,7 @@
     };
 
     extern int32_t sd_id;
+    extern int32_t aerobatic_active;
     extern int32_t sd_log[30];
 
     extern struct GuidanceLogStruct aerolog;
