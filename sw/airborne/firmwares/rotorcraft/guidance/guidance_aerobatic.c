@@ -344,7 +344,7 @@ void guidance_aerobatic_run(){
   }
   get_states();
   // get_mode();
-  YawControl();
+  // YawControl();
   Controller();
   get_G();
   get_du();
@@ -622,8 +622,8 @@ void set_states(void){
     float dtheta_perc = ctrl.dtheta/magdu;
     float dpsi_perc = ctrl.dpsi/magdu;
 
-    if (magdu > 2.0*M_PI/8.0){
-      magdu = 2.0*M_PI/8.0;
+    if (magdu > 2.0*M_PI/16.0){
+      magdu = 2.0*M_PI/16.0;
     }
     if (magdu < 1e-10){
       dq.qi = 1.0;
