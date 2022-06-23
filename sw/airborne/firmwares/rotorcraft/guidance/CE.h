@@ -1,3 +1,6 @@
+
+
+extern float thrust2cmd(float thrust);
 extern float a_D_wing_x(float V[3]);
 extern float a_D_wing_z(float V[3], float phi);
 extern float a_L_wing_x(float V[3]);

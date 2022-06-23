@@ -491,6 +491,9 @@ void Controller(void){
       ref.acc.z = 0.0;
     }
     mode_2_angle += 10.0/(mode_2_radius*512.0);
+    if (mode_2_angle > 2.0*M_PI * 1.5 +  atan2f(30.0,-30.0)){
+      circ_pos.z = -30.0;
+    }
 
 
   // float PGain = varset.p_gain;
