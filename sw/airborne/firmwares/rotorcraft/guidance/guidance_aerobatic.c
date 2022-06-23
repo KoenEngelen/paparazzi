@@ -53,7 +53,7 @@
 
 #define MAX_PPRZ_f 9600.0
 #define THRUST_MIN 1920 //0.20*MAX_PPRZ //TODO lower min thrust (Check)
-#define THRUST_MAX 8640 //0.90*MAX_PPRZ
+#define THRUST_MAX MAX_PPRZ //8640 //0.90*MAX_PPRZ
 #define THRUST_DYNAMICS 0.03
 #define MIN_THRUST_EFFECTIVNESS 4.0
 
@@ -555,9 +555,9 @@ void Controller(void){
   da_d.y = VGain * (ref.vel.y-in.vel.y);
   da_d.z = zVFactor * (ref.vel.z-in.vel.z);
 
-  da.x = da_p.x + da_d.x + ref.acc.x - filt.acc.x;
-  da.y = da_p.y + da_d.y + ref.acc.y - filt.acc.y;
-  da.z = da_p.z + da_d.z + ref.acc.z - filt.acc.z;
+  da.x = da_p.x + da_d.x + ref.acc.x - 0.0 * filt.acc.x;
+  da.y = da_p.y + da_d.y + ref.acc.y - 0.0 * filt.acc.y;
+  da.z = da_p.z + da_d.z + ref.acc.z - 0.0 * filt.acc.z;
 
   float_quat_vmult(&ctrl3.dv, &filt.q, &da);
 }
@@ -575,6 +575,7 @@ void get_G(void){
 void get_du(void){
   struct FloatMat33 Ga;
   struct FloatMat33 Ga_inv;
+
   
   for (int r = 0; r < ROWS_GUIDANCE; r++){
     for (int c = 0; c < COLS_GUIDANCE; c++){
@@ -606,6 +607,46 @@ void get_du(void){
 void set_states(void){
   out.thrust = filt.thrust + ctrl.dT;
   out.thrust_cmd = (int) (out.thrust*THRUST_TO_CMD);
+
+  float Tcom = sqrtf(powf(ctrl3.dv.x,2.0) + powf(ctrl3.dv.y,2.0) + powf(ctrl3.dv.z,2.0));
+  float cmd = thrust2cmd(Tcom);
+
+
+  struct FloatVect3 nb;
+  nb.x =  0.0;
+  nb.y =  0.0;
+  nb.z = -1.0;
+
+  struct FloatVect3 nt;
+  nt.x = ctrl3.dv.x/Tcom;
+  nt.y = ctrl3.dv.y/Tcom;
+  nt.z = ctrl3.dv.z/Tcom;
+
+  if (cmd > 0.6){
+    cmd = 0.6;
+  }
+  
+  int pprz_cmd = (int) (9600.0*cmd/0.6);
+
+  out.thrust = Tcom;
+  out.thrust_cmd = pprz_cmd;
+
+  struct FloatQuat qc;
+  
+  float c3 = sqrtf(powf(nt.x+nb.x,2.0)+powf(nt.y+nb.y,2.0)+powf(nt.z+nb.z,2.0));
+  
+  if (c3 == 0.0){
+    qc.qi = 0.0;
+    qc.qx = 1.0;
+    qc.qy = 0.0;
+    qc.qz = 0.0;
+  }else{
+    qc.qi = (1.0 + nb.x*nt.x + nb.y*nt.y + nb.z*nt.z)/c3;
+    qc.qx = (nb.y*nt.z - nb.z*nt.y)/c3;
+    qc.qy = (nb.z*nt.x - nb.x*nt.z)/c3;
+    qc.qz = (nb.x*nt.y - nb.y*nt.x)/c3;
+  }
+
   if (out.thrust_cmd > THRUST_MAX){
       out.thrust_cmd = THRUST_MAX;
       out.thrust = THRUST_MAX*CMD_TO_THRUST;
@@ -640,6 +681,8 @@ void set_states(void){
       dq.qz = sinf(magdu/2.0)*dpsi_perc/magdu;
     }
     float_quat_comp(&q_res, &filt.q, &dq);
+
+    float_quat_comp(&q_res, &filt.q, &qc);
 
     magdu = sqrt(q_res.qi*q_res.qi+q_res.qx*q_res.qx+q_res.qy*q_res.qy+q_res.qz*q_res.qz);
 
