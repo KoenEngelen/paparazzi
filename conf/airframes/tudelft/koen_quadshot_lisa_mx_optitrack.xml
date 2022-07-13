@@ -188,19 +188,18 @@
   </section>
 
   <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
-      <define name="MAX_VEL" value="3.0" description="Maximum velocity allowed during trajectory tracking"/>
-      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
-      <!-- <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
-      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>       -->
-      <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
-      <define name="D_GAIN" value="2.0" description="Velocity gain of the aerobatic controller"/>    
-      <define name="Z_P_FACTOR" value="2.0" description="Positional gain of the aerobatic controller"/>
-      <define name="Z_D_FACTOR" value="3.0" description="Velocity gain of the aerobatic controller"/>
-      <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
-      <define name="USE_FEEDFORWARD" value="FALSE" description="enable feedforward acceleration"/>
-      <define name="USE_ALT_GAINS" value="TRUE" description="enable feedforward acceleration"/>
-      <define name="USE_FILTERED_OUTPUT" value="FALSE" description="enable feedforward acceleration"/>
-      <define name="CE_MODE" value="2" description="enable feedforward acceleration"/>
+      <define name="MAX_VEL" value="1.0"/>
+      <define name="MAX_ACC" value="1.0"/>    
+      <define name="P_GAIN" value="1.0"/>
+      <define name="V_GAIN" value="4.0"/>    
+      <define name="A_GAIN" value="1.0"/> 
+      <define name="Z_P_FACTOR" value="1.0"/>
+      <define name="Z_D_FACTOR" value="1.0"/>
+      <define name="MODE" value="0" type="int32"/>
+      <define name="USE_FEEDFORWARD" value="FALSE"/>
+      <define name="USE_ALT_GAINS" value="TRUE"/>
+      <define name="USE_FILTERED_OUTPUT" value="FALSE"/>
+      <define name="CE_MODE" value="2"/>
   </section>
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
@@ -352,7 +351,7 @@
     <module name="gps"           type="datalink"/>
     <module name="stabilization" type="indi_simple"/>
     <module name="guidance"      type="aerobatic"/>
-    <define name="USE_AHRS_GPS_ACCELERATIONS" value="TRUE"/> <!-- Changed, added-->
+    <define name="USE_AHRS_GPS_ACCELERATIONS" value="FALSE"/> <!-- Changed, added-->
     <module name="ahrs"          type="int_cmpl_quat">
       <configure name="USE_MAGNETOMETER" value="FALSE"/>
       <define name="AHRS_USE_GPS_HEADING" value="TRUE"/>
@@ -364,9 +363,10 @@
           <define name="SAFETY_WARNING_LED" value="BODY"/>
     </load>
 
-    <module name="ins"/>
+    <!-- <module name="ins"/> -->
         <!-- <module name="ins"  type="ekf2"/> -->
     <!-- <module name="ins"  type="hff"/> -->
+    <module name="ins" type="gps_passthrough"/>
     <!-- <module name="ins"  type="float_invariant">
       <configure name="USE_MAGNETOMETER" value="FALSE"/>   
     </module> -->

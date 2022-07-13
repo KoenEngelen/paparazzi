@@ -57,7 +57,8 @@
         float max_vel;  //maximum velocity used on trajectory
         float max_acc;  //maximum acceleration used on trajectory
         float p_gain;   //gain used on position control
-        float d_gain;   //gain used on velocity control
+        float v_gain;   //gain used on velocity control
+        float a_gain;   //gain used on acceleration control
         float z_p_factor;
         float z_d_factor;
         int32_t mode; 

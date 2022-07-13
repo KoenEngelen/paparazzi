@@ -1,0 +1,2968 @@
+diff --git a/conf/airframes/examples/quadshot_asp21_spektrum.xml b/conf/airframes/examples/quadshot_asp21_spektrum.xml
+index 9955460f4..ebad6c052 100644
+--- a/conf/airframes/examples/quadshot_asp21_spektrum.xml
++++ b/conf/airframes/examples/quadshot_asp21_spektrum.xml
+@@ -97,12 +97,19 @@
+ <!--     <define name="MAG_Y_SENS" value="3.54049742843" integer="16"/> -->
+ <!--     <define name="MAG_Z_SENS" value="4.0620533034" integer="16"/> -->
+ 
+-	<define name="MAG_X_NEUTRAL" value="-86"/>
++  <define name="MAG_X_NEUTRAL" value="-21"/>
++  <define name="MAG_Y_NEUTRAL" value="91"/>
++  <define name="MAG_Z_NEUTRAL" value="56"/>
++  <define name="MAG_X_SENS" value="3.7557395411182743" integer="16"/>
++  <define name="MAG_Y_SENS" value="3.6193943040674297" integer="16"/>
++  <define name="MAG_Z_SENS" value="4.189378077233518" integer="16"/>
++
++	<!-- <define name="MAG_X_NEUTRAL" value="-86"/>
+ 	<define name="MAG_Y_NEUTRAL" value="-36"/>
+ 	<define name="MAG_Z_NEUTRAL" value="35"/>
+ 	<define name="MAG_X_SENS" value="3.98639595061" integer="16"/>
+ 	<define name="MAG_Y_SENS" value="4.00632407649" integer="16"/>
+-	<define name="MAG_Z_SENS" value="4.17946082997" integer="16"/>
++	<define name="MAG_Z_SENS" value="4.17946082997" integer="16"/> -->
+   </section>
+ 
+   <section name="IMU" prefix="IMU_">
+@@ -114,7 +121,7 @@
+   <section name="AUTOPILOT">
+     <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
+     <define name="MODE_AUTO1" value="AP_MODE_FORWARD"/>
+-    <define name="MODE_AUTO2"  value="AP_MODE_NAV"/>
++    <define name="MODE_AUTO2" value="AP_MODE_MODULE"/>
+ 
+ <!--     <define name="USE_YAW_FOR_MOTOR_ARMING" value="TRUE"/> -->
+   </section>
+diff --git a/conf/airframes/tudelft/koen_quadshot_lisa_mx.xml b/conf/airframes/tudelft/koen_quadshot_lisa_mx.xml
+index 16c9ded5e..40766e4c5 100644
+--- a/conf/airframes/tudelft/koen_quadshot_lisa_mx.xml
++++ b/conf/airframes/tudelft/koen_quadshot_lisa_mx.xml
+@@ -28,7 +28,7 @@
+     <servo name="A2" no="1" min="1000" neutral="1100" max="1600"/>
+     <servo name="B1"  no="2" min="1000" neutral="1100" max="1600"/>
+     <servo name="B2"  no="3" min="1000" neutral="1100" max="1600"/>
+-    <servo name="ELEVON_LEFT" no="4" min="1500" neutral="1700" max="1900"/>
++    <servo name="ELEVON_LEFT" no="4" min="1300" neutral="1500" max="1700"/>
+     <servo name="ELEVON_RIGHT" no="5" min="1300" neutral="1500" max="1700"/>
+   </servos>
+ 
+@@ -41,18 +41,18 @@
+ 
+   <command_laws>
+     <call fun="motor_mixing_run(autopilot_get_motors_on(),FALSE,values)"/>
+-    <!-- <set servo="A1" value="motor_mixing.commands[0]"/>
++    <set servo="A1" value="motor_mixing.commands[0]"/>
+     <set servo="A2"  value="motor_mixing.commands[1]"/>
+     <set servo="B1" value="motor_mixing.commands[2]"/>
+-    <set servo="B2"  value="motor_mixing.commands[3]"/> -->
++    <set servo="B2"  value="motor_mixing.commands[3]"/>
+ 
+     <!-- Mode dependent actuator laws for the elevons. The elevons act different in rc attitude flight mode-->
+     <!-- First the correct feedback is stored in variables -->
+-    <let var="aileron_feedback_left"  value="-@YAW"/>
+-    <let var="aileron_feedback_right" value="-@YAW"/>
++    <let var="aileron_feedback_left"  value="@YAW"/>
++    <let var="aileron_feedback_right" value="@YAW"/>
+ 
+-    <let var="elevator_feedback_left"  value="-@PITCH"/>
+-    <let var="elevator_feedback_right" value="+@PITCH"/>
++    <let var="elevator_feedback_left"  value="+@PITCH"/>
++    <let var="elevator_feedback_right" value="-@PITCH"/>
+ 
+     <!-- Here the gains are defined for the two feedback cases, hover and forward-->
+     <let var="hover_left"  value="10*$aileron_feedback_left"/>
+@@ -95,19 +95,20 @@
+   <section name="IMU" prefix="IMU_">
+     <!-- Use default driver values for gyro -->
+     <!-- IMU calibration, make sure to calibrate the IMU properly before flight, see the wiki for more info-->
+-    <define name="ACCEL_X_NEUTRAL" value="0"/>
+-    <define name="ACCEL_Y_NEUTRAL" value="0"/>
+-    <define name="ACCEL_Z_NEUTRAL" value="0"/>
+-    <define name="ACCEL_X_SENS" value="4.86487566223" integer="16"/>
+-    <define name="ACCEL_Y_SENS" value="4.89957269597" integer="16"/>
+-    <define name="ACCEL_Z_SENS" value="4.82616398266" integer="16"/>
+-    <define name="MAG_X_NEUTRAL" value="-86"/>
+-    <define name="MAG_Y_NEUTRAL" value="-36"/>
+-    <define name="MAG_Z_NEUTRAL" value="35"/>
+-    <define name="MAG_X_SENS" value="3.98639595061" integer="16"/>
+-    <define name="MAG_Y_SENS" value="4.00632407649" integer="16"/>
+-    <define name="MAG_Z_SENS" value="4.17946082997" integer="16"/>
+-  </section>
++    <define name="ACCEL_X_NEUTRAL" value="-13"/>
++    <define name="ACCEL_Y_NEUTRAL" value="10"/>
++    <define name="ACCEL_Z_NEUTRAL" value="-52"/>
++    <define name="ACCEL_X_SENS" value="4.919044539280737" integer="16"/>
++    <define name="ACCEL_Y_SENS" value="4.91902396983621" integer="16"/>
++    <define name="ACCEL_Z_SENS" value="4.889608930435962" integer="16"/>
++    
++    <define name="MAG_X_NEUTRAL" value="-24"/>
++    <define name="MAG_Y_NEUTRAL" value="89"/>
++    <define name="MAG_Z_NEUTRAL" value="51"/>
++    <define name="MAG_X_SENS" value="3.800545131674762" integer="16"/>
++    <define name="MAG_Y_SENS" value="3.657210501633149" integer="16"/>
++    <define name="MAG_Z_SENS" value="4.231408588370766" integer="16"/>
++</section>
+ 
+   <section name="IMU" prefix="IMU_">
+     <define name="BODY_TO_IMU_PHI"   value="0." unit="deg"/>
+@@ -117,8 +118,8 @@
+ 
+   <section name="AUTOPILOT">
+     <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
+-    <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
+-    <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
++    <define name="MODE_AUTO1" value="AP_MODE_FORWARD"/>
++    <define name="MODE_AUTO2" value="AP_MODE_MODULE"/>
+   </section>
+ 
+   <section name="BAT">
+@@ -187,13 +188,19 @@
+   </section>
+ 
+   <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
+-      <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
+-      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>
++      <define name="MAX_VEL" value="3.0" description="Maximum velocity allowed during trajectory tracking"/>
++      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
++      <!-- <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
++      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>       -->
+       <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
+-      <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>
+-      <define name="Z_P_FACTOR" value="1.0" description="Vertical positional gain factor of the aerobatic controller"/>
+-      <define name="Z_D_FACTOR" value="1.0" description="Vertical velocity gain factor of the aerobatic controller"/>
++      <define name="D_GAIN" value="2.0" description="Velocity gain of the aerobatic controller"/>    
++      <define name="Z_P_FACTOR" value="2.0" description="Positional gain of the aerobatic controller"/>
++      <define name="Z_D_FACTOR" value="3.0" description="Velocity gain of the aerobatic controller"/>
+       <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
++      <define name="USE_FEEDFORWARD" value="FALSE" description="enable feedforward acceleration"/>
++      <define name="USE_ALT_GAINS" value="TRUE" description="enable feedforward acceleration"/>
++      <define name="USE_FILTERED_OUTPUT" value="FALSE" description="enable feedforward acceleration"/>
++      <define name="CE_MODE" value="2" description="enable feedforward acceleration"/>
+   </section>
+ 
+   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
+@@ -210,14 +217,14 @@
+     <define name="G1_R" value="0.0095"/>
+     <define name="G2_R" value="0.0"/>
+     <!-- reference acceleration for attitude control -->
+-    <define name="REF_ERR_P" value="70.0"/>
+-    <define name="REF_ERR_Q" value="45.0"/>
+-    <define name="REF_ERR_R" value="70.0"/>
+-    <define name="REF_RATE_P" value="9.0"/>
+-    <define name="REF_RATE_Q" value="16.0"/>
++    <define name="REF_ERR_P" value="60.0"/>
++    <define name="REF_ERR_Q" value="150.0"/> <!--try 100-->
++    <define name="REF_ERR_R" value="60.0"/>
++    <define name="REF_RATE_P" value="8.0"/>
++    <define name="REF_RATE_Q" value="20.5"/> <!-- 15.0 -->
+     <define name="REF_RATE_R" value="12.0"/>
+     <!-- second order filter parameters -->
+-    <define name="FILT_CUTOFF" value="8.0"/>
++    <define name="FILT_CUTOFF" value="5.0"/>
+     <define name="FILT_CUTOFF_R" value="3.2"/>
+     <!-- first order actuator dynamics -->
+     <define name="ACT_DYN_P" value="0.03"/>
+@@ -342,14 +349,13 @@
+     <module name="telemetry"     type="xbee_api"/>
+     <module name="imu"           type="lisa_mx_v2.1"/>
+     <module name="gps"           type="ublox">
+-        <!-- <define name="UBX_GPS_PORT" value="UART3"/> -->
+-        <define name="UBX_GPS_BAUD" value="B460800"/>
++        <configure name="GPS_BAUD" value="B460800"/>
+     </module>
+     <module name="stabilization" type="indi_simple"/>
+     <module name="guidance"      type="aerobatic"/>
+     <module name="ahrs"          type="int_cmpl_quat">
+-      <configure name="USE_MAGNETOMETER" value="0"/>
+-      <define name="AHRS_USE_GPS_HEADING" value="0"/>
++      <configure name="USE_MAGNETOMETER" value="TRUE"/>
++      <define name="AHRS_USE_GPS_HEADING" value="FALSE"/>
+     </module>
+     
+     <!-- Modules section (depricated modules main_frequency) -->
+@@ -358,19 +364,25 @@
+           <define name="SAFETY_WARNING_LED" value="BODY"/>
+     </module>
+ 
+-    <!-- <module name="ins"/> -->
+-    <module name="ins"  type="hff"/>
++     <module name="ins"/>
++        <!-- <module name="ins"  type="ekf2"/> -->
++    <!-- <module name="ins"  type="hff"/> -->
++    <!-- <module name="ins"  type="float_invariant">
++      <configure name="USE_MAGNETOMETER" value="FALSE"/>   
++    </module> -->
++
+     <module name="airspeed_ms45xx_i2c">
+       <define name="MS45XX_I2C_DEV" value="i2c1" />
+       <define name="MS45XX_I2C_ADDR" value="0x50" />
+-      <define name="MS45XX_SYNC_SEND" value="TRUE" />
++      <define name="MS45XX_SYNC_SEND" value="FALSE" />
+       <define name="MS45XX_LOWPASS_TAU" value="0.15" />
+       <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
+     </module>
+     <module name="AOA_adc">
+       <configure name="ADC_AOA" value="ADC_2"/>
+-      <define name="AOA_OFFSET" value="-0.135000005364"/>
+-      <define name="AOA_FILTER" value="0.875999987125"/>
++      <!-- <define name="AOA_SENS" value="(2*3.14)/4000"/>  -->
++      <!-- <define name="AOA_OFFSET" value="3.14"/> -->
++      <define name="AOA_FILTER" value="0"/>
+       <define name="USE_AOA"/>
+     </module>
+     <module name="logger_spi_link">
+diff --git a/conf/airframes/tudelft/koen_quadshot_lisa_mx_optitrack.xml b/conf/airframes/tudelft/koen_quadshot_lisa_mx_optitrack.xml
+index 00a9b9cde..1477bd49e 100644
+--- a/conf/airframes/tudelft/koen_quadshot_lisa_mx_optitrack.xml
++++ b/conf/airframes/tudelft/koen_quadshot_lisa_mx_optitrack.xml
+@@ -188,15 +188,19 @@
+   </section>
+ 
+   <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
+-      <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
++      <define name="MAX_VEL" value="3.0" description="Maximum velocity allowed during trajectory tracking"/>
+       <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
+       <!-- <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
+       <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>       -->
+       <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
+-      <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>    
+-      <define name="Z_P_FACTOR" value="1.0" description="Positional gain of the aerobatic controller"/>
+-      <define name="Z_D_FACTOR" value="1.0" description="Velocity gain of the aerobatic controller"/>
++      <define name="D_GAIN" value="2.0" description="Velocity gain of the aerobatic controller"/>    
++      <define name="Z_P_FACTOR" value="2.0" description="Positional gain of the aerobatic controller"/>
++      <define name="Z_D_FACTOR" value="3.0" description="Velocity gain of the aerobatic controller"/>
+       <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
++      <define name="USE_FEEDFORWARD" value="FALSE" description="enable feedforward acceleration"/>
++      <define name="USE_ALT_GAINS" value="TRUE" description="enable feedforward acceleration"/>
++      <define name="USE_FILTERED_OUTPUT" value="FALSE" description="enable feedforward acceleration"/>
++      <define name="CE_MODE" value="2" description="enable feedforward acceleration"/>
+   </section>
+ 
+   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
+@@ -376,8 +380,9 @@
+     </module>
+     <module name="AOA_adc">
+       <configure name="ADC_AOA" value="ADC_2"/>
+-      <define name="AOA_OFFSET" value="-0.135000005364"/>
+-      <define name="AOA_FILTER" value="0.875999987125"/>
++      <!-- <define name="AOA_SENS" value="(2*3.14)/4000"/>  -->
++      <!-- <define name="AOA_OFFSET" value="3.14"/> -->
++      <define name="AOA_FILTER" value="0"/>
+       <define name="USE_AOA"/>
+     </module>
+     <module name="logger_spi_link">
+diff --git a/conf/airframes/tudelft/koen_quadshot_lisa_mx_optitrack.xml.2022-05-16_115133 b/conf/airframes/tudelft/koen_quadshot_lisa_mx_optitrack.xml.2022-05-16_115133
+new file mode 100644
+index 000000000..00a9b9cde
+--- /dev/null
++++ b/conf/airframes/tudelft/koen_quadshot_lisa_mx_optitrack.xml.2022-05-16_115133
+@@ -0,0 +1,391 @@
++<!-- this is a quadshot vehicle equiped with Lisa/m2.0 and an aspirin 2.1
++     More information on the Quadshot can be found at transition-robotics.com -->
++
++<airframe name="Quadshot Lisa MX v2.1">
++  <description>
++    Transition robotics Quadshot (https://www.openuas.org/airframes/)
++    + Airframe to validate all onboard functionally...
++      Quadshot
++        + Autopilot:   Lisa MX 2.1
++        + IMU:         Aspirin 2.2
++        + Motors:      Default Motors
++        + Actuators:   Default ESCs
++        + GPS:         uBlox 6 GNSS helix antenna
++        + TELEMETRY:   XBee Pro S1
++        + CURRENT:     V/A sensing module
++        + RC RX:       OpenRXSR on SBus port
++        + AGL ranging: TFMini the IIC(I2C) version
++
++    NOTES:
++        + Plz calibrate your magnetometer, Yes, you too ;), unit UKF auto works...
++        + And callibrate your Accelometer also...
++        + Uses PAPARAZZI "standard" radio channel settings
++        + Oh yeah, it is yellow :)
++  </description>
++
++  <servos driver="Pwm">
++    <servo name="A1" no="0" min="1000" neutral="1100" max="1600"/>
++    <servo name="A2" no="1" min="1000" neutral="1100" max="1600"/>
++    <servo name="B1"  no="2" min="1000" neutral="1100" max="1600"/>
++    <servo name="B2"  no="3" min="1000" neutral="1100" max="1600"/>
++    <servo name="ELEVON_LEFT" no="4" min="1300" neutral="1500" max="1700"/>
++    <servo name="ELEVON_RIGHT" no="5" min="1300" neutral="1500" max="1700"/>
++  </servos>
++
++  <commands>
++    <axis name="PITCH"  failsafe_value="0"/>
++    <axis name="ROLL"   failsafe_value="0"/>
++    <axis name="YAW"    failsafe_value="0"/>
++    <axis name="THRUST" failsafe_value="0"/>
++  </commands>
++
++  <command_laws>
++    <call fun="motor_mixing_run(autopilot_get_motors_on(),FALSE,values)"/>
++    <set servo="A1" value="motor_mixing.commands[0]"/>
++    <set servo="A2"  value="motor_mixing.commands[1]"/>
++    <set servo="B1" value="motor_mixing.commands[2]"/>
++    <set servo="B2"  value="motor_mixing.commands[3]"/>
++
++    <!-- Mode dependent actuator laws for the elevons. The elevons act different in rc attitude flight mode-->
++    <!-- First the correct feedback is stored in variables -->
++    <let var="aileron_feedback_left"  value="@YAW"/>
++    <let var="aileron_feedback_right" value="@YAW"/>
++
++    <let var="elevator_feedback_left"  value="+@PITCH"/>
++    <let var="elevator_feedback_right" value="-@PITCH"/>
++
++    <!-- Here the gains are defined for the two feedback cases, hover and forward-->
++    <let var="hover_left"  value="10*$aileron_feedback_left"/>
++    <let var="hover_right" value="10*$aileron_feedback_right"/>
++
++    <!--     if using INDI -->
++    <!-- <let var="forward_left"  value="aileron_gain*$aileron_feedback_left+elevator_gain*$elevator_feedback_left"/> -->
++    <!-- <let var="forward_right" value="aileron_gain*$aileron_feedback_right+elevator_gain*$elevator_feedback_right"/> -->
++
++    <!--     if using PID with gain scheduling -->
++    <let var="forward_left"  value="3*$aileron_feedback_left + 4*$elevator_feedback_left"/>
++    <let var="forward_right" value="3*$aileron_feedback_right + 4*$elevator_feedback_right"/>
++
++    <!-- This statement tells the autopilot to use the hover feedback if in mode attitude direct and to use the forward feedback in all other cases-->
++    <set servo="ELEVON_LEFT"    value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? $hover_left  : $forward_left" />
++    <set servo="ELEVON_RIGHT"   value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? $hover_right  : $forward_right" />
++  </command_laws>
++
++  <section name="SIMULATOR" prefix="NPS_">
++    <define name="ACTUATOR_NAMES" value="mot_A1, mot_A2, mot_B1, mot_B2" type="string[]"/>
++    <define name="JSBSIM_MODEL" value="quadshot" type="string"/>
++    <define name="SENSORS_PARAMS" value="nps_sensors_params_default.h" type="string"/>
++  </section>
++
++  <section name="MIXING" prefix="MOTOR_MIXING_">
++    <define name="TRIM_ROLL" value="0"/>
++    <define name="TRIM_PITCH" value="0"/>
++    <define name="TRIM_YAW" value="0"/>
++    <define name="NB_MOTOR" value="4"/>
++    <define name="SCALE" value="256"/>
++    <!--                                  A1    A2    B1    B2  -->
++    <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
++    <define name="ROLL_COEF"   value="{  256, -256,  256, -256 }"/>
++    <define name="YAW_COEF"    value="{ -256,  256,  128, -128 }"/>
++    <define name="THRUST_COEF" value="{  256,  256,  256,  256 }"/>
++  </section>
++  <!-- If you got a caliberation XML document from your IMU supplier, import this in the IMU section -->
++  <!-- Note that is better to have *no* caliberation file at all, than a one with incorrect caliberation values.
++       The default factory values are most of the time perfectly acceptable, so by default we will not use the caliberation file -->
++  <section name="IMU" prefix="IMU_">
++    <!-- Use default driver values for gyro -->
++    <!-- IMU calibration, make sure to calibrate the IMU properly before flight, see the wiki for more info-->
++    <define name="ACCEL_X_NEUTRAL" value="-13"/>
++    <define name="ACCEL_Y_NEUTRAL" value="10"/>
++    <define name="ACCEL_Z_NEUTRAL" value="-52"/>
++    <define name="ACCEL_X_SENS" value="4.919044539280737" integer="16"/>
++    <define name="ACCEL_Y_SENS" value="4.91902396983621" integer="16"/>
++    <define name="ACCEL_Z_SENS" value="4.889608930435962" integer="16"/>
++    
++    <define name="MAG_X_NEUTRAL" value="-86"/>
++    <define name="MAG_Y_NEUTRAL" value="-36"/>
++    <define name="MAG_Z_NEUTRAL" value="35"/>
++    <define name="MAG_X_SENS" value="3.98639595061" integer="16"/>
++    <define name="MAG_Y_SENS" value="4.00632407649" integer="16"/>
++    <define name="MAG_Z_SENS" value="4.17946082997" integer="16"/>
++  </section>
++
++  <section name="IMU" prefix="IMU_">
++    <define name="BODY_TO_IMU_PHI"   value="0." unit="deg"/>
++    <define name="BODY_TO_IMU_THETA" value="90." unit="deg"/>
++    <define name="BODY_TO_IMU_PSI"   value="0." unit="deg"/>
++  </section>
++
++  <section name="AUTOPILOT">
++    <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
++    <define name="MODE_AUTO1" value="AP_MODE_MODULE"/>
++    <define name="MODE_AUTO2" value="AP_MODE_NAV"/>
++  </section>
++
++  <section name="BAT">
++    <!--     <define name="MIN_BAT_LEVEL" value="10.8" units="V"/> -->
++    <define name="CRITIC_BAT_LEVEL" value="10.8" unit="V"/>
++    <define name="LOW_BAT_LEVEL" value="10.8" unit="V"/>
++    <define name="CATASTROPHIC_BAT_LEVEL" value="10.1" unit="V"/>
++  </section>
++
++  <section name="STABILIZATION_RATE" prefix="STABILIZATION_RATE_">
++    <define name="SP_MAX_P" value="10000"/>
++    <define name="SP_MAX_Q" value="10000"/>
++    <define name="SP_MAX_R" value="10000"/>
++
++    <define name="GAIN_P" value="350"/>
++    <define name="GAIN_Q" value="250"/>
++    <define name="GAIN_R" value="350"/>
++
++    <define name="IGAIN_P" value="200"/>
++    <define name="IGAIN_Q" value="200"/>
++    <define name="IGAIN_R" value="200"/>
++  </section>
++
++  <section name="STABILIZATION_ATTITUDE" prefix="STABILIZATION_ATTITUDE_">
++    <!-- setpoints -->
++    <define name="SP_MAX_PHI"     value="60." unit="deg"/>
++    <define name="SP_MAX_THETA"   value="60." unit="deg"/>
++    <define name="SP_MAX_R"       value="100." unit="deg/s"/>
++    <define name="DEADBAND_R"     value="250"/>
++    <define name="DEADBAND_A"     value="250"/>
++    <define name="SP_PSI_DELTA_LIMIT" value="90" unit="deg"/>
++
++    <!-- reference -->
++    <define name="REF_OMEGA_P"  value="1500" unit="deg/s"/>
++    <define name="REF_ZETA_P"   value="0.85"/>
++    <define name="REF_MAX_P"    value="300." unit="deg/s"/>
++    <define name="REF_MAX_PDOT" value="RadOfDeg(7000.)"/>
++
++    <define name="REF_OMEGA_Q"  value="1500" unit="deg/s"/>
++    <define name="REF_ZETA_Q"   value="0.85"/>
++    <define name="REF_MAX_Q"    value="300." unit="deg/s"/>
++    <define name="REF_MAX_QDOT" value="RadOfDeg(7000.)"/>
++
++    <define name="REF_OMEGA_R"  value="1500" unit="deg/s"/>
++    <define name="REF_ZETA_R"   value="0.85"/>
++    <define name="REF_MAX_R"    value="300." unit="deg/s"/>
++    <define name="REF_MAX_RDOT" value="RadOfDeg(7000.)"/>
++
++    <!-- feedback -->
++    <define name="PHI_PGAIN"  value="150"/>
++    <define name="PHI_DGAIN"  value="150"/>
++    <define name="PHI_IGAIN"  value="30"/>
++
++    <define name="THETA_PGAIN"  value="100"/>
++    <define name="THETA_DGAIN"  value="100"/>
++    <define name="THETA_IGAIN"  value="40"/>
++
++    <define name="PSI_PGAIN"  value="300"/>
++    <define name="PSI_DGAIN"  value="150"/>
++    <define name="PSI_IGAIN"  value="0"/>
++
++    <!-- feedforward -->
++    <define name="PHI_DDGAIN"   value=" 0"/>
++    <define name="THETA_DDGAIN" value=" 0"/>
++    <define name="PSI_DDGAIN"   value=" 0"/>
++  </section>
++
++  <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
++      <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
++      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
++      <!-- <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
++      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>       -->
++      <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
++      <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>    
++      <define name="Z_P_FACTOR" value="1.0" description="Positional gain of the aerobatic controller"/>
++      <define name="Z_D_FACTOR" value="1.0" description="Velocity gain of the aerobatic controller"/>
++      <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
++  </section>
++
++  <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
++    <!-- setpoints -->
++    <define name="SP_MAX_PHI" value="60." unit="deg"/>
++    <define name="SP_MAX_THETA" value="60." unit="deg"/>
++    <define name="SP_MAX_R" value="180." unit="deg/s"/>
++    <define name="DEADBAND_R" value="250"/>
++    <define name="DEADBAND_A" value="250"/>
++    <define name="SP_PSI_DELTA_LIMIT" value="90" unit="deg"/>
++    <!-- control effectiveness -->
++    <define name="G1_P" value="0.0179"/>
++    <define name="G1_Q" value="0.0708"/>
++    <define name="G1_R" value="0.0095"/>
++    <define name="G2_R" value="0.0"/>
++    <!-- reference acceleration for attitude control -->
++    <define name="REF_ERR_P" value="60.0"/>
++    <define name="REF_ERR_Q" value="150.0"/> <!--try 100-->
++    <define name="REF_ERR_R" value="60.0"/>
++    <define name="REF_RATE_P" value="8.0"/>
++    <define name="REF_RATE_Q" value="20.5"/> <!-- 15.0 -->
++    <define name="REF_RATE_R" value="12.0"/>
++    <!-- second order filter parameters -->
++    <define name="FILT_CUTOFF" value="5.0"/>
++    <define name="FILT_CUTOFF_R" value="3.2"/>
++    <!-- first order actuator dynamics -->
++    <define name="ACT_DYN_P" value="0.03"/>
++    <define name="ACT_DYN_Q" value="0.03"/>
++    <define name="ACT_DYN_R" value="0.03"/>
++        <!-- Adaptive Learning Rate -->
++    <define name="USE_ADAPTIVE" value="TRUE"/>
++    <define name="ADAPTIVE_MU" value="0.0001"/>
++  </section>
++
++  <section name="AHRS" prefix="AHRS_">
++    <define name="HEADING_UPDATE_GPS_MIN_SPEED" value="0"/>
++    <!--     Delft magnetic field -->
++    <define name="H_X" value="0.39049610"/>
++    <define name="H_Y" value="0.00278894"/>
++    <define name="H_Z" value="0.92060036"/>
++    <!-- For vibrating airfames -->
++    <define name="GRAVITY_HEURISTIC_FACTOR" value="0"/>
++  </section>
++  <!-- Gains for horizontal navigation-->
++  <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
++    <define name="PGAIN" value="100"/>
++    <define name="DGAIN" value="100"/>
++    <define name="IGAIN" value="0"/>
++
++    <define name="MAX_BANK" value="RadOfDeg(55)"/>
++    <define name="FORWARD_MAX_BANK" value="RadOfDeg(35)"/>
++    <define name="USE_REF" value="FALSE"/>
++  </section>
++  <!-- Gains for vertical navigation -->
++  <section name="GUIDANCE_V" prefix="GUIDANCE_V_">
++    <define name="MIN_ERR_Z"   value="POS_BFP_OF_REAL(-10.)"/>
++    <define name="MAX_ERR_Z"   value="POS_BFP_OF_REAL( 10.)"/>
++    <define name="MIN_ERR_ZD"  value="SPEED_BFP_OF_REAL(-10.)"/>
++    <define name="MAX_ERR_ZD"  value="SPEED_BFP_OF_REAL( 10.)"/>
++    <define name="MAX_SUM_ERR" value="2000000"/>
++    <define name="HOVER_KP"    value="200"/>
++    <define name="HOVER_KD"    value="175"/>
++    <define name="HOVER_KI"    value="100"/>
++    <define name="NOMINAL_HOVER_THROTTLE" value ="0.2"/>
++    <define name="ADAPT_THROTTLE_ENABLED" value="FALSE"/>
++  </section>
++
++  <section name="NAV">
++    <define name="ARRIVED_AT_WAYPOINT" value="0.2" unit="m"/>
++  </section>
++
++  <section name="MISC">
++    <!--<define name="RADIO_CONTROL_SPEKTRUM_SIGNS" value="{1,1,1,1,1,1,1,1,1,1,1,1}"/>-->
++    <!--The Quadshot uses a slightly different axis system for the setpoint, to make both hovering and flying forward intuitive-->
++    <define name="USE_EARTH_BOUND_RC_SETPOINT" value="TRUE"/>
++    <!-- This is the pitch angle that the Quadshot will have in forward flight, where 0 degrees is hover-->
++    <define name="TRANSITION_MAX_OFFSET" value="-75.0" unit="deg"/>
++    <define name="RC_LOST_MODE" value="MODE_AUTO2"/>
++    <define name="SWITCH_STICKS_FOR_RATE_CONTROL" value="TRUE"/>
++    <define name="AIRSPEED_ETS_I2C_DEV" value="i2c2"/>
++    <define name="AHRS_MAG_UPDATE_ALL_AXES" value="FALSE"/>
++    <define name="THRESHOLD_GROUND_DETECT" value="25.0"/>
++    <define name="KILL_ON_GROUND_DETECT" value="TRUE"/>
++    <define name="FAILSAFE_GROUND_DETECT" value="TRUE"/>
++    <!-- <define name="HYBRID_NAVIGATION" value="TRUE"/> -->
++    <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
++    <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
++    <define name="ADAPTIVE_INDI" value="FALSE"/>
++  </section>
++
++  <!-- <modules main_freq="512"> -->
++    <!-- <module name="gps" type="ubx_ucenter"/> -->
++    <!-- The the led_safety_status module will make the Quadshot LEDs blink in certain patterns when there are safety violations-->
++    <!-- <load name="led_safety_status.xml"> -->
++          <!-- <define name="USE_LED_BODY" value="1"/> -->
++          <!-- <define name="SAFETY_WARNING_LED" value="BODY"/> -->
++    <!-- </load> -->
++    <!-- <load name="sys_mon"/> -->
++    <!-- <module name="logger_spi_link"/> -->
++    <!-- <load name="AOA_adc.xml"> -->
++      <!-- <configure name="ADC_AOA" value="ADC_2"/> -->
++      <!-- <define name="AOA_OFFSET" value="0"/> -->
++      <!-- <define name="AOA_FILTER" value="0"/> -->
++      <!-- <define name="USE_AOA"/> -->
++      <!-- <define name="AOA_SENS" value="2.0*M_PI/1024/4"/> -->
++      <!-- </load> -->
++      <!-- <load name="airspeed_ets.xml"> -->
++          <!-- <define name="AIRSPEED_ETS_SYNC_SEND"/> -->
++      <!-- </load> -->
++      <!-- </modules> -->
++
++  <firmware name="rotorcraft">
++    <target name="ap" board="lisa_mx_2.1">
++      <module name="radio_control" type="sbus">
++        <configure name="SBUS_PORT" value="UART5"/>
++        <define name="RADIO_KILL_SWITCH" value="RADIO_GAIN1"/>
++        <define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="FALSE"/>
++      </module>
++      <!-- ONLY if flashing via JTAG cable -->
++      <configure name="FLASH_MODE"   value="SWD"/>
++      <configure name="BMP_PORT" value="/dev/ttyACM0" />
++      <!-- To use an airspeed sensor on I2C, enable I2C2-->
++      <define name="USE_I2C1"/>
++      <define name="USE_SERVOS_7AND8" value ="FALSE"/>
++      <!-- If using aspirin 2.2, make sure to uncomment the following barometer configuration: -->
++      <!--       <configure name="LISA_M_BARO" value="BARO_MS5611_SPI"/> -->
++      <configure name="LISA_M_BARO" value="BARO_BOARD_BMP085"/>
++    </target>
++    
++    <target name="nps"          board="pc">
++      <module name="fdm" type="jsbsim"/>
++      <module name="udp"/>
++      <module name="radio_control" type="datalink"/>
++      <module name="logger_file">
++        <define name="FILE_LOGGER_PATH" value="/home/koen/Documents"/>
++      </module>
++      <define name="MODE_STARTUP"  value="AP_MODE_NAV"/>
++      <!--Switch advanced INDI scheduling functions on or off-->
++      <!--Take the mode channel for simulation-->
++      <define name="INDI_FUNCTIONS_RC_CHANNEL" value="4"/>
++    </target>
++
++    <module name="motor_mixing"/>
++    <module name="actuators"     type="pwm">
++      <define name="SERVO_HZ" value="400"/>
++    </module>
++    <module name="telemetry"     type="xbee_api"/>
++    <module name="imu"           type="lisa_mx_v2.1"/>
++    <module name="gps"           type="datalink"/>
++    <module name="stabilization" type="indi_simple"/>
++    <module name="guidance"      type="aerobatic"/>
++    <define name="USE_AHRS_GPS_ACCELERATIONS" value="TRUE"/> <!-- Changed, added-->
++    <module name="ahrs"          type="int_cmpl_quat">
++      <configure name="USE_MAGNETOMETER" value="FALSE"/>
++      <define name="AHRS_USE_GPS_HEADING" value="TRUE"/>
++    </module>
++    
++    <!-- Modules section (depricated modules main_frequency) -->
++    <load name="led_safety_status.xml">
++          <define name="USE_LED_BODY" value="1"/>
++          <define name="SAFETY_WARNING_LED" value="BODY"/>
++    </load>
++
++    <module name="ins"/>
++        <!-- <module name="ins"  type="ekf2"/> -->
++    <!-- <module name="ins"  type="hff"/> -->
++    <!-- <module name="ins"  type="float_invariant">
++      <configure name="USE_MAGNETOMETER" value="FALSE"/>   
++    </module> -->
++
++    <module name="airspeed_ms45xx_i2c">
++      <define name="MS45XX_I2C_DEV" value="i2c1" />
++      <define name="MS45XX_I2C_ADDR" value="0x50" />
++      <define name="MS45XX_SYNC_SEND" value="FALSE" />
++      <define name="MS45XX_LOWPASS_TAU" value="0.15" />
++      <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
++    </module>
++    <module name="AOA_adc">
++      <configure name="ADC_AOA" value="ADC_2"/>
++      <define name="AOA_OFFSET" value="-0.135000005364"/>
++      <define name="AOA_FILTER" value="0.875999987125"/>
++      <define name="USE_AOA"/>
++    </module>
++    <module name="logger_spi_link">
++	    <configure name="HS_LOG_SPI_SLAVE_IDX" value="SPI_SLAVE1"/>
++    </module>
++    <module name="sys_id_chirp"/>
++    <module name="sys_mon"/>
++
++  </firmware>
++
++</airframe>
+diff --git a/conf/airframes/tudelft/koen_quadshot_lisa_mx_test_thrust.xml b/conf/airframes/tudelft/koen_quadshot_lisa_mx_test_thrust.xml
+new file mode 100644
+index 000000000..5cccb805e
+--- /dev/null
++++ b/conf/airframes/tudelft/koen_quadshot_lisa_mx_test_thrust.xml
+@@ -0,0 +1,396 @@
++<!-- this is a quadshot vehicle equiped with Lisa/m2.0 and an aspirin 2.1
++     More information on the Quadshot can be found at transition-robotics.com -->
++
++<airframe name="Quadshot Lisa MX v2.1">
++  <description>
++    Transition robotics Quadshot (https://www.openuas.org/airframes/)
++    + Airframe to validate all onboard functionally...
++      Quadshot
++        + Autopilot:   Lisa MX 2.1
++        + IMU:         Aspirin 2.2
++        + Motors:      Default Motors
++        + Actuators:   Default ESCs
++        + GPS:         uBlox 6 GNSS helix antenna
++        + TELEMETRY:   XBee Pro S1
++        + CURRENT:     V/A sensing module
++        + RC RX:       OpenRXSR on SBus port
++        + AGL ranging: TFMini the IIC(I2C) version
++
++    NOTES:
++        + Plz calibrate your magnetometer, Yes, you too ;), unit UKF auto works...
++        + And callibrate your Accelometer also...
++        + Uses PAPARAZZI "standard" radio channel settings
++        + Oh yeah, it is yellow :)
++  </description>
++
++  <servos driver="Pwm">
++    <servo name="A1" no="0" min="1000" neutral="1100" max="1600"/>
++    <servo name="A2" no="1" min="1000" neutral="1100" max="1600"/>
++    <servo name="B1"  no="2" min="1000" neutral="1100" max="1600"/>
++    <servo name="B2"  no="3" min="1000" neutral="1100" max="1600"/>
++    <servo name="ELEVON_LEFT" no="4" min="1300" neutral="1500" max="1700"/>
++    <servo name="ELEVON_RIGHT" no="5" min="1300" neutral="1500" max="1700"/>
++  </servos>
++
++  <commands>
++    <axis name="PITCH"  failsafe_value="0"/>
++    <axis name="ROLL"   failsafe_value="0"/>
++    <axis name="YAW"    failsafe_value="0"/>
++    <axis name="THRUST" failsafe_value="0"/>
++  </commands>
++
++  <command_laws>
++    <call fun="motor_mixing_run(autopilot_get_motors_on(),FALSE,values)"/>
++    <set servo="A1" value="@THRUST"/>
++    <set servo="A2" value="@THRUST"/>
++    <set servo="B1" value="@THRUST"/>
++    <set servo="B2" value="@THRUST"/>
++
++    <!-- Mode dependent actuator laws for the elevons. The elevons act different in rc attitude flight mode-->
++    <!-- First the correct feedback is stored in variables -->
++    <let var="aileron_feedback_left"  value="@YAW"/>
++    <let var="aileron_feedback_right" value="@YAW"/>
++
++    <let var="elevator_feedback_left"  value="+@PITCH"/>
++    <let var="elevator_feedback_right" value="-@PITCH"/>
++
++    <!-- Here the gains are defined for the two feedback cases, hover and forward-->
++    <let var="hover_left"  value="0*$aileron_feedback_left"/>
++    <let var="hover_right" value="0*$aileron_feedback_right"/>
++
++    <!--     if using INDI -->
++    <!-- <let var="forward_left"  value="aileron_gain*$aileron_feedback_left+elevator_gain*$elevator_feedback_left"/> -->
++    <!-- <let var="forward_right" value="aileron_gain*$aileron_feedback_right+elevator_gain*$elevator_feedback_right"/> -->
++
++    <!--     if using PID with gain scheduling -->
++    <let var="forward_left"  value="3*$aileron_feedback_left + 4*$elevator_feedback_left"/>
++    <let var="forward_right" value="3*$aileron_feedback_right + 4*$elevator_feedback_right"/>
++
++    <!-- This statement tells the autopilot to use the hover feedback if in mode attitude direct and to use the forward feedback in all other cases-->
++    <set servo="ELEVON_LEFT"    value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? $hover_left  : $forward_left" />
++    <set servo="ELEVON_RIGHT"   value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? $hover_right  : $forward_right" />
++  </command_laws>
++
++  <section name="SIMULATOR" prefix="NPS_">
++    <define name="ACTUATOR_NAMES" value="mot_A1, mot_A2, mot_B1, mot_B2" type="string[]"/>
++    <define name="JSBSIM_MODEL" value="quadshot" type="string"/>
++    <define name="SENSORS_PARAMS" value="nps_sensors_params_default.h" type="string"/>
++  </section>
++
++  <section name="MIXING" prefix="MOTOR_MIXING_">
++    <define name="TRIM_ROLL" value="0"/>
++    <define name="TRIM_PITCH" value="0"/>
++    <define name="TRIM_YAW" value="0"/>
++    <define name="NB_MOTOR" value="4"/>
++    <define name="SCALE" value="256"/>
++    <!--                                  A1    A2    B1    B2  -->
++    <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
++    <define name="ROLL_COEF"   value="{  256, -256,  256, -256 }"/>
++    <define name="YAW_COEF"    value="{ -256,  256,  128, -128 }"/>
++    <define name="THRUST_COEF" value="{  256,  256,  256,  256 }"/>
++  </section>
++  <!-- If you got a caliberation XML document from your IMU supplier, import this in the IMU section -->
++  <!-- Note that is better to have *no* caliberation file at all, than a one with incorrect caliberation values.
++       The default factory values are most of the time perfectly acceptable, so by default we will not use the caliberation file -->
++  <section name="IMU" prefix="IMU_">
++    <!-- Use default driver values for gyro -->
++    <!-- IMU calibration, make sure to calibrate the IMU properly before flight, see the wiki for more info-->
++    <define name="ACCEL_X_NEUTRAL" value="-13"/>
++    <define name="ACCEL_Y_NEUTRAL" value="10"/>
++    <define name="ACCEL_Z_NEUTRAL" value="-52"/>
++    <define name="ACCEL_X_SENS" value="4.919044539280737" integer="16"/>
++    <define name="ACCEL_Y_SENS" value="4.91902396983621" integer="16"/>
++    <define name="ACCEL_Z_SENS" value="4.889608930435962" integer="16"/>
++    
++    <define name="MAG_X_NEUTRAL" value="-24"/>
++    <define name="MAG_Y_NEUTRAL" value="89"/>
++    <define name="MAG_Z_NEUTRAL" value="51"/>
++    <define name="MAG_X_SENS" value="3.800545131674762" integer="16"/>
++    <define name="MAG_Y_SENS" value="3.657210501633149" integer="16"/>
++    <define name="MAG_Z_SENS" value="4.231408588370766" integer="16"/>
++</section>
++
++  <section name="IMU" prefix="IMU_">
++    <define name="BODY_TO_IMU_PHI"   value="0." unit="deg"/>
++    <define name="BODY_TO_IMU_THETA" value="90." unit="deg"/>
++    <define name="BODY_TO_IMU_PSI"   value="0." unit="deg"/>
++  </section>
++
++  <section name="AUTOPILOT">
++    <define name="MODE_MANUAL"  value="AP_MODE_ATTITUDE_DIRECT"/>
++    <define name="MODE_AUTO1" value="AP_MODE_FORWARD"/>
++    <define name="MODE_AUTO2" value="AP_MODE_MODULE"/>
++  </section>
++
++  <section name="BAT">
++    <!--     <define name="MIN_BAT_LEVEL" value="10.8" units="V"/> -->
++    <define name="CRITIC_BAT_LEVEL" value="10.8" unit="V"/>
++    <define name="LOW_BAT_LEVEL" value="10.8" unit="V"/>
++    <define name="CATASTROPHIC_BAT_LEVEL" value="10.1" unit="V"/>
++  </section>
++
++  <section name="STABILIZATION_RATE" prefix="STABILIZATION_RATE_">
++    <define name="SP_MAX_P" value="10000"/>
++    <define name="SP_MAX_Q" value="10000"/>
++    <define name="SP_MAX_R" value="10000"/>
++
++    <define name="GAIN_P" value="350"/>
++    <define name="GAIN_Q" value="250"/>
++    <define name="GAIN_R" value="350"/>
++
++    <define name="IGAIN_P" value="200"/>
++    <define name="IGAIN_Q" value="200"/>
++    <define name="IGAIN_R" value="200"/>
++  </section>
++
++  <section name="STABILIZATION_ATTITUDE" prefix="STABILIZATION_ATTITUDE_">
++    <!-- setpoints -->
++    <define name="SP_MAX_PHI"     value="60." unit="deg"/>
++    <define name="SP_MAX_THETA"   value="60." unit="deg"/>
++    <define name="SP_MAX_R"       value="100." unit="deg/s"/>
++    <define name="DEADBAND_R"     value="250"/>
++    <define name="DEADBAND_A"     value="250"/>
++    <define name="SP_PSI_DELTA_LIMIT" value="90" unit="deg"/>
++
++    <!-- reference -->
++    <define name="REF_OMEGA_P"  value="1500" unit="deg/s"/>
++    <define name="REF_ZETA_P"   value="0.85"/>
++    <define name="REF_MAX_P"    value="300." unit="deg/s"/>
++    <define name="REF_MAX_PDOT" value="RadOfDeg(7000.)"/>
++
++    <define name="REF_OMEGA_Q"  value="1500" unit="deg/s"/>
++    <define name="REF_ZETA_Q"   value="0.85"/>
++    <define name="REF_MAX_Q"    value="300." unit="deg/s"/>
++    <define name="REF_MAX_QDOT" value="RadOfDeg(7000.)"/>
++
++    <define name="REF_OMEGA_R"  value="1500" unit="deg/s"/>
++    <define name="REF_ZETA_R"   value="0.85"/>
++    <define name="REF_MAX_R"    value="300." unit="deg/s"/>
++    <define name="REF_MAX_RDOT" value="RadOfDeg(7000.)"/>
++
++    <!-- feedback -->
++    <define name="PHI_PGAIN"  value="150"/>
++    <define name="PHI_DGAIN"  value="150"/>
++    <define name="PHI_IGAIN"  value="30"/>
++
++    <define name="THETA_PGAIN"  value="100"/>
++    <define name="THETA_DGAIN"  value="100"/>
++    <define name="THETA_IGAIN"  value="40"/>
++
++    <define name="PSI_PGAIN"  value="300"/>
++    <define name="PSI_DGAIN"  value="150"/>
++    <define name="PSI_IGAIN"  value="0"/>
++
++    <!-- feedforward -->
++    <define name="PHI_DDGAIN"   value=" 0"/>
++    <define name="THETA_DDGAIN" value=" 0"/>
++    <define name="PSI_DDGAIN"   value=" 0"/>
++  </section>
++
++  <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
++      <define name="MAX_VEL" value="3.0" description="Maximum velocity allowed during trajectory tracking"/>
++      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>      
++      <!-- <define name="P_GAIN" value="1.145" description="Positional gain of the aerobatic controller"/>
++      <define name="D_GAIN" value="3.582" description="Velocity gain of the aerobatic controller"/>       -->
++      <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
++      <define name="D_GAIN" value="2.0" description="Velocity gain of the aerobatic controller"/>    
++      <define name="Z_P_FACTOR" value="2.0" description="Positional gain of the aerobatic controller"/>
++      <define name="Z_D_FACTOR" value="3.0" description="Velocity gain of the aerobatic controller"/>
++      <define name="MODE" value="0" type="int32" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
++      <define name="USE_FEEDFORWARD" value="FALSE" description="enable feedforward acceleration"/>
++      <define name="USE_ALT_GAINS" value="TRUE" description="enable feedforward acceleration"/>
++      <define name="USE_FILTERED_OUTPUT" value="FALSE" description="enable feedforward acceleration"/>
++      <define name="CE_MODE" value="2" description="enable feedforward acceleration"/>
++  </section>
++
++  <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
++    <!-- setpoints -->
++    <define name="SP_MAX_PHI" value="60." unit="deg"/>
++    <define name="SP_MAX_THETA" value="60." unit="deg"/>
++    <define name="SP_MAX_R" value="180." unit="deg/s"/>
++    <define name="DEADBAND_R" value="250"/>
++    <define name="DEADBAND_A" value="250"/>
++    <define name="SP_PSI_DELTA_LIMIT" value="90" unit="deg"/>
++    <!-- control effectiveness -->
++    <define name="G1_P" value="0.0179"/>
++    <define name="G1_Q" value="0.0708"/>
++    <define name="G1_R" value="0.0095"/>
++    <define name="G2_R" value="0.0"/>
++    <!-- reference acceleration for attitude control -->
++    <define name="REF_ERR_P" value="60.0"/>
++    <define name="REF_ERR_Q" value="150.0"/> <!--try 100-->
++    <define name="REF_ERR_R" value="60.0"/>
++    <define name="REF_RATE_P" value="8.0"/>
++    <define name="REF_RATE_Q" value="20.5"/> <!-- 15.0 -->
++    <define name="REF_RATE_R" value="12.0"/>
++    <!-- second order filter parameters -->
++    <define name="FILT_CUTOFF" value="5.0"/>
++    <define name="FILT_CUTOFF_R" value="3.2"/>
++    <!-- first order actuator dynamics -->
++    <define name="ACT_DYN_P" value="0.03"/>
++    <define name="ACT_DYN_Q" value="0.03"/>
++    <define name="ACT_DYN_R" value="0.03"/>
++        <!-- Adaptive Learning Rate -->
++    <define name="USE_ADAPTIVE" value="TRUE"/>
++    <define name="ADAPTIVE_MU" value="0.0001"/>
++  </section>
++
++  <section name="AHRS" prefix="AHRS_">
++    <!--     Delft magnetic field -->
++    <define name="H_X" value="0.39049610"/>
++    <define name="H_Y" value="0.00278894"/>
++    <define name="H_Z" value="0.92060036"/>
++    <!-- For vibrating airfames -->
++    <define name="GRAVITY_HEURISTIC_FACTOR" value="0"/>
++  </section>
++  <!-- Gains for horizontal navigation-->
++  <section name="GUIDANCE_H" prefix="GUIDANCE_H_">
++    <define name="PGAIN" value="100"/>
++    <define name="DGAIN" value="100"/>
++    <define name="IGAIN" value="0"/>
++
++    <define name="MAX_BANK" value="RadOfDeg(55)"/>
++    <define name="FORWARD_MAX_BANK" value="RadOfDeg(35)"/>
++    <define name="USE_REF" value="FALSE"/>
++  </section>
++  <!-- Gains for vertical navigation -->
++  <section name="GUIDANCE_V" prefix="GUIDANCE_V_">
++    <define name="MIN_ERR_Z"   value="POS_BFP_OF_REAL(-10.)"/>
++    <define name="MAX_ERR_Z"   value="POS_BFP_OF_REAL( 10.)"/>
++    <define name="MIN_ERR_ZD"  value="SPEED_BFP_OF_REAL(-10.)"/>
++    <define name="MAX_ERR_ZD"  value="SPEED_BFP_OF_REAL( 10.)"/>
++    <define name="MAX_SUM_ERR" value="2000000"/>
++    <define name="HOVER_KP"    value="200"/>
++    <define name="HOVER_KD"    value="175"/>
++    <define name="HOVER_KI"    value="100"/>
++    <define name="NOMINAL_HOVER_THROTTLE" value ="0.2"/>
++    <define name="ADAPT_THROTTLE_ENABLED" value="FALSE"/>
++  </section>
++
++  <section name="NAV">
++    <define name="ARRIVED_AT_WAYPOINT" value="5" unit="m"/>
++  </section>
++
++  <section name="MISC">
++    <!--<define name="RADIO_CONTROL_SPEKTRUM_SIGNS" value="{1,1,1,1,1,1,1,1,1,1,1,1}"/>-->
++    <!--The Quadshot uses a slightly different axis system for the setpoint, to make both hovering and flying forward intuitive-->
++    <define name="USE_EARTH_BOUND_RC_SETPOINT" value="TRUE"/>
++    <!-- This is the pitch angle that the Quadshot will have in forward flight, where 0 degrees is hover-->
++    <define name="TRANSITION_MAX_OFFSET" value="-75.0" unit="deg"/>
++    <define name="RC_LOST_MODE" value="MODE_AUTO2"/>
++    <define name="SWITCH_STICKS_FOR_RATE_CONTROL" value="TRUE"/>
++    <define name="AIRSPEED_ETS_I2C_DEV" value="i2c2"/>
++    <define name="AHRS_MAG_UPDATE_ALL_AXES" value="FALSE"/>
++    <define name="THRESHOLD_GROUND_DETECT" value="25.0"/>
++    <define name="KILL_ON_GROUND_DETECT" value="TRUE"/>
++    <define name="FAILSAFE_GROUND_DETECT" value="TRUE"/>
++    <!-- <define name="HYBRID_NAVIGATION" value="TRUE"/> -->
++    <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
++    <define name="NO_RC_THRUST_LIMIT" value="TRUE"/>
++    <define name="ADAPTIVE_INDI" value="FALSE"/>
++  </section>
++
++  <!-- <modules main_freq="512"> -->
++    <!-- <module name="gps" type="ubx_ucenter"/> -->
++    <!-- The the led_safety_status module will make the Quadshot LEDs blink in certain patterns when there are safety violations-->
++    <!-- <load name="led_safety_status.xml"> -->
++          <!-- <define name="USE_LED_BODY" value="1"/> -->
++          <!-- <define name="SAFETY_WARNING_LED" value="BODY"/> -->
++    <!-- </load> -->
++    <!-- <load name="sys_mon"/> -->
++    <!-- <module name="logger_spi_link"/> -->
++    <!-- <load name="AOA_adc.xml"> -->
++      <!-- <configure name="ADC_AOA" value="ADC_2"/> -->
++      <!-- <define name="AOA_OFFSET" value="0"/> -->
++      <!-- <define name="AOA_FILTER" value="0"/> -->
++      <!-- <define name="USE_AOA"/> -->
++      <!-- <define name="AOA_SENS" value="2.0*M_PI/1024/4"/> -->
++    <!-- </load> -->
++    <!-- <load name="airspeed_ets.xml"> -->
++      <!-- <define name="AIRSPEED_ETS_SYNC_SEND"/> -->
++    <!-- </load> -->
++  <!-- </modules> -->
++
++  <firmware name="rotorcraft">
++    <target name="ap" board="lisa_mx_2.1">
++      <module name="radio_control" type="sbus">
++        <configure name="SBUS_PORT" value="UART5"/>
++        <define name="RADIO_KILL_SWITCH" value="RADIO_GAIN1"/>
++        <define name="USE_KILL_SWITCH_FOR_MOTOR_ARMING" value="FALSE"/>
++      </module>
++      <!-- ONLY if flashing via JTAG cable -->
++      <configure name="FLASH_MODE"   value="SWD"/>
++      <configure name="BMP_PORT" value="/dev/ttyACM0" />
++      <!-- To use an airspeed sensor on I2C, enable I2C2-->
++      <define name="USE_I2C1"/>
++      <define name="USE_SERVOS_7AND8" value ="FALSE"/>
++      <!-- If using aspirin 2.2, make sure to uncomment the following barometer configuration: -->
++      <!--       <configure name="LISA_M_BARO" value="BARO_MS5611_SPI"/> -->
++      <configure name="LISA_M_BARO" value="BARO_BOARD_BMP085"/>
++    </target>
++    
++    <target name="nps"          board="pc">
++      <module name="fdm" type="jsbsim"/>
++      <module name="udp"/>
++      <module name="radio_control" type="datalink"/>
++      <module name="logger_file">
++        <define name="FILE_LOGGER_PATH" value="/home/koen/Documents"/>
++      </module>
++      <define name="MODE_STARTUP"  value="AP_MODE_NAV"/>
++      <!--Switch advanced INDI scheduling functions on or off-->
++      <!--Take the mode channel for simulation-->
++      <define name="INDI_FUNCTIONS_RC_CHANNEL" value="4"/>
++    </target>
++
++    <module name="motor_mixing"/>
++    <module name="actuators"     type="pwm">
++      <define name="SERVO_HZ" value="400"/>
++    </module>
++    <module name="telemetry"     type="xbee_api"/>
++    <module name="imu"           type="lisa_mx_v2.1"/>
++    <module name="gps"           type="ublox">
++        <configure name="GPS_BAUD" value="B460800"/>
++    </module>
++    <module name="stabilization" type="indi_simple"/>
++    <module name="guidance"      type="aerobatic"/>
++    <module name="ahrs"          type="int_cmpl_quat">
++      <configure name="USE_MAGNETOMETER" value="TRUE"/>
++      <define name="AHRS_USE_GPS_HEADING" value="FALSE"/>
++    </module>
++    
++    <!-- Modules section (depricated modules main_frequency) -->
++    <module name="led_safety_status.xml">
++          <define name="USE_LED_BODY" value="1"/>
++          <define name="SAFETY_WARNING_LED" value="BODY"/>
++    </module>
++
++     <module name="ins"/>
++        <!-- <module name="ins"  type="ekf2"/> -->
++    <!-- <module name="ins"  type="hff"/> -->
++    <!-- <module name="ins"  type="float_invariant">
++      <configure name="USE_MAGNETOMETER" value="FALSE"/>   
++    </module> -->
++
++    <module name="airspeed_ms45xx_i2c">
++      <define name="MS45XX_I2C_DEV" value="i2c1" />
++      <define name="MS45XX_I2C_ADDR" value="0x50" />
++      <define name="MS45XX_SYNC_SEND" value="FALSE" />
++      <define name="MS45XX_LOWPASS_TAU" value="0.15" />
++      <define name="USE_AIRSPEED_MS45XX" value="TRUE" />
++    </module>
++    <module name="AOA_adc">
++      <configure name="ADC_AOA" value="ADC_2"/>
++      <!-- <define name="AOA_SENS" value="(2*3.14)/4000"/>  -->
++      <!-- <define name="AOA_OFFSET" value="3.14"/> -->
++      <define name="AOA_FILTER" value="0"/>
++      <define name="USE_AOA"/>
++    </module>
++    <module name="logger_spi_link">
++	    <configure name="HS_LOG_SPI_SLAVE_IDX" value="SPI_SLAVE1"/>
++    </module>
++    <module name="sys_id_chirp"/>
++    <module name="sys_mon"/>
++
++  </firmware>
++
++</airframe>
+diff --git a/conf/flight_plans/tudelft/axel_quadshot_aerobatic.xml b/conf/flight_plans/tudelft/axel_quadshot_aerobatic.xml
+new file mode 100644
+index 000000000..312418361
+--- /dev/null
++++ b/conf/flight_plans/tudelft/axel_quadshot_aerobatic.xml
+@@ -0,0 +1,136 @@
++<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
++
++<flight_plan alt="40" ground_alt="0" lat0="51.278601" lon0="3.955033" max_dist_from_home="1000" name="Valkenburg Basic" security_height="2">
++  <header>
++    #include "autopilot.h"
++    #include "subsystems/datalink/datalink.h"
++    #include "subsystems/electrical.h"
++    #include "subsystems/radio_control.h"
++    #include "firmwares/rotorcraft/guidance/guidance_h.h"
++    #include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
++</header>
++  <waypoints>
++    <waypoint name="HOME" x="-1.2" y="-10.3"/>
++    <waypoint name="CLIMB" x="-420.1" y="81.5"/>
++    <waypoint name="STDBY" x="-419.7" y="83.1"/>
++    <waypoint name="TD" x="-420.7" y="83.6"/>
++    <waypoint lat="51.274700" lon="3.947875" name="KILL1"/>
++    <waypoint lat="51.275694" lon="3.949918" name="KILL2"/>
++    <waypoint lat="51.277131" lon="3.950813" name="KILL3"/>
++    <waypoint lat="51.279861" lon="3.956167" name="KILL4"/>
++    <waypoint lat="51.280122" lon="3.959156" name="KILL5"/>
++    <waypoint lat="51.277038" lon="3.963680" name="KILL6"/>
++    <waypoint lat="51.273376" lon="3.957677" name="KILL7"/>
++    <waypoint lat="51.273131" lon="3.950224" name="KILL8"/>
++    <waypoint lat="51.275922" lon="3.950890" name="WARN1"/>
++    <waypoint lat="51.277031" lon="3.952442" name="WARN2"/>
++    <waypoint lat="51.277376" lon="3.952292" name="WARN3"/>
++    <waypoint lat="51.279573" lon="3.956566" name="WARN4"/>
++    <waypoint lat="51.279612" lon="3.958008" name="WARN5"/>
++    <waypoint lat="51.276907" lon="3.961928" name="WARN6"/>
++    <waypoint lat="51.274348" lon="3.957469" name="WARN7"/>
++    <waypoint lat="51.274469" lon="3.953040" name="WARN8"/>
++    <waypoint lat="51.279384" lon="3.949027" name="TR_START"/>
++    <waypoint lat="51.279394" lon="3.949010" name="WP"/>
++    <waypoint lat="51.279384" lon="3.949005" name="CIRC"/>
++  </waypoints>
++  <sectors>
++    <sector color="red" name="Kill">
++      <corner name="KILL1"/>
++      <corner name="KILL2"/>
++      <corner name="KILL3"/>
++      <corner name="KILL4"/>
++      <corner name="KILL5"/>
++      <corner name="KILL6"/>
++      <corner name="KILL7"/>
++      <corner name="KILL8"/>
++    </sector>
++    <sector color="orange" name="Warn">
++      <corner name="WARN1"/>
++      <corner name="WARN2"/>
++      <corner name="WARN3"/>
++      <corner name="WARN4"/>
++      <corner name="WARN5"/>
++      <corner name="WARN6"/>
++      <corner name="WARN7"/>
++      <corner name="WARN8"/>
++    </sector>
++  </sectors>
++  <exceptions>
++    <exception cond="(!InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
++    <exception cond="(InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="ComeBackAndLand"/>
++    <exception cond="(!GpsFixValid() && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
++    <exception cond="(!InsideKill(GetPosX(), GetPosY()) && !(IndexOfBlock('Holding point') > nav_block) )" deroute="DatalinkLoss"/>
++    <exception cond="((radio_control.status == RC_REALLY_LOST) &&
++      !(IndexOfBlock('Takeoff') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
++    <exception cond="(datalink_time > 60 &&
++      !(datalink_time > 120) &&
++      !(IndexOfBlock('Takeoff') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="DatalinkLoss"/>
++    <exception cond="(electrical.bat_low &&
++      !(IndexOfBlock('Holding point') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
++    <exception cond="(electrical.bat_critical &&
++      !(IndexOfBlock('Holding point') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="land here"/>
++  </exceptions>
++  <blocks>
++    <block name="Wait GPS">
++      <call_once fun="NavKillThrottle()"/>
++      <while cond="!GpsFixValid()"/>
++    </block>
++    <block name="Geo init">
++      <while cond="LessThan(NavBlockTime(), 10)"/>
++      <call_once fun="NavSetGroundReferenceHere()"/>
++    </block>
++    <block name="Holding point">
++      <call_once fun="setModeKill()"/>
++      <call_once fun="NavKillThrottle()"/>
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="Start Engine">
++      <call_once fun="NavResurrect()"/>
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
++      <exception cond="stateGetPositionEnu_f()->z > 2.0" deroute="Standby"/>
++      <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
++      <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
++    </block>
++    <block name="Standby" strip_button="Standby" strip_icon="home.png">
++      <stay wp="STDBY"/>
++    </block>
++    <block name="stay_wp">
++      <stay wp="WP"/>
++    </block>
++    <block name="land here" strip_button="Land Here" strip_icon="land-right.png">
++      <call_once fun="NavSetWaypointHere(WP_TD)"/>
++    </block>
++    <block name="land">
++      <go wp="TD"/>
++    </block>
++    <block name="flare">
++      <exception cond="NavDetectGround()" deroute="Holding point"/>
++      <exception cond="!nav_is_in_flight()" deroute="landed"/>
++      <call_once fun="NavStartDetectGround()"/>
++      <stay climb="nav_descend_vspeed" vmode="climb" wp="TD"/>
++    </block>
++    <block name="landed">
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="ComeBackAndLand">
++      <go wp="HOME"/>
++      <deroute block="land here"/>
++    </block>
++    <block name="DatalinkLoss">
++      <call_once fun="NavSetWaypointHere(WP_TD)"/>
++      <stay until="stage_time>60" wp="TD"/>
++      <deroute block="ComeBackAndLand"/>
++    </block>
++  </blocks>
++</flight_plan>
+diff --git a/conf/flight_plans/tudelft/cyberzoo_quadshot_aerobatic.xml b/conf/flight_plans/tudelft/cyberzoo_quadshot_aerobatic.xml
+index 5e8c7bc4b..64c513495 100644
+--- a/conf/flight_plans/tudelft/cyberzoo_quadshot_aerobatic.xml
++++ b/conf/flight_plans/tudelft/cyberzoo_quadshot_aerobatic.xml
+@@ -2,11 +2,11 @@
+ 
+ <flight_plan alt="2.0" ground_alt="0"  lat0="51.990634" lon0="4.376789" max_dist_from_home="8" name="Quadshot Aerobatic Cyberzoo" security_height="0.5">
+     <header>
++        #include "autopilot.h"
+         #include "subsystems/datalink/datalink.h"
+         #include "subsystems/electrical.h"
+         #include "subsystems/radio_control.h"
+         #include "firmwares/rotorcraft/guidance/guidance_h.h"
+-        #include "autopilot.h"
+         #include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
+     </header>
+ 
+diff --git a/conf/flight_plans/tudelft/valkenburg_empty.xml b/conf/flight_plans/tudelft/valkenburg_empty.xml
+new file mode 100644
+index 000000000..55f30682c
+--- /dev/null
++++ b/conf/flight_plans/tudelft/valkenburg_empty.xml
+@@ -0,0 +1,150 @@
++<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
++
++<flight_plan alt="40" ground_alt="0" lat0="52.169348" lon0="4.411563" max_dist_from_home="1000" name="Valkenburg Basic" security_height="2">
++  <header>
++    #include "autopilot.h"
++    #include "subsystems/datalink/datalink.h"
++    #include "subsystems/electrical.h"
++    #include "subsystems/radio_control.h"
++</header>
++  <waypoints>
++    <waypoint name="HOME" x="104.3" y="-120.6"/>
++    <!-- <waypoint name="CLIMB" x="112.5" y="-102.0"/>
++    <waypoint name="STDBY" x="131.7" y="-110.5"/>
++    <waypoint name="CAM" x="228.8" y="-183.1"/>
++    <waypoint name="TD" x="70.9" y="-133.3"/>
++    <waypoint lat="52.169181" lon="4.411125" name="KILL1"/>
++    <waypoint lat="52.172293" lon="4.421487" name="KILL2"/>
++    <waypoint lat="52.169399" lon="4.423718" name="KILL3"/>
++    <waypoint lat="52.165949" lon="4.416042" name="KILL4"/>
++    <waypoint lat="52.166279" lon="4.412638" name="KILL5"/>
++    <waypoint lat="52.169057" lon="4.412255" name="WARN1"/>
++    <waypoint lat="52.171356" lon="4.419881" name="WARN2"/>
++    <waypoint lat="52.169058" lon="4.421375" name="WARN3"/>
++    <waypoint lat="52.166732" lon="4.415716" name="WARN4"/>
++    <waypoint lat="52.166767" lon="4.413562" name="WARN5"/>
++    <waypoint lat="52.168229" lon="4.413532" name="TR_START"/>
++    <waypoint lat="52.169479" lon="4.418473" name="TR_DIR"/>
++    <waypoint lat="52.168410" lon="4.414430" name="WP"/>
++    <waypoint lat="52.168638" lon="4.415202" name="CIRC"/> -->
++  </waypoints>
++  <sectors>
++    <!-- <sector color="red" name="Kill">
++      <corner name="KILL1"/>
++      <corner name="KILL2"/>
++      <corner name="KILL3"/>
++      <corner name="KILL4"/>
++      <corner name="KILL5"/>
++    </sector>
++    <sector color="orange" name="Warn">
++      <corner name="WARN1"/>
++      <corner name="WARN2"/>
++      <corner name="WARN3"/>
++      <corner name="WARN4"/>
++      <corner name="WARN5"/>
++    </sector> -->
++  </sectors>
++  <exceptions>
++    <!-- <exception cond="(!InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
++    <exception cond="(InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="ComeBackAndLand"/>
++    <exception cond="(!GpsFixValid() && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
++    <exception cond="(!InsideKill(GetPosX(), GetPosY()) && !(IndexOfBlock('Holding point') > nav_block) )" deroute="DatalinkLoss"/>
++    <exception cond="((radio_control.status == RC_REALLY_LOST) &&
++      !(IndexOfBlock('Takeoff') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
++    <exception cond="(datalink_time > 60 &&
++      !(datalink_time > 120) &&
++      !(IndexOfBlock('Takeoff') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="DatalinkLoss"/>
++    <exception cond="(electrical.bat_low &&
++      !(IndexOfBlock('Holding point') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
++    <exception cond="(electrical.bat_critical &&
++      !(IndexOfBlock('Holding point') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="land here"/> -->
++  </exceptions>
++  <blocks>
++    <block name="Wait GPS">
++      <call_once fun="NavKillThrottle()"/>
++      <while cond="!GpsFixValid()"/>
++    </block>
++    <block name="Geo init">
++      <while cond="LessThan(NavBlockTime(), 10)"/>
++      <call_once fun="NavSetGroundReferenceHere()"/>
++    </block>
++    <block name="Holding point">
++      <call_once fun="NavKillThrottle()"/>
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="Start Engine">
++      <call_once fun="NavResurrect()"/>
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
++      <exception cond="stateGetPositionEnu_f()->z > 2.0" deroute="Standby"/>
++      <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
++      <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
++    </block>
++    <block name="Standby" strip_button="Standby" strip_icon="home.png">
++      <stay wp="STDBY"/>
++    </block>
++    <block name="line_p1_p2">
++      <go from="p1" hmode="route" wp="p2"/>
++      <stay until="stage_time>10" wp="p2"/>
++      <go from="p2" hmode="route" wp="p1"/>
++      <deroute block="stay_p1"/>
++    </block>
++    <block name="stay_p1">
++      <stay wp="p1"/>
++    </block>
++    <block name="go_p2">
++      <go wp="p2"/>
++      <deroute block="stay_p1"/>
++    </block>
++    <block name="route">
++      <go from="p1" hmode="route" wp="p2"/>
++      <go from="p2" hmode="route" wp="p3"/>
++      <go from="p3" hmode="route" wp="p4"/>
++      <go from="p4" hmode="route" wp="p1"/>
++      <deroute block="stay_p1"/>
++    </block>
++    <block name="test yaw">
++      <go wp="p1"/>
++      <for from="1" to="16" var="i">
++        <heading alt="WaypointAlt(WP_p1)" course="90 * $i" until="stage_time > 3"/>
++      </for>
++      <deroute block="Standby"/>
++    </block>
++    <block name="circle CAM" pre_call="nav_set_heading_towards_waypoint(WP_CAM)">
++      <circle radius="nav_radius" wp="CAM"/>
++    </block>
++    <block name="land here" strip_button="Land Here" strip_icon="land-right.png">
++      <call_once fun="NavSetWaypointHere(WP_TD)"/>
++    </block>
++    <block name="land">
++      <go wp="TD"/>
++    </block>
++    <block name="flare">
++      <exception cond="NavDetectGround()" deroute="Holding point"/>
++      <exception cond="!nav_is_in_flight()" deroute="landed"/>
++      <call_once fun="NavStartDetectGround()"/>
++      <stay climb="nav_descend_vspeed" vmode="climb" wp="TD"/>
++    </block>
++    <block name="landed">
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="ComeBackAndLand">
++      <go wp="HOME"/>
++      <deroute block="land here"/>
++    </block>
++    <block name="DatalinkLoss">
++      <call_once fun="NavSetWaypointHere(WP_TD)"/>
++      <stay until="stage_time>60" wp="TD"/>
++      <deroute block="ComeBackAndLand"/>
++    </block>
++  </blocks>
++</flight_plan>
+diff --git a/conf/flight_plans/tudelft/valkenburg_quadshot_aerobatic_prawien.xml b/conf/flight_plans/tudelft/valkenburg_quadshot_aerobatic_prawien.xml
+new file mode 100644
+index 000000000..ddad17d8e
+--- /dev/null
++++ b/conf/flight_plans/tudelft/valkenburg_quadshot_aerobatic_prawien.xml
+@@ -0,0 +1,131 @@
++<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">
++
++<flight_plan alt="40" ground_alt="0" lat0="52.169348" lon0="4.411563" max_dist_from_home="1000" name="Valkenburg Basic" security_height="2">
++  <header>
++    #include "autopilot.h"
++    #include "subsystems/datalink/datalink.h"
++    #include "subsystems/electrical.h"
++    #include "subsystems/radio_control.h"
++    #include "firmwares/rotorcraft/guidance/guidance_h.h"
++    #include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
++</header>
++  <waypoints>
++    <waypoint name="HOME" x="104.3" y="-120.6"/>
++    <waypoint name="CLIMB" x="112.5" y="-102.0"/>
++    <waypoint name="STDBY" x="131.7" y="-110.5"/>
++    <waypoint name="TD" x="70.9" y="-133.3"/>
++    <waypoint lat="52.169181" lon="4.411125" name="KILL1"/>
++    <waypoint lat="52.172293" lon="4.421487" name="KILL2"/>
++    <waypoint lat="52.169399" lon="4.423718" name="KILL3"/>
++    <waypoint lat="52.165949" lon="4.416042" name="KILL4"/>
++    <waypoint lat="52.166279" lon="4.412638" name="KILL5"/>
++    <waypoint lat="52.169057" lon="4.412255" name="WARN1"/>
++    <waypoint lat="52.171356" lon="4.419881" name="WARN2"/>
++    <waypoint lat="52.169058" lon="4.421375" name="WARN3"/>
++    <waypoint lat="52.166732" lon="4.415716" name="WARN4"/>
++    <waypoint lat="52.166767" lon="4.413562" name="WARN5"/>
++    <waypoint lat="52.168229" lon="4.413532" name="TR_START"/>
++    <waypoint lat="52.169479" lon="4.418473" name="TR_DIR"/>
++    <waypoint lat="52.168410" lon="4.414430" name="WP"/>
++    <waypoint lat="52.168638" lon="4.415202" name="CIRC"/>
++  </waypoints>
++  <sectors>
++    <sector color="red" name="Kill">
++      <corner name="KILL1"/>
++      <corner name="KILL2"/>
++      <corner name="KILL3"/>
++      <corner name="KILL4"/>
++      <corner name="KILL5"/>
++    </sector>
++    <sector color="orange" name="Warn">
++      <corner name="WARN1"/>
++      <corner name="WARN2"/>
++      <corner name="WARN3"/>
++      <corner name="WARN4"/>
++      <corner name="WARN5"/>
++    </sector>
++  </sectors>
++  <exceptions>
++    <exception cond="(!InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
++    <exception cond="(InsideKill(GetPosX(), GetPosY()) && (radio_control.status == RC_REALLY_LOST))" deroute="ComeBackAndLand"/>
++    <exception cond="(!GpsFixValid() && (radio_control.status == RC_REALLY_LOST))" deroute="Holding point"/>
++    <exception cond="(!InsideKill(GetPosX(), GetPosY()) && !(IndexOfBlock('Holding point') > nav_block) )" deroute="DatalinkLoss"/>
++    <exception cond="((radio_control.status == RC_REALLY_LOST) &&
++      !(IndexOfBlock('Takeoff') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
++    <exception cond="(datalink_time > 60 &&
++      !(datalink_time > 120) &&
++      !(IndexOfBlock('Takeoff') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="DatalinkLoss"/>
++    <exception cond="(electrical.bat_low &&
++      !(IndexOfBlock('Holding point') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="ComeBackAndLand"/>
++    <exception cond="(electrical.bat_critical &&
++      !(IndexOfBlock('Holding point') > nav_block) &&
++      !(nav_block >= IndexOfBlock('land here')) &&
++      (autopilot_in_flight() == true) )" deroute="land here"/>
++  </exceptions>
++  <blocks>
++    <block name="Wait GPS">
++      <call_once fun="NavKillThrottle()"/>
++      <while cond="!GpsFixValid()"/>
++    </block>
++    <block name="Geo init">
++      <while cond="LessThan(NavBlockTime(), 10)"/>
++      <call_once fun="NavSetGroundReferenceHere()"/>
++    </block>
++    <block name="getWaypoints">
++        <call_once fun="getWaypoints(WP_WP, WP_CIRC, WP_TR_START, WP_TR_DIR)"/>
++    </block>
++    <block name="updateWaypoints">
++        <call_once fun="updateWaypoints()"/>
++    </block>
++    <block name="Holding point">
++      <call_once fun="setModeKill()"/>
++      <call_once fun="NavKillThrottle()"/>
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="Start Engine">
++      <call_once fun="NavResurrect()"/>
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="Takeoff" strip_button="Takeoff" strip_icon="takeoff.png">
++      <exception cond="stateGetPositionEnu_f()->z > 2.0" deroute="Standby"/>
++      <call_once fun="NavSetWaypointHere(WP_CLIMB)"/>
++      <stay climb="nav_climb_vspeed" vmode="climb" wp="CLIMB"/>
++    </block>
++    <block name="Standby" strip_button="Standby" strip_icon="home.png">
++      <stay wp="STDBY"/>
++    </block>
++    <block name="stay_wp">
++      <stay wp="WP"/>
++    </block>
++    <block name="land here" strip_button="Land Here" strip_icon="land-right.png">
++      <call_once fun="NavSetWaypointHere(WP_TD)"/>
++    </block>
++    <block name="land">
++      <go wp="TD"/>
++    </block>
++    <block name="flare">
++      <exception cond="NavDetectGround()" deroute="Holding point"/>
++      <exception cond="!nav_is_in_flight()" deroute="landed"/>
++      <call_once fun="NavStartDetectGround()"/>
++      <stay climb="nav_descend_vspeed" vmode="climb" wp="TD"/>
++    </block>
++    <block name="landed">
++      <attitude pitch="0" roll="0" throttle="0" until="FALSE" vmode="throttle"/>
++    </block>
++    <block name="ComeBackAndLand">
++      <go wp="HOME"/>
++      <deroute block="land here"/>
++    </block>
++    <block name="DatalinkLoss">
++      <call_once fun="NavSetWaypointHere(WP_TD)"/>
++      <stay until="stage_time>60" wp="TD"/>
++      <deroute block="ComeBackAndLand"/>
++    </block>
++  </blocks>
++</flight_plan>
+diff --git a/conf/messages.xml b/conf/messages.xml
+index fdd127886..c696a8262 100644
+--- a/conf/messages.xml
++++ b/conf/messages.xml
+@@ -1398,6 +1398,8 @@
+       <field name="p_gain" type="float"/>
+       <field name="d_gain" type="float"/>
+       <field name="mode" type="float"/>
++      <field name="ce_mode" type="float"/>
++      <field name="air" type="float[]"/>
+     </message>
+ 
+ 
+@@ -1548,6 +1550,7 @@
+       <field name="ref_pos" type="float[]"/>
+       <field name="ref_vel" type="float[]"/>
+       <field name="ref_acc" type="float[]"/>
++      <field name="air" type="float[]"/>
+       <field name="gains" type="float[]"/>
+     </message>
+ 
+diff --git a/conf/modules/AOA_adc.xml b/conf/modules/AOA_adc.xml
+index bd6d1495f..d4ec5b686 100644
+--- a/conf/modules/AOA_adc.xml
++++ b/conf/modules/AOA_adc.xml
+@@ -4,7 +4,7 @@
+   <doc>
+     <description>Angle of Attack using internal ADC</description>
+     <configure name="ADC_AOA" value="ADC_X" description="select the ADC channel to use"/>
+-    <define name="AOA_SENS" value="(2*3.14)/1024" description="sensor sensitivity"/>
++    <define name="AOA_SENS" value="(2*3.14)/4000" description="sensor sensitivity"/>
+     <define name="AOA_OFFSET" value="3.14"  description="offset in radians"/>
+     <define name="AOA_FILTER" value="0.5" description="filtering parameter between 0 (no filtering) and 1"/>
+ 
+diff --git a/conf/modules/guidance_aerobatic.xml b/conf/modules/guidance_aerobatic.xml
+index 2fdb38caa..746e1bbf5 100644
+--- a/conf/modules/guidance_aerobatic.xml
++++ b/conf/modules/guidance_aerobatic.xml
+@@ -10,20 +10,30 @@
+       <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>
+       <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
+       <define name="D_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>
+-      <define name="MODE" value="0.0" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Impulse"/>
++      <define name="Z_P_FACTOR" value="1.0" description="Vertical positional gain of the aerobatic controller"/>
++      <define name="Z_D_FACTOR" value="1.0" description="Vertical velocity gain of the aerobatic controller"/>
++      <define name="MODE" value="0.0" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Circle"/>
++      <define name="USE_FEEDFORWARD" value="FALSE|TRUE" description="enable feedforward acceleration"/>
++      <define name="USE_ALT_GAINS" value="FALSE|TRUE" description="enable altitude gains if horizontal gains are disabled"/>
++      <define name="USE_FILTERED_OUTPUT" value="FALSE|TRUE" description="use a filter on quaternion output"/>
++      <define name="CE_MODE" value="2" description="enable altitude gains if horizontal gains are disabled"/>
+       <!-- <define name="MIN_THRUST_EFFECT" value="4.0" description="Minimum value for effectivness"/> -->
+     </section>
+   </doc>
+   <settings>
+     <dl_settings>
+       <dl_settings NAME="guidance_aerobatic">
+-        <dl_setting var="varset.max_vel" min="0" step="0.1" max="10.0" shortname="Vmax" param="GUIDANCE_AEROBATIC_MAX_VEL" persistent="true" module="guidance/guidance_aerobatic"/>
+-        <dl_setting var="varset.max_acc" min="0" step="0.1" max="10.0" shortname="Amax" param="GUIDANCE_AEROBATIC_MAX_ACC" persistent="true"/>
+-        <dl_setting var="varset.p_gain"  min="0" step="0.001" max="10.0" shortname="Kp"   param="GUIDANCE_AEROBATIC_P_GAIN"  persistent="true"/>
+-        <dl_setting var="varset.d_gain"  min="0" step="0.001" max="10.0" shortname="Kd"   param="GUIDANCE_AEROBATIC_D_GAIN"  persistent="true"/>
+-        <dl_setting var="varset.z_p_factor"  min="0" step="0.001" max="10.0" shortname="ZpF"   param="GUIDANCE_AEROBATIC_Z_P_FACTOR"  persistent="true"/>
+-        <dl_setting var="varset.z_d_factor"  min="0" step="0.001" max="10.0" shortname="ZdF"   param="GUIDANCE_AEROBATIC_Z_D_FACTOR"  persistent="true"/>
+-        <dl_setting var="varset.mode"    min="0" step="0.1" max="2.0"  shortname="mode" param="GUIDANCE_AEROBATIC_MODE"    persistent="true"/>
++        <dl_setting var="varset.max_vel" min="0" step="0.25" max="50.0" shortname="Vmax" param="GUIDANCE_AEROBATIC_MAX_VEL" persistent="true" module="guidance/guidance_aerobatic"/>
++        <dl_setting var="varset.max_acc" min="0" step="0.25" max="10.0" shortname="Amax" param="GUIDANCE_AEROBATIC_MAX_ACC" persistent="true"/>
++        <dl_setting var="varset.p_gain"  min="0" step="0.25" max="20.0" shortname="Kp"   param="GUIDANCE_AEROBATIC_P_GAIN"  persistent="true"/>
++        <dl_setting var="varset.d_gain"  min="0" step="0.25" max="20.0" shortname="Kd"   param="GUIDANCE_AEROBATIC_D_GAIN"  persistent="true"/>
++        <dl_setting var="varset.z_p_factor"  min="0" step="0.25" max="20.0" shortname="ZpF"   param="GUIDANCE_AEROBATIC_Z_P_FACTOR"  persistent="true"/>
++        <dl_setting var="varset.z_d_factor"  min="0" step="0.25" max="20.0" shortname="ZdF"   param="GUIDANCE_AEROBATIC_Z_D_FACTOR"  persistent="true"/>
++        <dl_setting var="varset.mode"    min="0" step="1" max="4"  shortname="mode" values="Hover|10m SE|Circle 20m SE|30m SW|Alt" param="GUIDANCE_AEROBATIC_MODE" type="int32" persistent="true"/>
++        <dl_setting var="varset.use_feedforward" min="0" step="1" max="1" shortname="feedforward" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_FEEDFORWARD" type="uint8" persistent="true"/>
++        <dl_setting var="varset.use_alt_gains" min="0" step="1" max="1" shortname="alt gains" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_ALT_GAINS" type="uint8" persistent="true"/>
++        <dl_setting var="varset.use_filtered_output" min="0" step="1" max="1" shortname="filter output" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_FILTERED_OUTPUT" type="uint8" persistent="true"/>
++        <dl_setting var="varset.ce_mode" min="1" step="1" max="2" shortname="CE mode" values="3x3|4x4" param="GUIDANCE_AEROBATIC_CE_MODE" type="uint8" persistent="true"/>
+         <!-- <dl_setting var="varset.min_thrust_eff"    min="1.0" step="0.1" max="10.0"  shortname="min_eff" param="GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT"    persistent="true"/> -->
+       </dl_settings>
+     </dl_settings>
+diff --git a/conf/telemetry/default_rotorcraft.xml b/conf/telemetry/default_rotorcraft.xml
+index 7f43850e1..3dba42e48 100644
+--- a/conf/telemetry/default_rotorcraft.xml
++++ b/conf/telemetry/default_rotorcraft.xml
+@@ -16,7 +16,7 @@
+       <message name="WP_MOVED"                 period="1.3"/>
+       <message name="ROTORCRAFT_CAM"           period="1."/>
+       <message name="GPS_INT"                  period=".25"/>
+-      <message name="INS"                      period=".25"/>
++      <message name="INS"                      period=".1"/>
+       <message name="I2C_ERRORS"               period="4.1"/>
+       <message name="UART_ERRORS"              period="3.1"/>
+       <message name="SUPERBITRF"               period="3"/>
+diff --git a/data/maps/ValkenburgMap.png b/data/maps/ValkenburgMap.png
+new file mode 100644
+index 000000000..f2d7d48ce
+Binary files /dev/null and b/data/maps/ValkenburgMap.png differ
+diff --git a/data/maps/ValkenburgMap.xml b/data/maps/ValkenburgMap.xml
+new file mode 100644
+index 000000000..7f26b91d9
+--- /dev/null
++++ b/data/maps/ValkenburgMap.xml
+@@ -0,0 +1,4 @@
++<map file="ValkenburgMap.png" projection="Mercator">
++  <point x="0" y="0" geo="WGS84 52.1746155	4.4077153"/>
++  <point x="1297" y="1019" geo="WGS84 52.1642909	4.4291415"/>
++</map>
+diff --git a/sw/airborne/firmwares/rotorcraft/guidance/CE.c b/sw/airborne/firmwares/rotorcraft/guidance/CE.c
+index 701bf800c..1ab4fcdc8 100644
+--- a/sw/airborne/firmwares/rotorcraft/guidance/CE.c
++++ b/sw/airborne/firmwares/rotorcraft/guidance/CE.c
+@@ -6,8 +6,64 @@
+ #include "math/pprz_algebra_float.h"
+ 
+ // CE Lib Matlab
+-  
+-  
++  float thrust2cmd(float thrust)
++  {
++    float [20] x;
++    float [20] y;
++
++    x[0]  = 0.0;
++    x[1]  = 0.0526315789473684;	
++    x[2]  = 0.105263157894737;	
++    x[3]  = 0.157894736842105;	
++    x[4]  = 0.210526315789474;	
++    x[5]  = 0.263157894736842;	
++    x[6]  = 0.315789473684211;	
++    x[7]  = 0.368421052631579;	
++    x[8]  = 0.421052631578947;	
++    x[9]  = 0.473684210526316;	
++    x[10] = 0.526315789473684;	
++    x[11] = 0.578947368421053;	
++    x[12] = 0.631578947368421;	
++    x[13] = 0.684210526315790;	
++    x[14] = 0.736842105263158;	
++    x[15] = 0.789473684210526;	
++    x[16] = 0.842105263157895;	
++    x[17] = 0.894736842105263;	
++    x[18] = 0.947368421052632;	
++    x[19] = 1.0;
++    
++    y[0]  = 0.00018366013071; 
++    y[1]  = 0.05073244315826; 	
++    y[2]  = 0.16345421649358; 	
++    y[3]  = 0.92652640909841; 	
++    y[4]  = 1.87456099802201; 	
++    y[5]  = 2.62738722228120; 	
++    y[6]  = 3.16092679228087; 	
++    y[7]  = 3.54847057386879; 	
++    y[8]  = 3.84445853420274; 	
++    y[9]  = 4.07913232027519; 	
++    y[10] = 4.26854898019188; 	
++    y[11] = 4.42138188867095; 	
++    y[12] = 4.54247867820420; 	
++    y[13] = 4.63465002715227; 	
++    y[14] = 4.69958280369314; 	
++    y[15] = 4.73832115551302; 	
++    y[16] = 4.75152908989299; 	
++    y[17] = 4.75152908989299; 	
++    y[18] = 4.75152908989299; 	
++    y[19] = 4.75152908989299;
++
++    float cmd;
++
++    for (int i = 0; i < 20; i++)
++    {
++      if (thrust <= y[i]){
++        cmd = (x[i]- x[i-1])*(thrust - y[i-1])/(y[i] - y[i-1]) + x[i-1];
++        return cmd;
++      }
++    }
++  return -1.0;
++  }
+  
+   
+   /*
+diff --git a/sw/airborne/firmwares/rotorcraft/guidance/CE.h b/sw/airborne/firmwares/rotorcraft/guidance/CE.h
+index d00c53a1a..c05da204b 100644
+--- a/sw/airborne/firmwares/rotorcraft/guidance/CE.h
++++ b/sw/airborne/firmwares/rotorcraft/guidance/CE.h
+@@ -1,3 +1,6 @@
++
++
++extern float thrust2cmd(float thrust);
+ extern float a_D_wing_x(float V[3]);
+ extern float a_D_wing_z(float V[3], float phi);
+ extern float a_L_wing_x(float V[3]);
+diff --git a/sw/airborne/firmwares/rotorcraft/guidance/CEmainmain.h b/sw/airborne/firmwares/rotorcraft/guidance/CEmainmain.h
+index f4dca05ae..9b3bb6f12 100644
+--- a/sw/airborne/firmwares/rotorcraft/guidance/CEmainmain.h
++++ b/sw/airborne/firmwares/rotorcraft/guidance/CEmainmain.h
+@@ -5,6 +5,66 @@
+ #include "math/pprz_algebra_float.h"
+ 
+  
++
++static inline float thrust2cmd(float thrust)
++{
++  float x[20];
++  float y[20];
++
++  x[0]  = 0.0;
++  x[1]  = 0.0526315789473684;	
++  x[2]  = 0.105263157894737;	
++  x[3]  = 0.157894736842105;	
++  x[4]  = 0.210526315789474;	
++  x[5]  = 0.263157894736842;	
++  x[6]  = 0.315789473684211;	
++  x[7]  = 0.368421052631579;	
++  x[8]  = 0.421052631578947;	
++  x[9]  = 0.473684210526316;	
++  x[10] = 0.526315789473684;	
++  x[11] = 0.578947368421053;	
++  x[12] = 0.631578947368421;	
++  x[13] = 0.684210526315790;	
++  x[14] = 0.736842105263158;	
++  x[15] = 0.789473684210526;	
++  x[16] = 0.842105263157895;	
++  x[17] = 0.894736842105263;	
++  x[18] = 0.947368421052632;	
++  x[19] = 1.0;
++  
++  y[0]  = 0.00018366013071; 
++  y[1]  = 0.05073244315826; 	
++  y[2]  = 0.16345421649358; 	
++  y[3]  = 0.92652640909841; 	
++  y[4]  = 1.87456099802201; 	
++  y[5]  = 2.62738722228120; 	
++  y[6]  = 3.16092679228087; 	
++  y[7]  = 3.54847057386879; 	
++  y[8]  = 3.84445853420274; 	
++  y[9]  = 4.07913232027519; 	
++  y[10] = 4.26854898019188; 	
++  y[11] = 4.42138188867095; 	
++  y[12] = 4.54247867820420; 	
++  y[13] = 4.63465002715227; 	
++  y[14] = 4.69958280369314; 	
++  y[15] = 4.73832115551302; 	
++  y[16] = 4.75152908989299; 	
++  y[17] = 4.75152908989299; 	
++  y[18] = 4.75152908989299; 	
++  y[19] = 4.75152908989299;
++
++  float cmd;
++
++  for (int i = 0; i < 20; i++)
++  {
++    if (thrust <= y[i]){
++      cmd = (x[i]- x[i-1])*(thrust - y[i-1])/(y[i] - y[i-1]) + x[i-1];
++      return cmd;
++    }
++  }
++return -1.0;
++}
++
+  
+  //New Functions
+   /*
+diff --git a/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.c b/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.c
+index a31ae1ff5..29a0dc688 100644
+--- a/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.c
++++ b/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.c
+@@ -1,23 +1,3 @@
+-/*
+- * Copyright (C) 2015
+- *
+- * This file is part of paparazzi.
+- *
+- * paparazzi is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2, or (at your option)
+- * any later version.
+- *
+- * paparazzi is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with paparazzi; see the file COPYING.  If not, write to
+- * the Free Software Foundation, 59 Temple Place - Suite 330,
+- * Boston, MA 02111-1307, USA.
+- */
+ /** @file firmwares/rotorcraft/guidance/guidance_aerobatic.c
+  *  Reference generation for horizontal guidance.
+  *
+@@ -41,18 +21,28 @@
+ #include "CEmainmain.h"
+ #include "subsystems/radio_control.h"
+ #include "firmwares/rotorcraft/stabilization/stabilization_indi_simple.h"
++#include "modules/sensors/airspeed_ms45xx_i2c.h"
++#include "modules/sensors/aoa_adc.h"
++#include "subsystems/imu.h"
+ // #include "SF1eFilter.h"
+ // #include "SF1eFilter.c"
+ //Define
+ #ifndef PPRZ_MSG_ID_AEROBATIC_INDI
+-  #define PPRZ_MSG_ID_AEROBATIC_INDI 158
++#define PPRZ_MSG_ID_AEROBATIC_INDI 158
+ #endif
++
+ #ifndef PPRZ_MSG_ID_AEROBATIC_LOG
+-  #define PPRZ_MSG_ID_AEROBATIC_LOG 172
++#define PPRZ_MSG_ID_AEROBATIC_LOG 172
+ #endif
++
+ #ifndef PERIODIC_FREQUENCY
+-  #define PERIODIC_FREQUENCY 512
++#define PERIODIC_FREQUENCY 512
+ #endif
++
++// #ifndef GUIDANCE_AEROBATIC_USE_FEEDFORWARD
++// #define GUIDANCE_AEROBATIC_USE_FEEDFORWARD FALSE
++// #endif
++
+ #ifndef GUIDANCE_INDI_FILTER_CUTOFF
+   #ifdef STABILIZATION_INDI_FILT_CUTOFF
+     #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
+@@ -60,9 +50,10 @@
+     #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+   #endif
+ #endif
++
+ #define MAX_PPRZ_f 9600.0
+ #define THRUST_MIN 1920 //0.20*MAX_PPRZ //TODO lower min thrust (Check)
+-#define THRUST_MAX 8640 //0.90*MAX_PPRZ
++#define THRUST_MAX MAX_PPRZ //8640 //0.90*MAX_PPRZ
+ #define THRUST_DYNAMICS 0.03
+ #define MIN_THRUST_EFFECTIVNESS 4.0
+ 
+@@ -74,12 +65,20 @@ struct filter_struct{
+   Butterworth2LowPass vel_filter[3];
+   Butterworth2LowPass pos_filter[3];
+   Butterworth2LowPass q_filter[4];
++  Butterworth2LowPass qout_filter[4];
+   Butterworth2LowPass thrust_filter;
++  Butterworth2LowPass AoA_filter;
++  Butterworth2LowPass ay_filter;
++  Butterworth2LowPass V_filter;
+   struct NedCoor_f pos;
+   struct NedCoor_f vel;
+   struct NedCoor_f acc;
+   struct FloatQuat q;
++  struct FloatQuat qout;
+   float thrust;
++  float V;
++  float ay;
++  float AoA;
+ } filt;
+ struct input_states {
+     struct NedCoor_f pos;
+@@ -88,6 +87,9 @@ struct input_states {
+     struct NedCoor_f air;
+     struct FloatQuat q;
+     float thrust;
++    float AoA;
++    float V;
++    float ay;
+     int32_t thrust_cmd;
+ } in;
+ struct reference_states {
+@@ -100,12 +102,34 @@ struct output_states {
+   float thrust;
+   int32_t thrust_cmd;
+ } out;
+-struct ctrl_struct {
+-  float G[ROWS_GUIDANCE][COLS_GUIDANCE];
++struct ctrl_struct3 {
++  float G[3][3];
+   struct FloatVect3 dv; 
+   struct FloatVect3 du;
+   float dyaw;
++} ctrl3;
++
++struct ctrl_struct4 {
++  float G[16];
++  float dv[4]; 
++  float du[4];
++} ctrl4;
++
++struct ctrl_struct {
++  float dphi;
++  float dtheta;
++  float dpsi;
++  float dT;
+ } ctrl;
++
++struct wp_struct {
++  uint8_t stay_wp;
++  uint8_t circle;
++  uint8_t start;
++  uint8_t dir;
++} wps;
++
++
+ struct trajectory {
+     float t;
+     struct NedCoor_f pos;
+@@ -138,6 +162,10 @@ struct AerobaticVariableSettings varset = {
+     .z_p_factor  = GUIDANCE_AEROBATIC_Z_P_FACTOR,
+     .z_d_factor  = GUIDANCE_AEROBATIC_Z_D_FACTOR,
+     .mode = GUIDANCE_AEROBATIC_MODE,
++    .use_feedforward = GUIDANCE_AEROBATIC_USE_FEEDFORWARD,
++    .use_alt_gains = GUIDANCE_AEROBATIC_USE_ALT_GAINS,
++    .use_filtered_output = GUIDANCE_AEROBATIC_USE_FILTERED_OUTPUT,
++    .ce_mode = GUIDANCE_AEROBATIC_CE_MODE
+     // .min_thrust_eff = GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT
+ };
+ 
+@@ -168,6 +196,9 @@ struct GuidanceLogStruct aerolog = {
+     .ref_acc[0] = 0.0f,
+     .ref_acc[1] = 0.0f,
+     .ref_acc[2] = 0.0f,
++    .air[0] = 0.0f,
++    .air[1] = 0.0f,
++    .air[2] = 0.0f,
+     .thrust_in = 0.0f,
+     .dyaw = 0.0f,
+     .du[0] = 0.0f,
+@@ -181,12 +212,20 @@ float t = 0.0;
+ int wp_id = 0;
+ 
+ struct NedCoor_f ref_pos;
++struct NedCoor_f cur_pos;
++struct NedCoor_f circ_pos;
+ 
+ struct NedCoor_f Home;
+ 
+-bool is_in_mode_2;
+-float mode_2_radius;
+-float mode_2_angle;
++bool is_killed = false;
++
++bool mode_disabled_altitude_gains = false;
++bool mode_disabled_Kp = false;
++bool mode_disabled_Kd = false;
++int8_t active_mode = 0;
++
++float mode_2_radius = 0.0f;
++float mode_2_angle = 0.0f;
+ 
+ float THRUST_TO_CMD = MAX_PPRZ_f/20.0;
+ float CMD_TO_THRUST = 20.0/MAX_PPRZ_f;
+@@ -196,6 +235,7 @@ float y_coords[4] = {0};
+ 
+ int32_t sd_id = 0;
+ int32_t sd_log[30];
++int32_t aerobatic_active;
+ 
+ // SF1eFilter f_acc_x;
+ // SF1eFilter f_acc_y;
+@@ -235,7 +275,9 @@ static void send_aerobatic_INDI(struct transport_tx *trans, struct link_device *
+                          &varset.max_acc,
+                          &varset.p_gain,
+                          &varset.d_gain,
+-                         &varset.mode);
++                         &varset.mode,
++                         &varset.ce_mode,
++                         3,&aerolog.air[0]);
+ }
+ static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
+     pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
+@@ -245,6 +287,7 @@ static void send_aerobatic_log(struct transport_tx *trans, struct link_device *d
+                          3,&aerolog.ref_pos[0],
+                          3,&aerolog.ref_vel[0],
+                          3,&aerolog.ref_acc[0],
++                         3,&aerolog.air[0],
+                          2,&aerolog.gains[0]);
+ }
+ // Main functions
+@@ -256,16 +299,15 @@ void guidance_aerobatic_init(void){
+   register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_INDI);
+  }
+ void guidance_aerobatic_enter(void){
+-    t = -5.0;
+-    is_in_mode_2 = false;
++    t = 0.0;
+     // getWaypoints()
+ 
+     ref_pos = *stateGetPositionNed_f();
+     in.thrust = CMD_TO_THRUST*stabilization_cmd[COMMAND_THRUST];
+     out.thrust = in.thrust;
+ 
+-    varset.max_vel = 1.0;
+-    varset.max_acc = 1.0;
++    // varset.max_vel = 1.0;
++    // varset.max_acc = 1.0;
+ 
+     traj_sec.type = 0;
+     traj_sec.number = -1;
+@@ -274,63 +316,41 @@ void guidance_aerobatic_enter(void){
+ 
+     ref.pos.x = stateGetPositionNed_f()->x;
+     ref.pos.y = stateGetPositionNed_f()->y;
+-    ref.pos.z = stateGetPositionNed_f()->z-0.05;
++    ref.pos.z = stateGetPositionNed_f()->z + 1.0;
+     ref.vel.x = 0.0f;
+     ref.vel.y = 0.0f;
+     ref.vel.z = 0.0f;
+     ref.acc.x = 0.0f;
+     ref.acc.y = 0.0f;
+     ref.acc.z = 0.0f;
++    
++    circ_pos.x = ref.pos.x - 40.0;
++    circ_pos.y = ref.pos.y + 40.0;
++    circ_pos.z = ref.pos.z;
++
++
++    mode_2_angle = atan2f(30.0,-30.0);
++    mode_2_radius = sqrtf(2.0*powf(30.0,2.0));
+ 
+     filter_init();
+ 
+ }
+ void guidance_aerobatic_run(){
+   static int32_t counter = 0;
++  aerobatic_active = 1;
+   t = t + 0.001953125;
+   if (t > 360000){
+     t = 0;
+   }
+   get_states();
+-  YawControl();
++  // get_mode();
++  // YawControl();
+   Controller();
+   get_G();
+   get_du();
+   set_states();
+ 
+-  if(varset.mode == 0){
+-    is_in_mode_2 = false;
+-    ref.pos.x = ref_pos.x;
+-    ref.pos.y = ref_pos.y;
+-    ref.vel.x = 0.0;
+-    ref.vel.y = 0.0;
+-  }else if(varset.mode == 1){
+-    is_in_mode_2 = false;
+-    if(t > 10.0){
+-      t = 0.0;
+-      wp_id = wp_id + 1;
+-      if(wp_id == 4){
+-        wp_id = 0;
+-      }
+-      ref.pos.x = x_coords[0];
+-      ref.pos.y = y_coords[0];
+-      ref.pos.x = 0.0;
+-      ref.pos.y = 0.0;
+-    }
+-    ref.pos.x = x_coords[wp_id];
+-    ref.pos.y = y_coords[wp_id];
+-  }else if(varset.mode == 2){
+-    if (!is_in_mode_2){
+-      mode_2_angle = atan2f(in.pos.x,in.pos.y);
+-      mode_2_radius = 0.9 * sqrtf(powf(in.pos.x,2.0) + powf(in.pos.y,2.0));
+-      is_in_mode_2 = true;
+-    }
+-    ref.pos.x =  mode_2_radius * sinf(mode_2_angle);
+-    ref.pos.y =  mode_2_radius * cosf(mode_2_angle);
+-    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+-    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+-    mode_2_angle += varset.max_vel/(2.0*M_PI*mode_2_radius*512.0);
+-  }
++ 
+ 
+   message_log();
+   if (counter%2){
+@@ -345,6 +365,16 @@ void get_states(void){
+   in.vel = *stateGetSpeedNed_f();
+   in.acc = *stateGetAccelNed_f();
+ 
++  in.AoA = 0.0;
++  if (!isnan(aoa_adc.angle)){
++    in.AoA = -aoa_adc.angle;
++  }
++  in.V = 0.0;
++  if (!isnan(ms45xx.airspeed)){
++    in.V = ms45xx.airspeed;
++  }
++  in.ay = ACCEL_FLOAT_OF_BFP(imu.accel.y);
++
+   // Actuator Dynamics 
+   // float dthrust = ((float) out.thrust_cmd)*CMD_TO_THRUST -  filt.thrust;   
+   // in.thrust = filt.thrust + THRUST_DYNAMICS * dthrust;
+@@ -352,6 +382,35 @@ void get_states(void){
+ 
+   filter_run();
+ 
++
++
++  struct FloatVect3 ab;
++  struct FloatVect3 ag;
++  ag.x = 0.0;
++  ag.y = 0.0;
++  ag.z = 9.81;
++  float_quat_vmult(&ab, &filt.q, &ag);
++  float aymg = filt.ay - ab.y;
++
++
++
++  float_quat_vmult(&ab, &filt.q, &filt.acc);
++  float Vy = sqrtf(fabsf(5.0*aymg));
++  float Vxz = filt.V * powf(cosf(filt.AoA),2.0) + powf(sinf(filt.AoA),2.0) * sqrtf(5.0*sqrtf(fabsf(ab.x*ab.x + ab.z*ab.z)));
++
++  float Vz = cosf(filt.AoA)*Vxz;
++  float Vx = - sinf(filt.AoA)*Vxz;
++
++  in.air.x = Vx ;
++  in.air.y = Vy ;
++  in.air.z = Vz ;
++
++  aerolog.air[0] =  in.air.x;
++  aerolog.air[1] =  in.air.y;
++  aerolog.air[2] =  in.air.z;
++
++
++
+   struct FloatVect3 V_drone;
+   V_drone.x = in.vel.x;
+   V_drone.y = in.vel.y;
+@@ -367,9 +426,9 @@ void get_states(void){
+   V_drone.y = -V_drone.y;
+   V_drone.z = -V_drone.z;
+ 
+-  in.air.x = V_inf.x;
+-  in.air.y = V_inf.y;
+-  in.air.z = V_inf.z;   
++  // in.air.x = V_inf.x;
++  // in.air.y = V_inf.y;
++  // in.air.z = V_inf.z;   
+ }
+ void YawControl(void){
+   struct FloatVect3 Yaw_bE;
+@@ -393,8 +452,8 @@ void YawControl(void){
+   Yaw_proj.z = 0.0f;
+ 
+ 
+-  Yaw_ref.x = 1.0f/sqrt(2.0f);
+-  Yaw_ref.y = -1.0f/sqrt(2.0f);
++  Yaw_ref.x = -1.0f/sqrt(2.0f);
++  Yaw_ref.y = 1.0f/sqrt(2.0f);
+   Yaw_ref.z = 0.0f;
+ 
+   // Yaw_ref.x = 0.0f;
+@@ -409,29 +468,73 @@ void YawControl(void){
+   // Yaw_ref.x = dposx/dmag;
+   // Yaw_ref.y = dposy/dmag;
+ 
+-  ctrl.dyaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
++  ctrl3.dyaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
+ 
+-  if (ctrl.dyaw > 5.0f/M_PI){
+-      ctrl.dyaw = 5.0f/M_PI;
+-  } else if (ctrl.dyaw < -5.0f/M_PI){
+-      ctrl.dyaw = -5.0f/M_PI;
++  if (ctrl3.dyaw > 5.0f/M_PI){
++      ctrl3.dyaw = 5.0f/M_PI;
++  } else if (ctrl3.dyaw < -5.0f/M_PI){
++      ctrl3.dyaw = -5.0f/M_PI;
+   }
++  ctrl3.dyaw = 0.0;
+ }
+ void Controller(void){
++
++    ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
++    ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
++    ref.pos.z = circ_pos.z;
++    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * 10.0/(mode_2_radius);
++    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * 10.0/(mode_2_radius);
++    ref.vel.z = 0.0;
++    if (varset.use_feedforward){
++      ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
++      ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
++      ref.acc.z = 0.0;
++    }
++    mode_2_angle += 10.0/(mode_2_radius*512.0);
++    if (mode_2_angle > 2.0*M_PI * 1.5 +  atan2f(30.0,-30.0)){
++      circ_pos.z = -30.0;
++    }
++
++
++  // float PGain = varset.p_gain;
++  // if (mode_disabled_Kp){
++  //   float PGain = 0.0;
++  // }
++  // float VGain = varset.d_gain;
++  // if (mode_disabled_Kd){
++  //   float VGain = 0.0;
++  // }
++  // float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR * PGain;
++  // float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR * VGain;
++  // if (!mode_disabled_altitude_gains){
++  //   if (mode_disabled_Kp){
++  //     float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR;
++  //   }
++  //   if (mode_disabled_Kd){
++  //     float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR;
++  //   }
++  // }
+   float PGain = varset.p_gain;
+   float VGain = varset.d_gain;
+-  float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR;
+-  float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR;
++
++  float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR * PGain;
++  float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR * VGain;
+ 
+   struct FloatVect3 da_p;
+   struct FloatVect3 da_d;
+   struct FloatVect3 da;
+   
+-  float ddx = 0.0;
+-  float ddy = 0.0;
+-  float dx = 0.0;
+-  float dy = 0.0;
+-  float dz = 0.0;
++  // ref.pos.x = -20.0;
++  // ref.pos.y =  20.0;
++  // ref.pos.z = -40.0;
++
++  ref.vel.x = 0.0;
++  ref.vel.y = 0.0;
++  ref.vel.z = 0.0;
++
++  ref.acc.x = 0.0;
++  ref.acc.y = 0.0;
++  ref.acc.z = 0.0;
+ 
+   // if(varset.mode == 1){
+   //   dx = varset.max_acc * (radio_control.values[1]-radio_control.values[2])/9600.0;
+@@ -444,49 +547,45 @@ void Controller(void){
+   //   PGain = 0.0;
+   // }
+   
+-  da_p.x = PGain * (ref.pos.x+dx-in.pos.x);
+-  da_p.y = PGain * (ref.pos.y+dy-in.pos.y);
+-  da_p.z = zPFactor *PGain * (ref.pos.z+dz-in.pos.z);
++  da_p.x = PGain * (ref.pos.x-in.pos.x);
++  da_p.y = PGain * (ref.pos.y-in.pos.y);
++  da_p.z = zPFactor * (ref.pos.z-in.pos.z);
+ 
+-  da_d.x = VGain * (ref.vel.x+ddx-in.vel.x);
+-  da_d.y = VGain * (ref.vel.y+ddy-in.vel.y);
+-  da_d.z = zVFactor * VGain * (ref.vel.z-in.vel.z);
++  da_d.x = VGain * (ref.vel.x-in.vel.x);
++  da_d.y = VGain * (ref.vel.y-in.vel.y);
++  da_d.z = zVFactor * (ref.vel.z-in.vel.z);
+ 
+-  da.x = da_p.x + da_d.x + ref.acc.x - filt.acc.x;
+-  da.y = da_p.y + da_d.y + ref.acc.y - filt.acc.y;
+-  da.z = da_p.z + da_d.z + ref.acc.z - filt.acc.z;
++  da.x = da_p.x + da_d.x + ref.acc.x - 0.0 * filt.acc.x;
++  da.y = da_p.y + da_d.y + ref.acc.y - 0.0 * filt.acc.y;
++  da.z = da_p.z + da_d.z + ref.acc.z - 0.0 * filt.acc.z;
+ 
+-  float_quat_vmult(&ctrl.dv, &filt.q, &da);
++  float_quat_vmult(&ctrl3.dv, &filt.q, &da);
+ }
+ void get_G(void){ 
+-  float V[3];
+-  V[0] = in.air.x;
+-  V[1] = in.air.y;
+-  V[2] = in.air.z;
+-
+-  ctrl.G[0][0] =  0.0f * da_wing_x_dphii(V)  ; 
+-  ctrl.G[1][0] =  0.0f * da_wing_y_dphii(V)   + fmaxf(in.thrust,MIN_THRUST_EFFECTIVNESS); 
+-  ctrl.G[2][0] =  0.0f * da_wing_z_dphii(V)  ; 
+-  ctrl.G[0][1] =  0.0f * da_wing_x_dthetai(V) - fmaxf(in.thrust,MIN_THRUST_EFFECTIVNESS); 
+-  ctrl.G[1][1] =  0.0f * da_wing_y_dthetai() ; 
+-  ctrl.G[2][1] =  0.0f * da_wing_z_dthetai(V); 
+-  ctrl.G[0][2] =  0.0f; 
+-  ctrl.G[1][2] =  0.0f; 
+-  ctrl.G[2][2] = -1.0f; 
++  ctrl3.G[0][0] =  0.0f; 
++  ctrl3.G[1][0] =  2.0 * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
++  ctrl3.G[2][0] =  0.0f; 
++  ctrl3.G[0][1] = -2.0 * fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
++  ctrl3.G[1][1] =  0.0f; 
++  ctrl3.G[2][1] =  0.0f; 
++  ctrl3.G[0][2] =  0.0f; 
++  ctrl3.G[1][2] =  0.0f; 
++  ctrl3.G[2][2] = -1.0f;   
+ }
+ void get_du(void){
+   struct FloatMat33 Ga;
+   struct FloatMat33 Ga_inv;
++
+   
+   for (int r = 0; r < ROWS_GUIDANCE; r++){
+     for (int c = 0; c < COLS_GUIDANCE; c++){
+-      Ga.m[3*r+c] = ctrl.G[r][c];
++      Ga.m[3*r+c] = ctrl3.G[r][c];
+       Ga_inv.m[3*r+c] = 0.0f;
+     }
+   }    
+   
+   MAT33_INV(Ga_inv, Ga); 
+-  MAT33_VECT3_MUL(ctrl.du, Ga_inv, ctrl.dv);
++  MAT33_VECT3_MUL(ctrl3.du, Ga_inv, ctrl3.dv);
+ 
+   // in.thrust = 20*CMD_Thrust/9600
+   // min = 0 
+@@ -494,15 +593,60 @@ void get_du(void){
+   float du_min = THRUST_MIN*CMD_TO_THRUST - filt.thrust; 
+   float du_max = THRUST_MAX*CMD_TO_THRUST - filt.thrust; 
+ 
+-  if (ctrl.du.z < du_min){
+-    ctrl.du.z = du_min;
+-  }else if (ctrl.du.z > du_max){
+-    ctrl.du.z = du_max;
++  if (ctrl3.du.z < du_min){
++    ctrl3.du.z = du_min;
++  }else if (ctrl3.du.z > du_max){
++    ctrl3.du.z = du_max;
+   }
++
++  ctrl.dphi   = ctrl3.du.x;
++  ctrl.dtheta = ctrl3.du.y;
++  ctrl.dpsi   = ctrl3.dyaw;
++  ctrl.dT     = ctrl3.du.z;
+ }
+ void set_states(void){
+-  out.thrust = filt.thrust + ctrl.du.z;
++  out.thrust = filt.thrust + ctrl.dT;
+   out.thrust_cmd = (int) (out.thrust*THRUST_TO_CMD);
++
++  float Tcom = sqrtf(powf(ctrl3.dv.x,2.0) + powf(ctrl3.dv.y,2.0) + powf(ctrl3.dv.z,2.0));
++  float cmd = thrust2cmd(Tcom);
++
++
++  struct FloatVect3 nb;
++  nb.x =  0.0;
++  nb.y =  0.0;
++  nb.z = -1.0;
++
++  struct FloatVect3 nt;
++  nt.x = ctrl3.dv.x/Tcom;
++  nt.y = ctrl3.dv.y/Tcom;
++  nt.z = ctrl3.dv.z/Tcom;
++
++  if (cmd > 0.6){
++    cmd = 0.6;
++  }
++  
++  int pprz_cmd = (int) (9600.0*cmd/0.6);
++
++  out.thrust = Tcom;
++  out.thrust_cmd = pprz_cmd;
++
++  struct FloatQuat qc;
++  
++  float c3 = sqrtf(powf(nt.x+nb.x,2.0)+powf(nt.y+nb.y,2.0)+powf(nt.z+nb.z,2.0));
++  
++  if (c3 == 0.0){
++    qc.qi = 0.0;
++    qc.qx = 1.0;
++    qc.qy = 0.0;
++    qc.qz = 0.0;
++  }else{
++    qc.qi = (1.0 + nb.x*nt.x + nb.y*nt.y + nb.z*nt.z)/c3;
++    qc.qx = (nb.y*nt.z - nb.z*nt.y)/c3;
++    qc.qy = (nb.z*nt.x - nb.x*nt.z)/c3;
++    qc.qz = (nb.x*nt.y - nb.y*nt.x)/c3;
++  }
++
+   if (out.thrust_cmd > THRUST_MAX){
+       out.thrust_cmd = THRUST_MAX;
+       out.thrust = THRUST_MAX*CMD_TO_THRUST;
+@@ -511,28 +655,35 @@ void set_states(void){
+       out.thrust_cmd = THRUST_MIN;
+       out.thrust = THRUST_MIN*CMD_TO_THRUST;
+   }
+-    stabilization_cmd[COMMAND_THRUST] = out.thrust_cmd;
+-
+     struct FloatQuat dq;
+     struct FloatQuat q_res = {0};
+     struct Int32Quat q_i_res = {0};
+ 
+ 
+     float magdu;
+-    magdu = sqrt(ctrl.du.x*ctrl.du.x+ctrl.du.y*ctrl.du.y+ctrl.dyaw*ctrl.dyaw);
++    magdu = sqrtf(ctrl.dphi*ctrl.dphi+ctrl.dtheta*ctrl.dtheta+ctrl.dpsi*ctrl.dpsi);
++    float dphi_perc = ctrl.dphi/magdu;
++    float dtheta_perc = ctrl.dtheta/magdu;
++    float dpsi_perc = ctrl.dpsi/magdu;
++
++    if (magdu > 2.0*M_PI/16.0){
++      magdu = 2.0*M_PI/16.0;
++    }
+     if (magdu < 1e-10){
+       dq.qi = 1.0;
+       dq.qx = 0.0;
+       dq.qy = 0.0;
+       dq.qz = 0.0;
+     }else{
+-      dq.qi = cos(magdu/2.0);
+-      dq.qx = sin(magdu/2.0)*ctrl.du.x/magdu;
+-      dq.qy = sin(magdu/2.0)*ctrl.du.y/magdu;
+-      dq.qz = sin(magdu/2.0)*ctrl.dyaw/magdu;
++      dq.qi = cosf(magdu/2.0);
++      dq.qx = sinf(magdu/2.0)*dphi_perc/magdu;
++      dq.qy = sinf(magdu/2.0)*dtheta_perc/magdu;
++      dq.qz = sinf(magdu/2.0)*dpsi_perc/magdu;
+     }
+     float_quat_comp(&q_res, &filt.q, &dq);
+ 
++    float_quat_comp(&q_res, &filt.q, &qc);
++
+     magdu = sqrt(q_res.qi*q_res.qi+q_res.qx*q_res.qx+q_res.qy*q_res.qy+q_res.qz*q_res.qz);
+ 
+     q_res.qi = q_res.qi/magdu;
+@@ -540,6 +691,20 @@ void set_states(void){
+     q_res.qy = q_res.qy/magdu;
+     q_res.qz = q_res.qz/magdu;
+ 
++    update_butterworth_2_low_pass(&filt.qout_filter[0], q_res.qi);
++    update_butterworth_2_low_pass(&filt.qout_filter[1], q_res.qx);
++    update_butterworth_2_low_pass(&filt.qout_filter[2], q_res.qy);
++    update_butterworth_2_low_pass(&filt.qout_filter[3], q_res.qz);
++
++    float sum = 0.0;
++    for (int i = 0; i < 4; i++){
++      sum += powf(filt.qout_filter[i].o[0],2);
++    }
++    float length = sqrtf(sum);
++    filt.qout.qi = filt.qout_filter[0].o[0]/length;
++    filt.qout.qx = filt.qout_filter[1].o[0]/length;
++    filt.qout.qy = filt.qout_filter[2].o[0]/length;
++    filt.qout.qz = filt.qout_filter[3].o[0]/length;
+ 
+     QUAT_BFP_OF_REAL(q_i_res, q_res);
+     stabilization_indi_attitude_run(q_i_res,true);
+@@ -572,9 +737,19 @@ void filter_init(void){
+     init_butterworth_2_low_pass(&filt.q_filter[1], tau, sample_time, in.q.qx);
+     init_butterworth_2_low_pass(&filt.q_filter[2], tau, sample_time, in.q.qy);
+     init_butterworth_2_low_pass(&filt.q_filter[3], tau, sample_time, in.q.qz);
++
++    init_butterworth_2_low_pass(&filt.qout_filter[0], 1.0 / (2.0 * M_PI), sample_time, in.q.qi);
++    init_butterworth_2_low_pass(&filt.qout_filter[1], 1.0 / (2.0 * M_PI), sample_time, in.q.qx);
++    init_butterworth_2_low_pass(&filt.qout_filter[2], 1.0 / (2.0 * M_PI), sample_time, in.q.qy);
++    init_butterworth_2_low_pass(&filt.qout_filter[3], 1.0 / (2.0 * M_PI), sample_time, in.q.qz);
+     
+     init_butterworth_2_low_pass(&filt.thrust_filter, tau, sample_time, in.thrust);
+ 
++
++    init_butterworth_2_low_pass(&filt.V_filter, tau, sample_time, in.V);
++    init_butterworth_2_low_pass(&filt.AoA_filter, tau, sample_time, in.AoA);
++    init_butterworth_2_low_pass(&filt.ay_filter, tau, sample_time, in.ay);
++
+     // float freq = 256;
+     // float beta = 1.000000;
+     // float mincutoff = 8.000000;
+@@ -613,6 +788,7 @@ void filter_init(void){
+     // SF1eFilterInit(&f2_acc_z);
+ 
+ }
++
+ void filter_run(void){
+   // same filter as for the acceleration
+   update_butterworth_2_low_pass(&filt.thrust_filter, in.thrust);
+@@ -634,7 +810,16 @@ void filter_run(void){
+   update_butterworth_2_low_pass(&filt.q_filter[2], in.q.qy);
+   update_butterworth_2_low_pass(&filt.q_filter[3], in.q.qz);
+ 
++
++  update_butterworth_2_low_pass(&filt.AoA_filter, in.AoA);
++  update_butterworth_2_low_pass(&filt.ay_filter, in.ay);
++  update_butterworth_2_low_pass(&filt.V_filter, in.V);
++
+   filt.thrust = filt.thrust_filter.o[0];
++
++  filt.AoA = filt.AoA_filter.o[0];
++  filt.ay = filt.ay_filter.o[0];
++  filt.V = filt.V_filter.o[0];
+   
+   filt.pos.x = filt.pos_filter[0].o[0];
+   filt.pos.y = filt.pos_filter[1].o[0];
+@@ -695,7 +880,7 @@ void message_log(void){
+     aerolog.q[2] = filt.q.qy;
+     aerolog.q[3] = filt.q.qz;
+ 
+-    aerolog.dyaw = ctrl.dyaw;
++    aerolog.dyaw = ctrl.dpsi;
+ 
+     aerolog.t = t;
+     aerolog.mode = varset.mode;
+@@ -703,9 +888,9 @@ void message_log(void){
+     aerolog.max_vel = varset.max_vel;
+     aerolog.max_acc = varset.max_acc;
+ 
+-    aerolog.du[0] = ctrl.du.x;
+-    aerolog.du[1] = ctrl.du.y;
+-    aerolog.du[2] = ctrl.du.z;
++    aerolog.du[0] = ctrl.dphi;
++    aerolog.du[1] = ctrl.dtheta;
++    aerolog.du[2] = ctrl.dT;
+     aerolog.thrust_in = in.thrust;
+ 
+     aerolog.gains[0] = varset.p_gain;
+@@ -733,10 +918,10 @@ void update_sd_logger(void){
+   sd_log[14] = *(int32_t*)&in.q.qy;
+   sd_log[15] = *(int32_t*)&in.q.qz;
+ 
+-  sd_log[16] = *(int32_t*)&ctrl.du.x;
+-  sd_log[17] = *(int32_t*)&ctrl.du.y;
+-  sd_log[18] = *(int32_t*)&LogFiltRate.r;
+-  sd_log[19] = *(int32_t*)&ctrl.du.z;
++  sd_log[16] = *(int32_t*)&ctrl.dphi;
++  sd_log[17] = *(int32_t*)&ctrl.dtheta;
++  sd_log[18] = *(int32_t*)&ctrl.dpsi;
++  sd_log[19] = *(int32_t*)&ctrl.dT;
+   sd_log[20] = *(int32_t*)&in.thrust;
+ 
+   sd_log[21] = stabilization_cmd[COMMAND_ROLL];
+@@ -744,8 +929,8 @@ void update_sd_logger(void){
+   sd_log[23] = stabilization_cmd[COMMAND_YAW];
+   sd_log[24] = stabilization_cmd[COMMAND_THRUST];
+ 
+-  // sd_log[25] = varset.p_gain;
+-  // sd_log[26] = varset.d_gain;
++  sd_log[25] = varset.p_gain;
++  sd_log[26] = varset.d_gain;
+   // sd_log[27] = (int32_t) 100 * 420;
+   // sd_log[28] = (int32_t) 10 * 420;
+   // sd_log[29] = (int32_t) 420;
+@@ -753,13 +938,91 @@ void update_sd_logger(void){
+   // sd_log[25] = *(int32_t*)&f2_acc.x;
+   // sd_log[26] = *(int32_t*)&f2_acc.y;
+   // sd_log[27] = *(int32_t*)&f2_acc.z;
+-  sd_log[28] = *(int32_t*)&LogFiltRate.p;
+-  sd_log[29] = *(int32_t*)&LogFiltRate.q;
+-  sd_log[27] = imu.accel.x;
+-  sd_log[28] = imu.accel.y;
+-  sd_log[29] = imu.accel.z;
++  // sd_log[28] = *(int32_t*)&LogFiltRate.p;
++  // sd_log[29] = *(int32_t*)&LogFiltRate.q;
++  sd_log[27] = *(int32_t*)&in.AoA;
++  sd_log[28] = *(int32_t*)&in.ay;
++  sd_log[29] = *(int32_t*)&in.V;
+ }
+ // Trajectory
++void get_mode(void){
++  bool switched_mode = false;
++  if(active_mode != varset.mode){
++    t = 0.0;
++    switched_mode = true;
++    active_mode = varset.mode;
++  }
++  //Precaution set all references to zero to prevent values from 'sticking'
++  cur_pos = *stateGetPositionNed_f();
++  
++  ref.pos.x = cur_pos.x;
++  ref.pos.y = cur_pos.y;
++  ref.pos.z = ref_pos.z;
++  ref.vel.x = 0.0;
++  ref.vel.y = 0.0;
++  ref.vel.z = 0.0;
++  ref.acc.x = 0.0;
++  ref.acc.y = 0.0;
++  ref.acc.y = 0.0;
++  //Precaution enable Kp and Kd
++  mode_disabled_Kp = false;
++  mode_disabled_Kd = false;
++  mode_disabled_altitude_gains = !varset.use_alt_gains;
++  
++  
++
++  switch (varset.mode)
++  {
++  // Stay at reference position
++  case 0: ;
++    ref.pos.x = ref_pos.x;
++    ref.pos.y = ref_pos.y;
++    break;
++  // Fly in square
++  case 1: ;
++    ref.pos.x = ref_pos.x - 10.0;
++    ref.pos.y = ref_pos.y + 10.0;
++    break;
++  // Fly in circle
++  case 2: ;
++    if (switched_mode){
++      float x0 = cur_pos.x - 14.0;
++      float y0 = cur_pos.y + 14.0;
++      circ_pos.x = cur_pos.x - 14.0;
++      circ_pos.y = cur_pos.y + 14.0;
++      circ_pos.x = ref_pos.z;
++      mode_2_angle = atan2f(14.0,-14.0);
++      mode_2_radius = sqrtf(powf(14.0,2.0) + powf(14.0,2.0));
++    }
++    ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
++    ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
++    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
++    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
++    if (varset.use_feedforward){
++      ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
++      ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/(2.0*M_PI*mode_2_radius),2.0);
++    }
++    mode_2_angle += varset.max_vel/(2.0*M_PI*mode_2_radius*512.0);
++    break;
++  // Acceleration tracking test
++  case 3: ;
++    ref.pos.x = ref_pos.x - 30.0;
++    ref.pos.y = ref_pos.y - 30.0;
++    break;
++  // Acceleration tracking test
++  case 4: ;
++    ref.pos.x = cur_pos.x;
++    ref.pos.y = cur_pos.y;
++    ref.pos.z = ref_pos.z;
++    break;
++  // Default stay at reference position
++  default: ;
++    ref.pos.x = ref_pos.x;
++    ref.pos.y = ref_pos.y;
++    break;
++  }
++}
++
+ void UpdateTrajectory(void){
+     traj.t = t;
+ 
+@@ -973,6 +1236,10 @@ void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4)
+ 
+ }
+ void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
++    wps.stay_wp = wp_1;
++    wps.circle = wp_2;
++    wps.start = wp_3;
++    wps.dir = wp_4;
+ 
+     x_coords[0] = waypoint_get_x(wp_1);
+     x_coords[1] = waypoint_get_x(wp_2);
+@@ -983,5 +1250,175 @@ void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4){
+     y_coords[1] = waypoint_get_y(wp_2);
+     y_coords[2] = waypoint_get_y(wp_3);
+     y_coords[3] = waypoint_get_y(wp_4);
++}
++void updateWaypoints(void){
++  switch (varset.mode)
++  {
++  case 0: ; // Hover
++    float x0 = waypoint_get_x(wps.start);
++    float y0 = waypoint_get_y(wps.start);
++    float x1 = waypoint_get_x(wps.dir);
++    float y1 = waypoint_get_y(wps.dir);
++
++    float head = atan2f(y1-y0,x1-x0);
++    waypoint_set_here_2d(wps.start);
++
++    waypoints[wps.dir].enu_f.x = x0 + sinf(head) * 150.0;
++    waypoints[wps.dir].enu_f.y = y0 + cosf(head) * 150.0;
++    waypoint_globalize(wps.dir);
++    break;
++  
++  case 1: ; // Waypoint
++    break;
++
++  case 2: ; // Circle
++    break;
+ 
+-  }
+\ No newline at end of file
++  case 3: ; // Transition straight, pause, back.
++    break;
++
++  case 4: ; // Trajectory extreme
++    break;
++
++  default:
++    break;
++  }
++}
++void setModeKill(void){
++  is_killed = true;
++}
++bool Mat44Inv(const float m[16], float invOut[16])
++{
++    float inv[16], det;
++    int i;
++
++    inv[0] = m[5]  * m[10] * m[15] - 
++             m[5]  * m[11] * m[14] - 
++             m[9]  * m[6]  * m[15] + 
++             m[9]  * m[7]  * m[14] +
++             m[13] * m[6]  * m[11] - 
++             m[13] * m[7]  * m[10];
++
++    inv[4] = -m[4]  * m[10] * m[15] + 
++              m[4]  * m[11] * m[14] + 
++              m[8]  * m[6]  * m[15] - 
++              m[8]  * m[7]  * m[14] - 
++              m[12] * m[6]  * m[11] + 
++              m[12] * m[7]  * m[10];
++
++    inv[8] = m[4]  * m[9] * m[15] - 
++             m[4]  * m[11] * m[13] - 
++             m[8]  * m[5] * m[15] + 
++             m[8]  * m[7] * m[13] + 
++             m[12] * m[5] * m[11] - 
++             m[12] * m[7] * m[9];
++
++    inv[12] = -m[4]  * m[9] * m[14] + 
++               m[4]  * m[10] * m[13] +
++               m[8]  * m[5] * m[14] - 
++               m[8]  * m[6] * m[13] - 
++               m[12] * m[5] * m[10] + 
++               m[12] * m[6] * m[9];
++
++    inv[1] = -m[1]  * m[10] * m[15] + 
++              m[1]  * m[11] * m[14] + 
++              m[9]  * m[2] * m[15] - 
++              m[9]  * m[3] * m[14] - 
++              m[13] * m[2] * m[11] + 
++              m[13] * m[3] * m[10];
++
++    inv[5] = m[0]  * m[10] * m[15] - 
++             m[0]  * m[11] * m[14] - 
++             m[8]  * m[2] * m[15] + 
++             m[8]  * m[3] * m[14] + 
++             m[12] * m[2] * m[11] - 
++             m[12] * m[3] * m[10];
++
++    inv[9] = -m[0]  * m[9] * m[15] + 
++              m[0]  * m[11] * m[13] + 
++              m[8]  * m[1] * m[15] - 
++              m[8]  * m[3] * m[13] - 
++              m[12] * m[1] * m[11] + 
++              m[12] * m[3] * m[9];
++
++    inv[13] = m[0]  * m[9] * m[14] - 
++              m[0]  * m[10] * m[13] - 
++              m[8]  * m[1] * m[14] + 
++              m[8]  * m[2] * m[13] + 
++              m[12] * m[1] * m[10] - 
++              m[12] * m[2] * m[9];
++
++    inv[2] = m[1]  * m[6] * m[15] - 
++             m[1]  * m[7] * m[14] - 
++             m[5]  * m[2] * m[15] + 
++             m[5]  * m[3] * m[14] + 
++             m[13] * m[2] * m[7] - 
++             m[13] * m[3] * m[6];
++
++    inv[6] = -m[0]  * m[6] * m[15] + 
++              m[0]  * m[7] * m[14] + 
++              m[4]  * m[2] * m[15] - 
++              m[4]  * m[3] * m[14] - 
++              m[12] * m[2] * m[7] + 
++              m[12] * m[3] * m[6];
++
++    inv[10] = m[0]  * m[5] * m[15] - 
++              m[0]  * m[7] * m[13] - 
++              m[4]  * m[1] * m[15] + 
++              m[4]  * m[3] * m[13] + 
++              m[12] * m[1] * m[7] - 
++              m[12] * m[3] * m[5];
++
++    inv[14] = -m[0]  * m[5] * m[14] + 
++               m[0]  * m[6] * m[13] + 
++               m[4]  * m[1] * m[14] - 
++               m[4]  * m[2] * m[13] - 
++               m[12] * m[1] * m[6] + 
++               m[12] * m[2] * m[5];
++
++    inv[3] = -m[1] * m[6] * m[11] + 
++              m[1] * m[7] * m[10] + 
++              m[5] * m[2] * m[11] - 
++              m[5] * m[3] * m[10] - 
++              m[9] * m[2] * m[7] + 
++              m[9] * m[3] * m[6];
++
++    inv[7] = m[0] * m[6] * m[11] - 
++             m[0] * m[7] * m[10] - 
++             m[4] * m[2] * m[11] + 
++             m[4] * m[3] * m[10] + 
++             m[8] * m[2] * m[7] - 
++             m[8] * m[3] * m[6];
++
++    inv[11] = -m[0] * m[5] * m[11] + 
++               m[0] * m[7] * m[9] + 
++               m[4] * m[1] * m[11] - 
++               m[4] * m[3] * m[9] - 
++               m[8] * m[1] * m[7] + 
++               m[8] * m[3] * m[5];
++
++    inv[15] = m[0] * m[5] * m[10] - 
++              m[0] * m[6] * m[9] - 
++              m[4] * m[1] * m[10] + 
++              m[4] * m[2] * m[9] + 
++              m[8] * m[1] * m[6] - 
++              m[8] * m[2] * m[5];
++
++    det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
++
++    if (det == 0)
++        return false;
++
++    det = 1.0 / det;
++
++    for (i = 0; i < 16; i++)
++        invOut[i] = inv[i] * det;
++
++    return true;
++}
++void Mat44Vect4Mul(float du[4], const float G_inv[16], const float dv[4]){
++  du[0] = G_inv[0]  * dv[0] + G_inv[1]  * dv[1] + G_inv[2]  * dv[2] + G_inv[3]  * dv[3];
++  du[1] = G_inv[4]  * dv[0] + G_inv[5]  * dv[1] + G_inv[6]  * dv[2] + G_inv[7]  * dv[3];
++  du[2] = G_inv[8]  * dv[0] + G_inv[9]  * dv[1] + G_inv[10] * dv[2] + G_inv[11] * dv[3];
++  du[3] = G_inv[12] * dv[0] + G_inv[13] * dv[1] + G_inv[14] * dv[2] + G_inv[15] * dv[3];
++}
+\ No newline at end of file
+diff --git a/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.h b/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.h
+index 15452186a..3b6c11bb6 100644
+--- a/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.h
++++ b/sw/airborne/firmwares/rotorcraft/guidance/guidance_aerobatic.h
+@@ -60,7 +60,11 @@
+         float d_gain;   //gain used on velocity control
+         float z_p_factor;
+         float z_d_factor;
+-        float mode;   
++        int32_t mode; 
++        uint8_t use_feedforward;
++        uint8_t use_alt_gains;  
++        uint8_t use_filtered_output;
++        uint8_t ce_mode;
+         // float min_thrust_eff;   // 0 = hover, 1 = trajectory, 2 = impulse
+     };
+ 
+@@ -76,6 +80,7 @@
+         float ref_pos[3];
+         float ref_vel[3];
+         float ref_acc[3];
++        float air[3];
+         float gains[2];
+         float thrust_in;
+         float dyaw;
+@@ -83,6 +88,7 @@
+     };
+ 
+     extern int32_t sd_id;
++    extern int32_t aerobatic_active;
+     extern int32_t sd_log[30];
+ 
+     extern struct GuidanceLogStruct aerolog;
+@@ -94,6 +100,8 @@
+     extern void setReferenceHere(uint8_t wp);
+     extern void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
+     extern void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
++    extern void updateWaypoints(void);
++    extern void setModeKill(void);
+ 
+     void guidance_aerobatic_init(void);
+     void guidance_aerobatic_enter(void);
+@@ -109,10 +117,14 @@
+     void get_du(void);
+     void set_states(void);
+ 
++    void get_mode(void);
+     void UpdateTrajectory(void);
+     void CalcNewTrajectory(void);
+     void TrajectoryScenario(void);
+ 
+     void update_sd_logger(void);
+     void message_log(void);
++
++    bool Mat44Inv(const float m[16], float invOut[16]);
++    void Mat44Vect4Mul(float du[4], const float G_inv[16], const float dv[4]);
+ #endif 
+diff --git a/sw/airborne/modules/loggers/high_speed_logger_spi_link.c b/sw/airborne/modules/loggers/high_speed_logger_spi_link.c
+index c00326987..888739a2b 100644
+--- a/sw/airborne/modules/loggers/high_speed_logger_spi_link.c
++++ b/sw/airborne/modules/loggers/high_speed_logger_spi_link.c
+@@ -70,21 +70,63 @@ void high_speed_logger_spi_link_periodic(void)
+ 
+     high_speed_logger_spi_link_data.id = counter;
+ 
+-    high_speed_logger_spi_link_data.d1  = sd_log[ 0+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d2  = sd_log[ 1+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d3  = sd_log[ 2+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d4  = sd_log[ 3+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d5  = sd_log[ 4+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d6  = sd_log[ 5+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d7  = sd_log[ 6+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d8  = sd_log[ 7+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d9  = sd_log[ 8+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d10 = sd_log[ 9+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d11 = sd_log[10+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d12 = sd_log[11+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d13 = sd_log[12+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d14 = sd_log[13+15*(counter%2)];
+-    high_speed_logger_spi_link_data.d15 = sd_log[14+15*(counter%2)];
++
++
++
++    if ((counter%2) == 1 ){
++      float AoA = -aoa_adc.angle;
++      float Voo = ms45xx.airspeed;
++      float dp = ms45xx.pressure;
++      struct NedCoor_f acc_body;
++      struct FloatRates pqr = *stateGetBodyRates_f();
++      acc_body.x = ACCEL_FLOAT_OF_BFP(imu.accel.x);
++      acc_body.y = ACCEL_FLOAT_OF_BFP(imu.accel.y);
++      acc_body.z = ACCEL_FLOAT_OF_BFP(imu.accel.z);
++
++      high_speed_logger_spi_link_data.d1  = *(int32_t*)&AoA;
++      high_speed_logger_spi_link_data.d2  = *(int32_t*)&Voo;
++      high_speed_logger_spi_link_data.d3  = *(int32_t*)&dp;
++      high_speed_logger_spi_link_data.d4  = *(int32_t*)&pqr.p;
++      high_speed_logger_spi_link_data.d5  = *(int32_t*)&pqr.q;
++      high_speed_logger_spi_link_data.d6  = *(int32_t*)&pqr.r;
++      high_speed_logger_spi_link_data.d7  = *(int32_t*)&acc_body.x;
++      high_speed_logger_spi_link_data.d8  = *(int32_t*)&acc_body.y;
++      high_speed_logger_spi_link_data.d9  = *(int32_t*)&acc_body.z;
++      high_speed_logger_spi_link_data.d10 = sd_log[9];
++      high_speed_logger_spi_link_data.d11 = sd_log[10];
++      high_speed_logger_spi_link_data.d12 = sd_log[11];
++      high_speed_logger_spi_link_data.d13 = aerobatic_active;
++      high_speed_logger_spi_link_data.d14 = stabilization_cmd[COMMAND_ROLL];
++      high_speed_logger_spi_link_data.d15 = stabilization_cmd[COMMAND_PITCH];
++      aerobatic_active = 0;
++    } else {
++      
++      struct NedCoor_f pos;
++      struct NedCoor_f vel;
++      struct NedCoor_f acc;
++      struct FloatQuat q;
++
++      pos = *stateGetPositionNed_f();
++      vel = *stateGetSpeedNed_f();
++      acc = *stateGetAccelNed_f();
++      q   = *stateGetNedToBodyQuat_f();
++
++      high_speed_logger_spi_link_data.d1  = *(int32_t*)&pos.x;
++      high_speed_logger_spi_link_data.d2  = *(int32_t*)&pos.y;
++      high_speed_logger_spi_link_data.d3  = *(int32_t*)&pos.z;
++      high_speed_logger_spi_link_data.d4  = *(int32_t*)&vel.x;
++      high_speed_logger_spi_link_data.d5  = *(int32_t*)&vel.y;
++      high_speed_logger_spi_link_data.d6  = *(int32_t*)&vel.z;
++      high_speed_logger_spi_link_data.d7  = *(int32_t*)&acc.x;
++      high_speed_logger_spi_link_data.d8  = *(int32_t*)&acc.y;
++      high_speed_logger_spi_link_data.d9  = *(int32_t*)&acc.z;
++      high_speed_logger_spi_link_data.d10 = *(int32_t*)&q.qi;
++      high_speed_logger_spi_link_data.d11 = *(int32_t*)&q.qx;
++      high_speed_logger_spi_link_data.d12 = *(int32_t*)&q.qy;
++      high_speed_logger_spi_link_data.d13 = *(int32_t*)&q.qz;
++      high_speed_logger_spi_link_data.d14 = stabilization_cmd[COMMAND_YAW];
++      high_speed_logger_spi_link_data.d15 = stabilization_cmd[COMMAND_THRUST];
++    }
+     
+     spi_submit(&(HIGH_SPEED_LOGGER_SPI_LINK_DEVICE), &high_speed_logger_spi_link_transaction);
+   }
+diff --git a/sw/airborne/modules/sensors/aoa_adc.c b/sw/airborne/modules/sensors/aoa_adc.c
+index c1147eb78..01a7dd885 100644
+--- a/sw/airborne/modules/sensors/aoa_adc.c
++++ b/sw/airborne/modules/sensors/aoa_adc.c
+@@ -48,7 +48,7 @@
+ #endif
+ /// Default sensitivity (2*pi on a 10 bit ADC)
+ #ifndef AOA_SENS
+-#define AOA_SENS ((2.0*M_PI)/1024)
++#define AOA_SENS ((2.0*M_PI)/4000)
+ #endif
+ 
+ 

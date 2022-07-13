@@ -1394,9 +1394,10 @@
 
     <message name="AEROBATIC_INDI" id="158">
       <field name="max_vel" type="float"/>
-      <field name="macc_acc" type="float"/>
+      <field name="max_acc" type="float"/>
       <field name="p_gain" type="float"/>
-      <field name="d_gain" type="float"/>
+      <field name="v_gain" type="float"/>
+      <field name="a_gain" type="float"/>
       <field name="mode" type="float"/>
       <field name="ce_mode" type="float"/>
       <field name="air" type="float[]"/>
