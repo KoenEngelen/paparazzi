@@ -54,13 +54,20 @@
     #include "math/pprz_matrix_decomp_float.h"
 
     struct AerobaticVariableSettings {
-        float max_vel;  //maximum velocity used on trajectory
-        float max_acc;  //maximum acceleration used on trajectory
-        float p_gain;   //gain used on position control
-        float v_gain;   //gain used on velocity control
-        float a_gain;   //gain used on acceleration control
-        float z_p_factor;
-        float z_d_factor;
+        float offset_x;
+        float offset_y;
+        float offset_z;
+        // float max_vel;  //maximum velocity used on trajectory
+        // float max_acc;  //maximum acceleration used on trajectory
+        float p_gain_x;   //gain used on position control
+        float v_gain_x;   //gain used on velocity control
+        float a_gain_x;   //gain used on acceleration control
+        float p_gain_y;   //gain used on position control
+        float v_gain_y;   //gain used on velocity control
+        float a_gain_y;   //gain used on acceleration control
+        float p_gain_z;   //gain used on position control
+        float v_gain_z;   //gain used on velocity control
+        float a_gain_z;   //gain used on acceleration control
         int32_t mode; 
         uint8_t use_feedforward;
         uint8_t use_alt_gains;  

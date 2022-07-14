@@ -95,6 +95,14 @@
   <section name="IMU" prefix="IMU_">
     <!-- Use default driver values for gyro -->
     <!-- IMU calibration, make sure to calibrate the IMU properly before flight, see the wiki for more info-->
+
+    <!-- <define name="ACCEL_X_NEUTRAL" value="99"/>
+    <define name="ACCEL_Y_NEUTRAL" value="-147"/>
+    <define name="ACCEL_Z_NEUTRAL" value="-56"/>
+    <define name="ACCEL_X_SENS" value="5.124557808130992" integer="16"/>
+    <define name="ACCEL_Y_SENS" value="5.328001398908523" integer="16"/>
+    <define name="ACCEL_Z_SENS" value="4.860152447391604" integer="16"/> -->
+
     <define name="ACCEL_X_NEUTRAL" value="-13"/>
     <define name="ACCEL_Y_NEUTRAL" value="10"/>
     <define name="ACCEL_Z_NEUTRAL" value="-52"/>
@@ -188,13 +196,22 @@
   </section>
 
   <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
-      <define name="MAX_VEL" value="1.0"/>
-      <define name="MAX_ACC" value="1.0"/>    
-      <define name="P_GAIN" value="1.0"/>
-      <define name="V_GAIN" value="4.0"/>    
-      <define name="A_GAIN" value="1.0"/> 
-      <define name="Z_P_FACTOR" value="1.0"/>
-      <define name="Z_D_FACTOR" value="1.0"/>
+      <define name="X_OFF" value="0.0"/> 
+      <define name="Y_OFF" value="0.0"/> 
+      <define name="Z_OFF" value="0.0"/> 
+      
+      <define name="P_GAIN_X" value="1.0"/>
+      <define name="V_GAIN_X" value="4.0"/>    
+      <define name="A_GAIN_X" value="1.0"/> 
+      
+      <define name="P_GAIN_Y" value="0.0"/>
+      <define name="V_GAIN_Y" value="0.0"/>    
+      <define name="A_GAIN_Y" value="0.0"/>
+
+      <define name="P_GAIN_Z" value="1.0"/>
+      <define name="V_GAIN_Z" value="4.0"/>    
+      <define name="A_GAIN_Z" value="1.0"/> 
+      
       <define name="MODE" value="0" type="int32"/>
       <define name="USE_FEEDFORWARD" value="FALSE"/>
       <define name="USE_ALT_GAINS" value="TRUE"/>

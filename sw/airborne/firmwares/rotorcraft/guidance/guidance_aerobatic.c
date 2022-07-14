@@ -42,7 +42,7 @@
 // #ifndef GUIDANCE_AEROBATIC_USE_FEEDFORWARD
 // #define GUIDANCE_AEROBATIC_USE_FEEDFORWARD FALSE
 // #endif
-#define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+// #define GUIDANCE_INDI_FILTER_CUTOFF 3.0
 #ifndef GUIDANCE_INDI_FILTER_CUTOFF
   #ifdef STABILIZATION_INDI_FILT_CUTOFF
     #define GUIDANCE_INDI_FILTER_CUTOFF STABILIZATION_INDI_FILT_CUTOFF
@@ -155,13 +155,20 @@ struct trajectory_section {
     float acc_max;
 } traj_sec;
 struct AerobaticVariableSettings varset = {
-    .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
-    .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
-    .p_gain  = GUIDANCE_AEROBATIC_P_GAIN,
-    .v_gain  = GUIDANCE_AEROBATIC_V_GAIN,
-    .a_gain  = GUIDANCE_AEROBATIC_A_GAIN,
-    .z_p_factor  = GUIDANCE_AEROBATIC_Z_P_FACTOR,
-    .z_d_factor  = GUIDANCE_AEROBATIC_Z_D_FACTOR,
+    // .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
+    // .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
+    .offset_x  = GUIDANCE_AEROBATIC_X_OFF,
+    .offset_y  = GUIDANCE_AEROBATIC_Y_OFF,
+    .offset_z  = GUIDANCE_AEROBATIC_Z_OFF,
+    .p_gain_x  = GUIDANCE_AEROBATIC_P_GAIN_X,
+    .v_gain_x  = GUIDANCE_AEROBATIC_V_GAIN_X,
+    .a_gain_x  = GUIDANCE_AEROBATIC_A_GAIN_X,
+    .p_gain_y  = GUIDANCE_AEROBATIC_P_GAIN_Y,
+    .v_gain_y  = GUIDANCE_AEROBATIC_V_GAIN_Y,
+    .a_gain_y  = GUIDANCE_AEROBATIC_A_GAIN_Y,
+    .p_gain_z  = GUIDANCE_AEROBATIC_P_GAIN_Z,
+    .v_gain_z  = GUIDANCE_AEROBATIC_V_GAIN_Z,
+    .a_gain_z  = GUIDANCE_AEROBATIC_A_GAIN_Z,
     .mode = GUIDANCE_AEROBATIC_MODE,
     .use_feedforward = GUIDANCE_AEROBATIC_USE_FEEDFORWARD,
     .use_alt_gains = GUIDANCE_AEROBATIC_USE_ALT_GAINS,
@@ -173,8 +180,8 @@ struct AerobaticVariableSettings varset = {
 struct GuidanceLogStruct aerolog = {
     .t = 0.0f,
     .mode = GUIDANCE_AEROBATIC_MODE,
-    .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
-    .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
+    // .max_vel = GUIDANCE_AEROBATIC_MAX_VEL,
+    // .max_acc = GUIDANCE_AEROBATIC_MAX_ACC,
     .q[0] = 0,
     .q[1] = 0,
     .q[2] = 0,
@@ -228,8 +235,8 @@ int8_t active_mode = 0;
 float mode_2_radius = 0.0f;
 float mode_2_angle = 0.0f;
 
-float THRUST_TO_CMD = MAX_PPRZ_f/20.0;
-float CMD_TO_THRUST = 20.0/MAX_PPRZ_f;
+float THRUST_TO_CMD = MAX_PPRZ_f/23.08;
+float CMD_TO_THRUST = 23.08/MAX_PPRZ_f;
 
 float x_coords[4] = {0};
 float y_coords[4] = {0};
@@ -270,35 +277,35 @@ void guidance_h_module_run(UNUSED bool in_flight){
     guidance_aerobatic_run();
 }
 //Messages
-static void send_aerobatic_INDI(struct transport_tx *trans, struct link_device *dev){
-    pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
-                         &varset.max_vel,
-                         &varset.max_acc,
-                         &varset.p_gain,
-                         &varset.v_gain,
-                         &varset.a_gain,
-                         &varset.mode,
-                         &varset.ce_mode,
-                         3,&aerolog.air[0]);
-}
-static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
-    pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
-                         3,&aerolog.pos[0],
-                         3,&aerolog.vel[0],
-                         3,&aerolog.acc[0],
-                         3,&aerolog.ref_pos[0],
-                         3,&aerolog.ref_vel[0],
-                         3,&aerolog.ref_acc[0],
-                         3,&aerolog.air[0],
-                         2,&aerolog.gains[0]);
-}
+// static void send_aerobatic_INDI(struct transport_tx *trans, struct link_device *dev){
+//     pprz_msg_send_AEROBATIC_INDI(trans, dev, AC_ID,
+//                          &varset.max_vel,
+//                          &varset.max_acc,
+//                          &varset.p_gain_x,
+//                          &varset.v_gain_x,
+//                          &varset.a_gain_x,
+//                          &varset.mode,
+//                          &varset.ce_mode,
+//                          3,&aerolog.air[0]);
+// }
+// static void send_aerobatic_log(struct transport_tx *trans, struct link_device *dev){
+//     pprz_msg_send_AEROBATIC_LOG(trans, dev, AC_ID,
+//                          3,&aerolog.pos[0],
+//                          3,&aerolog.vel[0],
+//                          3,&aerolog.acc[0],
+//                          3,&aerolog.ref_pos[0],
+//                          3,&aerolog.ref_vel[0],
+//                          3,&aerolog.ref_acc[0],
+//                          3,&aerolog.air[0],
+//                          2,&aerolog.gains[0]);
+// }
 // Main functions
 void guidance_aerobatic_init(void){
   t = -5.0;
 
   filter_init();
-  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_LOG, send_aerobatic_log);
-  register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_INDI);
+  // register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_LOG, send_aerobatic_log);
+  // register_periodic_telemetry(DefaultPeriodic, PPRZ_MSG_ID_AEROBATIC_INDI, send_aerobatic_INDI);
  }
 void guidance_aerobatic_enter(void){
     t = 0.0;
@@ -448,15 +455,15 @@ void YawControl(void){
   float_quat_vmult(&Yaw_bE, &q_inv, &Yaw_b);
 
   float mag;
-  mag = sqrt(Yaw_bE.x*Yaw_bE.x+Yaw_bE.y*Yaw_bE.y);
+  mag = sqrtf(Yaw_bE.x*Yaw_bE.x+Yaw_bE.y*Yaw_bE.y);
 
   Yaw_proj.x = Yaw_bE.x/mag;
   Yaw_proj.y = Yaw_bE.y/mag;
   Yaw_proj.z = 0.0f;
 
 
-  Yaw_ref.x = -1.0f/sqrt(2.0f);
-  Yaw_ref.y = 1.0f/sqrt(2.0f);
+  Yaw_ref.x = -1.0f/sqrtf(2.0f);
+  Yaw_ref.y = 1.0f/sqrtf(2.0f);
   Yaw_ref.z = 0.0f;
 
   // Yaw_ref.x = 0.0f;
@@ -515,17 +522,28 @@ void Controller(void){
   //     float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR;
   //   }
   // }
-  float AGain = varset.a_gain;
-  float VGain = varset.v_gain * AGain;
-  float PGain = varset.p_gain * VGain;
+  float AGainX = varset.a_gain_x;
+  float VGainX = varset.v_gain_x * AGainX;
+  float PGainX = varset.p_gain_x * VGainX;
 
+  float AGainY = varset.a_gain_y;
+  float VGainY = varset.v_gain_y * AGainY;
+  float PGainY = varset.p_gain_y * VGainY;
 
-  float zPFactor = GUIDANCE_AEROBATIC_Z_P_FACTOR * PGain;
-  float zVFactor = GUIDANCE_AEROBATIC_Z_D_FACTOR * VGain;
+  float AGainZ = varset.a_gain_z;
+  float VGainZ = varset.v_gain_z * AGainZ;
+  float PGainZ = varset.p_gain_z * VGainZ;
+
 
   struct FloatVect3 da_p;
   struct FloatVect3 da_v;
   struct FloatVect3 da_a;
+
+
+  struct FloatVect3 da_b_p;
+  struct FloatVect3 da_b_v;
+  struct FloatVect3 da_b_a;
+
   struct FloatVect3 da;
   
   // ref.pos.x = -20.0;
@@ -551,29 +569,39 @@ void Controller(void){
   //   PGain = 0.0;
   // }
   
-  da_p.x = PGain * (varset.max_vel+ref.pos.x-in.pos.x);
-  da_p.y = PGain * (ref.pos.y-in.pos.y);
-  da_p.z = PGain * (ref.pos.z-in.pos.z);
+  da_p.x = (varset.offset_x+ref.pos.x-in.pos.x);
+  da_p.y = (varset.offset_y+ref.pos.y-in.pos.y);
+  da_p.z = (varset.offset_z+ref.pos.z-in.pos.z);
 
-  da_v.x = VGain * (ref.vel.x-in.vel.x);
-  da_v.y = VGain * (ref.vel.y-in.vel.y);
-  da_v.z = VGain * (ref.vel.z-in.vel.z);
+  float_quat_vmult(&da_b_p, &filt.q, &da_p);
 
-  da_a.x = AGain * (ref.acc.x - filt.acc.x);
-  da_a.y = AGain * (ref.acc.y - filt.acc.y);
-  da_a.z = AGain * (ref.acc.z - filt.acc.z);
+  da_v.x = (ref.vel.x-in.vel.x);
+  da_v.y = (ref.vel.y-in.vel.y);
+  da_v.z = (ref.vel.z-in.vel.z);
 
-  da.x = da_p.x + da_v.x + da_a.x;
-  da.y = da_p.y + da_v.y + da_a.y;
-  da.z = da_p.z + da_v.z + da_a.z;
+  float_quat_vmult(&da_b_v, &filt.q, &da_v);
 
-  float_quat_vmult(&ctrl3.dv, &filt.q, &da);
+  da_a.x = (ref.acc.x - filt.acc.x);
+  da_a.y = (ref.acc.y - filt.acc.y);
+  da_a.z = (ref.acc.z - filt.acc.z);
+
+  float_quat_vmult(&da_b_a, &filt.q, &da_a);
+
+  ctrl3.dv.x = PGainX * da_b_p.x + VGainX * da_b_v.x + AGainX * da_b_a.x;
+  ctrl3.dv.y = PGainY * da_b_p.y + VGainY * da_b_v.y + AGainY * da_b_a.y;
+  ctrl3.dv.z = PGainZ * da_b_p.z + VGainZ * da_b_v.z + AGainZ * da_b_a.z;
+
+  // da.x = da_p.x + da_v.x + da_a.x;
+  // da.y = da_p.y + da_v.y + da_a.y;
+  // da.z = da_p.z + da_v.z + da_a.z;
+
+  // float_quat_vmult(&ctrl3.dv, &filt.q, &da);
 }
 void get_G(void){ 
   ctrl3.G[0][0] =  0.0f; 
-  ctrl3.G[1][0] =  9.81 +0.0*fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl3.G[1][0] =  fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
   ctrl3.G[2][0] =  0.0f; 
-  ctrl3.G[0][1] = -9.81 -0.0*fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
+  ctrl3.G[0][1] = -fmaxf(filt.thrust,MIN_THRUST_EFFECTIVNESS); 
   ctrl3.G[1][1] =  0.0f; 
   ctrl3.G[2][1] =  0.0f; 
   ctrl3.G[0][2] =  0.0f; 
@@ -663,41 +691,45 @@ void set_states(void){
       out.thrust_cmd = THRUST_MIN;
       out.thrust = THRUST_MIN*CMD_TO_THRUST;
   }
-    // struct FloatQuat dq;
+    struct FloatQuat dq;
     struct FloatQuat q_res = {0};
     struct Int32Quat q_i_res = {0};
 
 
-    // float magdu;
-    // magdu = sqrtf(ctrl.dphi*ctrl.dphi+ctrl.dtheta*ctrl.dtheta+ctrl.dpsi*ctrl.dpsi);
-    // float dphi_perc = ctrl.dphi/magdu;
-    // float dtheta_perc = ctrl.dtheta/magdu;
-    // float dpsi_perc = ctrl.dpsi/magdu;
+    // Test Theta only
+    ctrl.dphi = 0.0;
+    ctrl.dpsi = 0.0;
+
+    float magdu;
+    magdu = sqrtf(ctrl.dphi*ctrl.dphi+ctrl.dtheta*ctrl.dtheta+ctrl.dpsi*ctrl.dpsi);
+    float dphi_perc = ctrl.dphi/magdu;
+    float dtheta_perc = ctrl.dtheta/magdu;
+    float dpsi_perc = ctrl.dpsi/magdu;
 
     // if (magdu > 2.0*M_PI/16.0){
     //   magdu = 2.0*M_PI/16.0;
     // }
-    // if (magdu < 1e-10){
-    //   dq.qi = 1.0;
-    //   dq.qx = 0.0;
-    //   dq.qy = 0.0;
-    //   dq.qz = 0.0;
-    // }else{
-    //   dq.qi = cosf(magdu/2.0);
-    //   dq.qx = sinf(magdu/2.0)*dphi_perc/magdu;
-    //   dq.qy = sinf(magdu/2.0)*dtheta_perc/magdu;
-    //   dq.qz = sinf(magdu/2.0)*dpsi_perc/magdu;
-    // }
-    // float_quat_comp(&q_res, &filt.q, &dq);
+    if (magdu < 1e-10){
+      dq.qi = 1.0;
+      dq.qx = 0.0;
+      dq.qy = 0.0;
+      dq.qz = 0.0;
+    }else{
+      dq.qi = cosf(magdu/2.0);
+      dq.qx = sinf(magdu/2.0)*dphi_perc/magdu;
+      dq.qy = sinf(magdu/2.0)*dtheta_perc/magdu;
+      dq.qz = sinf(magdu/2.0)*dpsi_perc/magdu;
+    }
+    float_quat_comp(&q_res, &filt.q, &dq);
 
     // // float_quat_comp(&q_res, &filt.q, &qc);
 
-    // magdu = sqrt(q_res.qi*q_res.qi+q_res.qx*q_res.qx+q_res.qy*q_res.qy+q_res.qz*q_res.qz);
+    magdu = sqrtf(q_res.qi*q_res.qi+q_res.qx*q_res.qx+q_res.qy*q_res.qy+q_res.qz*q_res.qz);
 
-    // q_res.qi = q_res.qi/magdu;
-    // q_res.qx = q_res.qx/magdu;
-    // q_res.qy = q_res.qy/magdu;
-    // q_res.qz = q_res.qz/magdu;
+    q_res.qi = q_res.qi/magdu;
+    q_res.qx = q_res.qx/magdu;
+    q_res.qy = q_res.qy/magdu;
+    q_res.qz = q_res.qz/magdu;
 
     // update_butterworth_2_low_pass(&filt.qout_filter[0], q_res.qi);
     // update_butterworth_2_low_pass(&filt.qout_filter[1], q_res.qx);
@@ -713,9 +745,14 @@ void set_states(void){
     // filt.qout.qx = filt.qout_filter[1].o[0]/length;
     // filt.qout.qy = filt.qout_filter[2].o[0]/length;
     // filt.qout.qz = filt.qout_filter[3].o[0]/length;
-
+    
     //REMOVE THIS LINE:
-    q_res.qi = 1.0;
+    // q_res.qi = 1.0;
+    // float angle_pitch = 2.0*acosf(q_res.qi)*q_res.qx/sqrtf(q_res.qx*q_res.qx+q_res.qy*q_res.qy+q_res.qz*q_res.qz);
+    // q_res.qi = cosf(angle_pitch/2.0);
+    // q_res.qx = 0.0;
+    // q_res.qy = sinf(angle_pitch/2.0);
+    // q_res.qz = 0.0;
 
     QUAT_BFP_OF_REAL(q_i_res, q_res);
     stabilization_indi_attitude_run(q_i_res,true);
@@ -898,16 +935,16 @@ void message_log(void){
     aerolog.t = t;
     aerolog.mode = varset.mode;
 
-    aerolog.max_vel = varset.max_vel;
-    aerolog.max_acc = varset.max_acc;
+    // aerolog.max_vel = varset.max_vel;
+    // aerolog.max_acc = varset.max_acc;
 
     aerolog.du[0] = ctrl.dphi;
     aerolog.du[1] = ctrl.dtheta;
     aerolog.du[2] = ctrl.dT;
     aerolog.thrust_in = in.thrust;
 
-    aerolog.gains[0] = varset.p_gain;
-    aerolog.gains[1] = varset.v_gain;
+    aerolog.gains[0] = varset.p_gain_x;
+    aerolog.gains[1] = varset.v_gain_x;
 }
 void update_sd_logger(void){
   sd_id = sd_id + 2;
@@ -942,8 +979,8 @@ void update_sd_logger(void){
   sd_log[23] = stabilization_cmd[COMMAND_YAW];
   sd_log[24] = stabilization_cmd[COMMAND_THRUST];
 
-  sd_log[25] = varset.p_gain;
-  sd_log[26] = varset.v_gain;
+  sd_log[25] = varset.p_gain_x;
+  sd_log[26] = varset.v_gain_x;
   // sd_log[27] = (int32_t) 100 * 420;
   // sd_log[28] = (int32_t) 10 * 420;
   // sd_log[29] = (int32_t) 420;
@@ -998,6 +1035,7 @@ void get_mode(void){
     break;
   // Fly in circle
   case 2: ;
+    float vel = 1.0;
     if (switched_mode){
       float x0 = cur_pos.x - 14.0;
       float y0 = cur_pos.y + 14.0;
@@ -1009,13 +1047,13 @@ void get_mode(void){
     }
     ref.pos.x =  mode_2_radius * sinf(mode_2_angle) + circ_pos.x;
     ref.pos.y =  mode_2_radius * cosf(mode_2_angle) + circ_pos.y;
-    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
-    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * varset.max_vel/(2.0*M_PI*mode_2_radius);
+    ref.vel.x =  mode_2_radius * cosf(mode_2_angle) * vel/(2.0*M_PI*mode_2_radius);
+    ref.vel.y = -mode_2_radius * sinf(mode_2_angle) * vel/(2.0*M_PI*mode_2_radius);
     if (varset.use_feedforward){
-      ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(varset.max_vel/mode_2_radius,2.0);
-      ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(varset.max_vel/mode_2_radius,2.0);
+      ref.acc.x = -mode_2_radius * sinf(mode_2_angle) * powf(vel/mode_2_radius,2.0);
+      ref.acc.y = -mode_2_radius * cosf(mode_2_angle) * powf(vel/mode_2_radius,2.0);
     }
-    mode_2_angle += varset.max_vel/(2.0*M_PI*mode_2_radius*512.0);
+    mode_2_angle += vel/(2.0*M_PI*mode_2_radius*512.0);
     break;
   // Acceleration tracking test
   case 3: ;
@@ -1208,8 +1246,8 @@ void TrajectoryScenario(void){
     traj_sec.pos_end.x =  y_coords[traj_sec.number];
     traj_sec.pos_end.y =  x_coords[traj_sec.number];
 
-    traj_sec.vel_max = varset.max_vel; 
-    traj_sec.acc_max = varset.max_acc;
+    // traj_sec.vel_max = varset.max_vel; 
+    // traj_sec.acc_max = varset.max_acc;
 
 
 }

@@ -6,13 +6,18 @@
       Guidance controller for quadshot using INDI
     </description>
     <section name="GUIDANCE_AEROBATIC" prefix="GUIDANCE_AEROBATIC_">
-      <define name="MAX_VEL" value="1.0" description="Maximum velocity allowed during trajectory tracking"/>
-      <define name="MAX_ACC" value="1.0" description="Maximum acceleration allowed during trajectory tracking"/>
-      <define name="P_GAIN" value="1.0" description="Positional gain of the aerobatic controller"/>
-      <define name="V_GAIN" value="1.0" description="Velocity gain of the aerobatic controller"/>
-      <define name="A_GAIN" value="1.0" description="Acceleration gain of the aerobatic controller"/>
-      <define name="Z_P_FACTOR" value="1.0" description="Vertical positional gain of the aerobatic controller"/>
-      <define name="Z_D_FACTOR" value="1.0" description="Vertical velocity gain of the aerobatic controller"/>
+      <define name="X_OFF" value="0.0" description="Offset in X position"/>
+      <define name="Y_OFF" value="0.0" description="Offset in Y position"/>
+      <define name="Z_OFF" value="0.0" description="Offset in Z position"/>
+      <define name="P_GAIN_X" value="1.0" description="Positional gain of the aerobatic controller"/>
+      <define name="V_GAIN_X" value="1.0" description="Velocity gain of the aerobatic controller"/>
+      <define name="A_GAIN_X" value="1.0" description="Acceleration gain of the aerobatic controller"/>
+      <define name="P_GAIN_Y" value="1.0" description="Positional gain of the aerobatic controller"/>
+      <define name="V_GAIN_Y" value="1.0" description="Velocity gain of the aerobatic controller"/>
+      <define name="A_GAIN_Y" value="1.0" description="Acceleration gain of the aerobatic controller"/>
+      <define name="P_GAIN_Z" value="1.0" description="Positional gain of the aerobatic controller"/>
+      <define name="V_GAIN_Z" value="1.0" description="Velocity gain of the aerobatic controller"/>
+      <define name="A_GAIN_Z" value="1.0" description="Acceleration gain of the aerobatic controller"/>
       <define name="MODE" value="0.0" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Circle"/>
       <define name="USE_FEEDFORWARD" value="FALSE|TRUE" description="enable feedforward acceleration"/>
       <define name="USE_ALT_GAINS" value="FALSE|TRUE" description="enable altitude gains if horizontal gains are disabled"/>
@@ -24,13 +29,18 @@
   <settings>
     <dl_settings>
       <dl_settings NAME="guidance_aerobatic">
-        <dl_setting var="varset.max_vel" min="0" step="0.25" max="50.0" shortname="Vmax" param="GUIDANCE_AEROBATIC_MAX_VEL" persistent="true" module="guidance/guidance_aerobatic"/>
-        <dl_setting var="varset.max_acc" min="0" step="0.25" max="10.0" shortname="Amax" param="GUIDANCE_AEROBATIC_MAX_ACC" persistent="true"/>
-        <dl_setting var="varset.p_gain"  min="0" step="0.25" max="20.0" shortname="Kp"   param="GUIDANCE_AEROBATIC_P_GAIN"  persistent="true"/>
-        <dl_setting var="varset.v_gain"  min="0" step="0.25" max="20.0" shortname="Kv"   param="GUIDANCE_AEROBATIC_V_GAIN"  persistent="true"/>
-        <dl_setting var="varset.a_gain"  min="0" step="0.01" max="2.0" shortname="Ka"   param="GUIDANCE_AEROBATIC_A_GAIN"  persistent="true"/>
-        <dl_setting var="varset.z_p_factor"  min="0" step="0.25" max="20.0" shortname="ZpF"   param="GUIDANCE_AEROBATIC_Z_P_FACTOR"  persistent="true"/>
-        <dl_setting var="varset.z_d_factor"  min="0" step="0.25" max="20.0" shortname="ZdF"   param="GUIDANCE_AEROBATIC_Z_D_FACTOR"  persistent="true"/>
+        <dl_setting var="varset.offset_x"  min="-2.0" step="0.25" max="2.0" shortname="Xoffset" param="GUIDANCE_AEROBATIC_X_OFF" persistent="true"/>
+        <dl_setting var="varset.offset_y"  min="-2.0" step="0.25" max="2.0" shortname="Yoffset" param="GUIDANCE_AEROBATIC_Y_OFF" persistent="true"/>
+        <dl_setting var="varset.offset_z"  min="-2.0" step="0.25" max="2.0" shortname="Zoffset" param="GUIDANCE_AEROBATIC_Z_OFF" persistent="true"/>
+        <dl_setting var="varset.p_gain_x"  min="0" step="0.25" max="10.0" shortname="Kpx"   param="GUIDANCE_AEROBATIC_P_GAIN_X"  persistent="true"/>
+        <dl_setting var="varset.v_gain_x"  min="0" step="0.25" max="10.0" shortname="Kvx"   param="GUIDANCE_AEROBATIC_V_GAIN_X"  persistent="true"/>
+        <dl_setting var="varset.a_gain_x"  min="0" step="0.01" max="2.0"  shortname="Kax"   param="GUIDANCE_AEROBATIC_A_GAIN_X"  persistent="true"/>
+        <dl_setting var="varset.p_gain_y"  min="0" step="0.25" max="10.0" shortname="Kpy"   param="GUIDANCE_AEROBATIC_P_GAIN_Y"  persistent="true"/>
+        <dl_setting var="varset.v_gain_y"  min="0" step="0.25" max="10.0" shortname="Kvy"   param="GUIDANCE_AEROBATIC_V_GAIN_Y"  persistent="true"/>
+        <dl_setting var="varset.a_gain_y"  min="0" step="0.01" max="2.0"  shortname="Kay"   param="GUIDANCE_AEROBATIC_A_GAIN_Y"  persistent="true"/>
+        <dl_setting var="varset.p_gain_z"  min="0" step="0.25" max="10.0" shortname="Kpz"   param="GUIDANCE_AEROBATIC_P_GAIN_Z"  persistent="true"/>
+        <dl_setting var="varset.v_gain_z"  min="0" step="0.25" max="10.0" shortname="Kvz"   param="GUIDANCE_AEROBATIC_V_GAIN_Z"  persistent="true"/>
+        <dl_setting var="varset.a_gain_z"  min="0" step="0.01" max="2.0"  shortname="Kaz"   param="GUIDANCE_AEROBATIC_A_GAIN_Z"  persistent="true"/>
         <dl_setting var="varset.mode"    min="0" step="1" max="4"  shortname="mode" values="Hover|10m SE|Circle 20m SE|30m SW|Alt" param="GUIDANCE_AEROBATIC_MODE" type="int32" persistent="true"/>
         <dl_setting var="varset.use_feedforward" min="0" step="1" max="1" shortname="feedforward" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_FEEDFORWARD" type="uint8" persistent="true"/>
         <dl_setting var="varset.use_alt_gains" min="0" step="1" max="1" shortname="alt gains" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_ALT_GAINS" type="uint8" persistent="true"/>
