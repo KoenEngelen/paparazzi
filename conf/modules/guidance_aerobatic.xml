@@ -18,55 +18,40 @@
       <define name="P_GAIN_Z" value="1.0" description="Positional gain of the aerobatic controller"/>
       <define name="V_GAIN_Z" value="1.0" description="Velocity gain of the aerobatic controller"/>
       <define name="A_GAIN_Z" value="1.0" description="Acceleration gain of the aerobatic controller"/>
-      <define name="MODE" value="0.0" description="Guidance mode: 0 Hover | 1 Trajectory | 2 Circle"/>
-      <define name="USE_FEEDFORWARD" value="FALSE|TRUE" description="enable feedforward acceleration"/>
-      <define name="USE_ALT_GAINS" value="FALSE|TRUE" description="enable altitude gains if horizontal gains are disabled"/>
-      <define name="USE_FILTERED_OUTPUT" value="FALSE|TRUE" description="use a filter on quaternion output"/>
-      <define name="CE_MODE" value="2" description="enable altitude gains if horizontal gains are disabled"/>
-      <!-- <define name="MIN_THRUST_EFFECT" value="4.0" description="Minimum value for effectivness"/> -->
     </section>
   </doc>
+  
   <settings>
     <dl_settings>
       <dl_settings NAME="guidance_aerobatic">
-        <dl_setting var="varset.offset_x"  min="-2.0" step="0.25" max="2.0" shortname="Xoffset" param="GUIDANCE_AEROBATIC_X_OFF" persistent="true"/>
-        <dl_setting var="varset.offset_y"  min="-2.0" step="0.25" max="2.0" shortname="Yoffset" param="GUIDANCE_AEROBATIC_Y_OFF" persistent="true"/>
-        <dl_setting var="varset.offset_z"  min="-2.0" step="0.25" max="2.0" shortname="Zoffset" param="GUIDANCE_AEROBATIC_Z_OFF" persistent="true"/>
-        <dl_setting var="varset.p_gain_x"  min="0" step="0.25" max="10.0" shortname="Kpx"   param="GUIDANCE_AEROBATIC_P_GAIN_X"  persistent="true"/>
-        <dl_setting var="varset.v_gain_x"  min="0" step="0.25" max="10.0" shortname="Kvx"   param="GUIDANCE_AEROBATIC_V_GAIN_X"  persistent="true"/>
-        <dl_setting var="varset.a_gain_x"  min="0" step="0.01" max="2.0"  shortname="Kax"   param="GUIDANCE_AEROBATIC_A_GAIN_X"  persistent="true"/>
-        <dl_setting var="varset.p_gain_y"  min="0" step="0.25" max="10.0" shortname="Kpy"   param="GUIDANCE_AEROBATIC_P_GAIN_Y"  persistent="true"/>
-        <dl_setting var="varset.v_gain_y"  min="0" step="0.25" max="10.0" shortname="Kvy"   param="GUIDANCE_AEROBATIC_V_GAIN_Y"  persistent="true"/>
-        <dl_setting var="varset.a_gain_y"  min="0" step="0.01" max="2.0"  shortname="Kay"   param="GUIDANCE_AEROBATIC_A_GAIN_Y"  persistent="true"/>
-        <dl_setting var="varset.p_gain_z"  min="0" step="0.25" max="10.0" shortname="Kpz"   param="GUIDANCE_AEROBATIC_P_GAIN_Z"  persistent="true"/>
-        <dl_setting var="varset.v_gain_z"  min="0" step="0.25" max="10.0" shortname="Kvz"   param="GUIDANCE_AEROBATIC_V_GAIN_Z"  persistent="true"/>
-        <dl_setting var="varset.a_gain_z"  min="0" step="0.01" max="2.0"  shortname="Kaz"   param="GUIDANCE_AEROBATIC_A_GAIN_Z"  persistent="true"/>
-        <dl_setting var="varset.mode"    min="0" step="1" max="4"  shortname="mode" values="Hover|10m SE|Circle 20m SE|30m SW|Alt" param="GUIDANCE_AEROBATIC_MODE" type="int32" persistent="true"/>
-        <dl_setting var="varset.use_feedforward" min="0" step="1" max="1" shortname="feedforward" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_FEEDFORWARD" type="uint8" persistent="true"/>
-        <dl_setting var="varset.use_alt_gains" min="0" step="1" max="1" shortname="alt gains" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_ALT_GAINS" type="uint8" persistent="true"/>
-        <dl_setting var="varset.use_filtered_output" min="0" step="1" max="1" shortname="filter output" values="FALSE|TRUE" param="GUIDANCE_AEROBATIC_USE_FILTERED_OUTPUT" type="uint8" persistent="true"/>
-        <dl_setting var="varset.ce_mode" min="1" step="1" max="2" shortname="CE mode" values="3x3|4x4" param="GUIDANCE_AEROBATIC_CE_MODE" type="uint8" persistent="true"/>
-        <!-- <dl_setting var="varset.min_thrust_eff"    min="1.0" step="0.1" max="10.0"  shortname="min_eff" param="GUIDANCE_AEROBATIC_MIN_THRUST_EFFECT"    persistent="true"/> -->
+        <dl_setting var="my_settings.offset_x"  min="-2.0" step="0.25" max="2.0" shortname="Xoffset" param="GUIDANCE_AEROBATIC_X_OFF"     persistent="true"/>
+        <dl_setting var="my_settings.offset_y"  min="-2.0" step="0.25" max="2.0" shortname="Yoffset" param="GUIDANCE_AEROBATIC_Y_OFF"     persistent="true"/>
+        <dl_setting var="my_settings.offset_z"  min="-2.0" step="0.25" max="2.0" shortname="Zoffset" param="GUIDANCE_AEROBATIC_Z_OFF"     persistent="true"/>
+        <dl_setting var="my_settings.p_gain_x"  min="0"    step="0.25" max="8.0" shortname="Kpx"     param="GUIDANCE_AEROBATIC_P_GAIN_X"  persistent="true"/>
+        <dl_setting var="my_settings.v_gain_x"  min="0"    step="0.25" max="8.0" shortname="Kvx"     param="GUIDANCE_AEROBATIC_V_GAIN_X"  persistent="true"/>
+        <dl_setting var="my_settings.a_gain_x"  min="0"    step="0.01" max="2.0" shortname="Kax"     param="GUIDANCE_AEROBATIC_A_GAIN_X"  persistent="true"/>
+        <dl_setting var="my_settings.p_gain_y"  min="0"    step="0.25" max="8.0" shortname="Kpy"     param="GUIDANCE_AEROBATIC_P_GAIN_Y"  persistent="true"/>
+        <dl_setting var="my_settings.v_gain_y"  min="0"    step="0.25" max="8.0" shortname="Kvy"     param="GUIDANCE_AEROBATIC_V_GAIN_Y"  persistent="true"/>
+        <dl_setting var="my_settings.a_gain_y"  min="0"    step="0.01" max="2.0" shortname="Kay"     param="GUIDANCE_AEROBATIC_A_GAIN_Y"  persistent="true"/>
+        <dl_setting var="my_settings.p_gain_z"  min="0"    step="0.25" max="8.0" shortname="Kpz"     param="GUIDANCE_AEROBATIC_P_GAIN_Z"  persistent="true"/>
+        <dl_setting var="my_settings.v_gain_z"  min="0"    step="0.25" max="8.0" shortname="Kvz"     param="GUIDANCE_AEROBATIC_V_GAIN_Z"  persistent="true"/>
+        <dl_setting var="my_settings.a_gain_z"  min="0"    step="0.01" max="2.0" shortname="Kaz"     param="GUIDANCE_AEROBATIC_A_GAIN_Z"  persistent="true"/>
       </dl_settings>
     </dl_settings>
   </settings>
+  
   <header>
     <file name="guidance_aerobatic.h"/>
   </header>
-  <!-- <init fun="guidance_module_h_init()"/> -->
-  <!-- <init fun="guidance_aerobatic_enter()"/> -->
-  <!-- <periodic fun="guidance_aerobatic_run()" freq="512" autorun="TRUE"/> -->
-
+  
   <makefile>
     <file name="guidance_aerobatic.c" dir="$(SRC_FIRMWARE)/guidance"/>
   </makefile>
-
+  
   <makefile target="ap|nps" firmware="rotorcraft">
-    <!-- <file name="pprz_matrix_decomp_float.c" dir="math"/> -->
     <define name="GUIDANCE_AEROBATIC" value="TRUE"/>
     <define name="GUIDANCE_V_MODE_MODULE_SETTING" value="GUIDANCE_V_MODE_MODULE"/>
     <define name="GUIDANCE_H_MODE_MODULE_SETTING" value="GUIDANCE_H_MODE_MODULE"/>
   </makefile>
-
 
 </module>

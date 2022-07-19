@@ -8,12 +8,12 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
 #include "math/pprz_algebra_float.h"
 #include "filters/low_pass_filter.h"
 #include "subsystems/imu.h"
 #include "subsystems/abi.h"
 #include "subsystems/radio_control.h"
-#include "CEmainmain.h"
 #include "stabilization.h"
 #include "firmwares/rotorcraft/stabilization.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_indi_simple.h"
@@ -24,6 +24,9 @@
 #endif
 #define GUIDANCE_INDI_FILTER_CUTOFF 8.0
 #define THRUST_DYNAMICS 0.03
+#define CMD_TO_THRUST (23.08/((float)(MAX_PPRZ)))
+#define MIN_THRUST (CMD_TO_THRUST * 0.2 * (float)(MAX_PPRZ))
+#define MAX_THRUST (CMD_TO_THRUST * 0.9 * (float)(MAX_PPRZ))
 
 struct filter_struct{
   Butterworth2LowPass acc_filter[3];
@@ -62,7 +65,8 @@ struct ctrl_struct {
   float dT;
 } ctrl;
 
-struct GuidanceAerobaticSettings settings = {
+int32_t aerobatic_active;
+struct MySettings my_settings = {
   .offset_x  = GUIDANCE_AEROBATIC_X_OFF,
   .offset_y  = GUIDANCE_AEROBATIC_Y_OFF,
   .offset_z  = GUIDANCE_AEROBATIC_Z_OFF,
@@ -76,12 +80,7 @@ struct GuidanceAerobaticSettings settings = {
   .v_gain_z  = GUIDANCE_AEROBATIC_V_GAIN_Z,
   .a_gain_z  = GUIDANCE_AEROBATIC_A_GAIN_Z
 };
-
-float CMD_TO_THRUST = 23.08/((float)(MAX_PPRZ));
-float MIN_THRUST = CMD_TO_THRUST * 0.2 * (float)(MAX_PPRZ);
-float MAX_THRUST = CMD_TO_THRUST * 0.9 * (float)(MAX_PPRZ);
-
-int32_t aerobatic_active;
+// struct MySettings my_settings;
 
 // Guidance V Module: UNUSED
 void guidance_v_module_init(void){}
@@ -130,30 +129,30 @@ void guidance_aerobatic_run(){
 // Controller functions
 
 void get_states(void){
+
+  // Input States
   in.q   = *stateGetNedToBodyQuat_f();
   in.pos = *stateGetPositionNed_f();
   in.vel = *stateGetSpeedNed_f();
-  in.acc = *stateGetAccelNed_f(
-  
-  // Actuator Dynamics 
-  // float dthrust = ((float) out.thrust_cmd)*CMD_TO_THRUST -  filt.thrust;   
-  // in.thrust = filt.thrust + THRUST_DYNAMICS * dthrust;
+  in.acc = *stateGetAccelNed_f();
+  // Actuator Dynamics
   in.thrust = (1.0-THRUST_DYNAMICS)*in.thrust + THRUST_DYNAMICS*out.thrust;
+  // Filter States
   filter_run();   
 }
 
 void get_dv(void){  
   
   // Load Gain Settings
-  float Kax = settings.a_gain_x;
-  float Kay = settings.a_gain_y;
-  float Kaz = settings.a_gain_z;
-  float Kvx = settings.v_gain_x * Kax;
-  float Kvy = settings.v_gain_y * Kay;
-  float Kvz = settings.v_gain_z * Kaz;
-  float Kpx = settings.p_gain_x * Kvx;
-  float Kpy = settings.p_gain_y * Kvy;
-  float Kpz = settings.p_gain_z * Kvz;
+  float Kax = my_settings.a_gain_x;
+  float Kay = my_settings.a_gain_y;
+  float Kaz = my_settings.a_gain_z;
+  float Kvx = my_settings.v_gain_x * Kax;
+  float Kvy = my_settings.v_gain_y * Kay;
+  float Kvz = my_settings.v_gain_z * Kaz;
+  float Kpx = my_settings.p_gain_x * Kvx;
+  float Kpy = my_settings.p_gain_y * Kvy;
+  float Kpz = my_settings.p_gain_z * Kvz;
 
   // Incremental Acceleration in NED (da) and Body (da_b) Reference Frame 
   struct FloatVect3 da_p;
@@ -162,9 +161,9 @@ void get_dv(void){
   struct FloatVect3 da_b_p;
   struct FloatVect3 da_b_v;
   struct FloatVect3 da_b_a;
-  da_p.x = (settings.offset_x+ref.pos.x-in.pos.x);
-  da_p.y = (settings.offset_y+ref.pos.y-in.pos.y);
-  da_p.z = (settings.offset_z+ref.pos.z-in.pos.z);
+  da_p.x = (my_settings.offset_x+ref.pos.x-in.pos.x);
+  da_p.y = (my_settings.offset_y+ref.pos.y-in.pos.y);
+  da_p.z = (my_settings.offset_z+ref.pos.z-in.pos.z);
   da_v.x = (ref.vel.x-in.vel.x);
   da_v.y = (ref.vel.y-in.vel.y);
   da_v.z = (ref.vel.z-in.vel.z);
@@ -182,6 +181,7 @@ void get_dv(void){
 }
 
 void get_G(void){
+
   //Reduced Control Effectiveness
   ctrl.Gx = -filt.thrust;
   ctrl.Gy =  filt.thrust;
@@ -189,6 +189,7 @@ void get_G(void){
 }
 
 void get_du(void){
+
   // Output Incremental Orientation, Thrust
   ctrl.dphi   = ctrl.ddy/ctrl.Gy;
   ctrl.dtheta = ctrl.ddx/ctrl.Gx;
@@ -202,6 +203,7 @@ void get_du(void){
 }
 
 void set_states(void){
+
   //Set Thrust State
   out.thrust = filt.thrust + ctrl.dT;
   out.thrust = fmaxf(MIN_THRUST,fminf(MAX_THRUST,out.thrust)); // clamp 
@@ -231,7 +233,6 @@ void set_states(void){
   struct Int32Quat q_i_res = {0};
   QUAT_BFP_OF_REAL(q_i_res, q_res);
   stabilization_indi_attitude_run(q_i_res,true);
-
 }
 
 // Filters

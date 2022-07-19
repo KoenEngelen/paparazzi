@@ -50,7 +50,7 @@
     #define GUIDANCE_AEROBATIC_H_
     #define GUIDANCE_MODULE_H_
     
-    struct GuidanceAerobaticSettings {
+    struct MySettings {
         float offset_x;
         float offset_y;
         float offset_z;
@@ -66,7 +66,16 @@
     };
 
     extern int32_t aerobatic_active;
-    extern struct GuidanceAerobaticSettings settings;
+    extern struct MySettings my_settings;
+
+    // void guidance_v_module_init(void);
+    // void guidance_v_module_enter(void);
+    // void guidance_v_module_run(UNUSED bool in_flight);
+    
+    // void guidance_h_module_read_rc(void);
+    // void guidance_h_module_init(void);
+    // void guidance_h_module_enter(void);
+    // void guidance_h_module_run(UNUSED bool in_flight);
 
     void guidance_aerobatic_init(void);
     void guidance_aerobatic_enter(void);
