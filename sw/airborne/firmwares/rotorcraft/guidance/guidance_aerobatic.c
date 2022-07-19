@@ -54,7 +54,7 @@
 #define MAX_PPRZ_f 9600.0
 #define THRUST_MIN 1920 //0.20*MAX_PPRZ //TODO lower min thrust (Check)
 #define THRUST_MAX MAX_PPRZ //8640 //0.90*MAX_PPRZ
-#define THRUST_DYNAMICS 0.01
+#define THRUST_DYNAMICS 0.03
 #define MIN_THRUST_EFFECTIVNESS 4.0
 
 #define ROWS_GUIDANCE 3 //Control Effectiveness Rows
@@ -376,13 +376,7 @@ void get_states(void){
   in.acc = *stateGetAccelNed_f();
 
   in.AoA = 0.0;
-  if (!isnan(aoa_adc.angle)){
-    in.AoA = -aoa_adc.angle;
-  }
   in.V = 0.0;
-  if (!isnan(ms45xx.airspeed)){
-    in.V = ms45xx.airspeed;
-  }
   in.ay = ACCEL_FLOAT_OF_BFP(imu.accel.y);
 
   // Actuator Dynamics 
