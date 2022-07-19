@@ -22,11 +22,11 @@
 #ifndef PERIODIC_FREQUENCY
 #define PERIODIC_FREQUENCY 512
 #endif
-#define GUIDANCE_INDI_FILTER_CUTOFF 8.0
-#define THRUST_DYNAMICS 0.03
-#define CMD_TO_THRUST (23.08/((float)(MAX_PPRZ)))
-#define MIN_THRUST (CMD_TO_THRUST * 0.2 * (float)(MAX_PPRZ))
-#define MAX_THRUST (CMD_TO_THRUST * 0.9 * (float)(MAX_PPRZ))
+#define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+#define THRUST_DYNAMICS 0.01
+#define CMD_TO_THRUST 0.00240416666//(23.08/((float)(MAX_PPRZ)))
+#define MIN_THRUST 4.616 //(23.08 * 0.2)
+#define MAX_THRUST 20.772 //(23.08 * 0.9)
 
 struct filter_struct{
   Butterworth2LowPass acc_filter[3];
@@ -197,8 +197,8 @@ void get_du(void){
   ctrl.dT     = ctrl.ddz/ctrl.Gz;
   
   // Clamp Incremental Thrust
-  float MIN_DT = MIN_THRUST - filt.thrust; 
-  float MAX_DT = MAX_THRUST - filt.thrust; 
+  float MIN_DT = (MIN_THRUST) - filt.thrust; 
+  float MAX_DT = (MAX_THRUST) - filt.thrust; 
   ctrl.dT = fmaxf(MIN_DT,fminf(MAX_DT,ctrl.dT)); // clamp
 }
 
@@ -207,14 +207,14 @@ void set_states(void){
   //Set Thrust State
   out.thrust = filt.thrust + ctrl.dT;
   out.thrust = fmaxf(MIN_THRUST,fminf(MAX_THRUST,out.thrust)); // clamp 
-  stabilization_cmd[COMMAND_THRUST] = (int)(out.thrust/CMD_TO_THRUST);
+  stabilization_cmd[COMMAND_THRUST] = (int)(out.thrust/(CMD_TO_THRUST));
 
-  // Set Quaternion Stata
+  // Set Quaternion State
   struct FloatQuat dq;
   // Test Theta only
-  dq.qi = cosf(0.5);
+  dq.qi = cosf(ctrl.dtheta/2.0);
   dq.qx = 0.0;
-  dq.qy = sinf(0.5)*ctrl.dtheta;
+  dq.qy = sinf(ctrl.dtheta/2.0);
   dq.qz = 0.0;
   // Add dQ to Quaternion
   struct FloatQuat q_res = {0};
@@ -240,8 +240,9 @@ void set_states(void){
 void filter_init(void){
   
   // Initial Values: Thrust, Quaterion
-  in.thrust = CMD_TO_THRUST*stabilization_cmd[COMMAND_THRUST];
+  in.thrust = (CMD_TO_THRUST)*stabilization_cmd[COMMAND_THRUST];
   in.thrust = fmaxf(MIN_THRUST,fminf(MAX_THRUST,in.thrust)); // clamp 
+  out.thrust = in.thrust;
   in.q = *stateGetNedToBodyQuat_f();
 
   // Filter Settings

@@ -209,7 +209,7 @@
       <define name="A_GAIN_Y" value="1.0"/>
 
       <define name="P_GAIN_Z" value="1.0"/>
-      <define name="V_GAIN_Z" value="1.0"/>    
+      <define name="V_GAIN_Z" value="8.0"/>    
       <define name="A_GAIN_Z" value="1.0"/> 
   </section>
 
