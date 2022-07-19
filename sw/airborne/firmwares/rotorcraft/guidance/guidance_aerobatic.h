@@ -49,67 +49,24 @@
 #ifndef GUIDANCE_AEROBATIC_H_
     #define GUIDANCE_AEROBATIC_H_
     #define GUIDANCE_MODULE_H_
-    //#include "generated/modules.h"
-    #include "math/pprz_algebra_int.h"
-    #include "math/pprz_matrix_decomp_float.h"
-
-    struct AerobaticVariableSettings {
+    
+    struct GuidanceAerobaticSettings {
         float offset_x;
         float offset_y;
         float offset_z;
-        // float max_vel;  //maximum velocity used on trajectory
-        // float max_acc;  //maximum acceleration used on trajectory
-        float p_gain_x;   //gain used on position control
-        float v_gain_x;   //gain used on velocity control
-        float a_gain_x;   //gain used on acceleration control
-        float p_gain_y;   //gain used on position control
-        float v_gain_y;   //gain used on velocity control
-        float a_gain_y;   //gain used on acceleration control
-        float p_gain_z;   //gain used on position control
-        float v_gain_z;   //gain used on velocity control
-        float a_gain_z;   //gain used on acceleration control
-        int32_t mode; 
-        uint8_t use_feedforward;
-        uint8_t use_alt_gains;  
-        uint8_t use_filtered_output;
-        uint8_t ce_mode;
-        // float min_thrust_eff;   // 0 = hover, 1 = trajectory, 2 = impulse
+        float p_gain_x;
+        float v_gain_x;
+        float a_gain_x;
+        float p_gain_y;
+        float v_gain_y;
+        float a_gain_y;
+        float p_gain_z;
+        float v_gain_z;
+        float a_gain_z;
     };
 
-    struct GuidanceLogStruct {
-        float t;
-        float mode;
-        float max_vel;
-        float max_acc;
-        float q[4];
-        float pos[3];
-        float vel[3];
-        float acc[3];
-        float ref_pos[3];
-        float ref_vel[3];
-        float ref_acc[3];
-        float air[3];
-        float gains[2];
-        float thrust_in;
-        float dyaw;
-        float du[3];
-    };
-
-    extern int32_t sd_id;
     extern int32_t aerobatic_active;
-    extern int32_t sd_log[30];
-
-    extern struct GuidanceLogStruct aerolog;
-    extern struct AerobaticVariableSettings varset;
-
-    extern float guidance_aerobatic_indi_gain;
-
-
-    extern void setReferenceHere(uint8_t wp);
-    extern void makeWaypointsSquare(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
-    extern void getWaypoints(uint8_t wp_1, uint8_t wp_2, uint8_t wp_3, uint8_t wp_4);
-    extern void updateWaypoints(void);
-    extern void setModeKill(void);
+    extern struct GuidanceAerobaticSettings settings;
 
     void guidance_aerobatic_init(void);
     void guidance_aerobatic_enter(void);
@@ -118,21 +75,9 @@
     void filter_init(void);
     void filter_run(void);
 
-    void YawControl(void);
-    void Controller(void);
     void get_states(void);
+    void get_dv(void);
     void get_G(void);
     void get_du(void);
     void set_states(void);
-
-    void get_mode(void);
-    void UpdateTrajectory(void);
-    void CalcNewTrajectory(void);
-    void TrajectoryScenario(void);
-
-    void update_sd_logger(void);
-    void message_log(void);
-
-    bool Mat44Inv(const float m[16], float invOut[16]);
-    void Mat44Vect4Mul(float du[4], const float G_inv[16], const float dv[4]);
 #endif 
