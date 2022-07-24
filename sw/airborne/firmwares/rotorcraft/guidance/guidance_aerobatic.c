@@ -63,6 +63,7 @@ struct ctrl_struct {
   float dtheta;
   float dpsi;
   float dT;
+  float dyaw;
 } ctrl;
 
 int32_t aerobatic_active;
@@ -140,7 +141,38 @@ void get_states(void){
   // Filter States
   filter_run();   
 }
+void YawControl(void){
+  struct FloatVect3 Yaw_bE;
+  struct FloatVect3 Yaw_b;
+  struct FloatVect3 Yaw_proj;
+  struct FloatVect3 Yaw_ref;
 
+  Yaw_b.x = 0.0f;
+  Yaw_b.y = 1.0f;
+  Yaw_b.z = 0.0f;
+  
+  struct FloatQuat q_inv;
+  float_quat_invert(&q_inv, &filt.q);
+  float_quat_vmult(&Yaw_bE, &q_inv, &Yaw_b);
+
+  float mag = sqrt(Yaw_bE.x*Yaw_bE.x+Yaw_bE.y*Yaw_bE.y);
+  Yaw_proj.x = Yaw_bE.x/mag;
+  Yaw_proj.y = Yaw_bE.y/mag;
+  Yaw_proj.z = 0.0f;
+
+  Yaw_ref.x = 0.0f;
+  Yaw_ref.y = 1.0f;
+  Yaw_ref.z = 0.0f;
+
+  ctrl.dyaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
+
+  float max_yaw = 90.0*M_PI/180.0;
+  if (ctrl.dyaw > max_yaw){
+      ctrl.dyaw = max_yaw;
+  } else if (ctrl.dyaw < -max_yaw){
+      ctrl.dyaw = -max_yaw;
+  }
+}
 void get_dv(void){  
   
   // Load Gain Settings
@@ -175,9 +207,9 @@ void get_dv(void){
   float_quat_vmult(&da_b_a, &filt.q, &da_a);
 
   // Output Incremental Acceleration
-  ctrl.ddx = Kpx * da_p.x + Kvx * da_v.x + Kax * da_a.x;
-  ctrl.ddy = Kpy * da_p.y + Kvy * da_v.y + Kay * da_a.y;
-  ctrl.ddz = Kpz * da_p.z + Kvz * da_v.z + Kaz * da_a.z;
+  ctrl.ddx = Kpx * da_b_p.x + Kvx * da_b_v.x + Kax * da_b_a.x;
+  ctrl.ddy = Kpy * da_b_p.y + Kvy * da_b_v.y + Kay * da_b_a.y;
+  ctrl.ddz = Kpz * da_b_p.z + Kvz * da_b_v.z + Kaz * da_b_a.z;
 }
 
 void get_G(void){
@@ -193,7 +225,7 @@ void get_du(void){
   // Output Incremental Orientation, Thrust
   ctrl.dphi   = ctrl.ddy/ctrl.Gy;
   ctrl.dtheta = ctrl.ddx/ctrl.Gx;
-  ctrl.dpsi   = 0.0;
+  ctrl.dpsi   = ctrl.dyaw;
   ctrl.dT     = ctrl.ddz/ctrl.Gz;
   
   // Clamp Incremental Thrust
@@ -203,6 +235,8 @@ void get_du(void){
 }
 
 void set_states(void){
+  float sum;
+  float length;
 
   //Set Thrust State
   out.thrust = filt.thrust + ctrl.dT;
@@ -211,20 +245,24 @@ void set_states(void){
 
   // Set Quaternion State
   struct FloatQuat dq;
+  sum = powf(ctrl.dphi,2) 
+      + powf(ctrl.dtheta,2)
+      + powf(ctrl.dpsi,2);
+  length = sqrtf(sum);
   // Test Theta only
-  dq.qi = cosf(ctrl.dtheta/2.0);
-  dq.qx = 0.0;
-  dq.qy = sinf(ctrl.dtheta/2.0);
-  dq.qz = 0.0;
+  dq.qi = cosf(length/2.0);
+  dq.qx = sinf(length/2.0)*ctrl.dphi/length;
+  dq.qy = sinf(length/2.0)*ctrl.dtheta/length;
+  dq.qz = sinf(length/2.0)*ctrl.dpsi/length;
   // Add dQ to Quaternion
   struct FloatQuat q_res = {0};
   float_quat_comp(&q_res, &filt.q, &dq);
   // Normalize Resultant Quaternion
-  float sum = powf(q_res.qi,2) 
-            + powf(q_res.qx,2)
-            + powf(q_res.qy,2)
-            + powf(q_res.qz,2);
-  float length = sqrtf(sum);
+  sum = powf(q_res.qi,2) 
+      + powf(q_res.qx,2)
+      + powf(q_res.qy,2)
+      + powf(q_res.qz,2);
+  length = sqrtf(sum);
   q_res.qi = q_res.qi/length;
   q_res.qx = q_res.qx/length;
   q_res.qy = q_res.qy/length;
