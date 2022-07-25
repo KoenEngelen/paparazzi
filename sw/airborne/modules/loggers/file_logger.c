@@ -43,6 +43,7 @@
 #include "firmwares/fixedwing/stabilization/stabilization_adaptive.h"
 #endif
 
+#include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
 
 /** Set the default File logger path to the USB drive */
 #ifndef FILE_LOGGER_PATH
@@ -65,8 +66,20 @@ static void file_logger_write_header(FILE *file) {
   fprintf(file, "time,");
   fprintf(file, "pos_x,pos_y,pos_z,");
   fprintf(file, "vel_x,vel_y,vel_z,");
+  fprintf(file, "acc_x,acc_y,acc_z,");
+  fprintf(file, "qi,qx,qy,qz,");
   fprintf(file, "att_phi,att_theta,att_psi,");
   fprintf(file, "rate_p,rate_q,rate_r,");
+  fprintf(file, "ref_pos_x,ref_pos_y,ref_pos_z,");
+  fprintf(file, "ref_vel_x,ref_vel_y,ref_vel_z,");
+  fprintf(file, "ref_acc_x,ref_acc_y,ref_acc_z,");
+  fprintf(file, "ref_qi,ref_qx,ref_qy,ref_qz,");
+  fprintf(file, "ref_rate_p,ref_rate_q,ref_rate_r,");
+  fprintf(file, "ref_acc_p,ref_acc_q,ref_acc_r,");
+  fprintf(file, "filt_acc_x,filt_acc_y,filt_acc_z,");
+  fprintf(file, "filt_qi,filt_qx,filt_qy,filt_qz,");
+  fprintf(file, "filt_rate_p,filt_rate_q,filt_rate_r,");
+  fprintf(file, "filt_acc_p,filt_acc_q,filt_acc_r,");
 #ifdef COMMAND_THRUST
   fprintf(file, "cmd_thrust,cmd_roll,cmd_pitch,cmd_yaw\n");
 #else
@@ -83,14 +96,32 @@ static void file_logger_write_header(FILE *file) {
 static void file_logger_write_row(FILE *file) {
   struct NedCoor_f *pos = stateGetPositionNed_f();
   struct NedCoor_f *vel = stateGetSpeedNed_f();
+  struct NedCoor_f *acc = stateGetAccelNed_f();
+  struct FloatQuat *quat = stateGetNedToBodyQuat_f();
   struct FloatEulers *att = stateGetNedToBodyEulers_f();
   struct FloatRates *rates = stateGetBodyRates_f();
 
+  //States: (no acc angular)
   fprintf(file, "%f,", get_sys_time_float());
   fprintf(file, "%f,%f,%f,", pos->x, pos->y, pos->z);
   fprintf(file, "%f,%f,%f,", vel->x, vel->y, vel->z);
+  fprintf(file, "%f,%f,%f,", acc->x, acc->y, acc->z);
+  fprintf(file, "%f,%f,%f,%f,", quat->qi, quat->qx, quat->qy, quat->qz);
   fprintf(file, "%f,%f,%f,", att->phi, att->theta, att->psi);
   fprintf(file, "%f,%f,%f,", rates->p, rates->q, rates->r);
+  //References: (quat no att) + acc angular
+  fprintf(file, "%f,%f,%f,", GAStates.ref_pos_x, GAStates.ref_pos_y, GAStates.ref_pos_z);
+  fprintf(file, "%f,%f,%f,", GAStates.ref_vel_x, GAStates.ref_vel_y, GAStates.ref_vel_z);
+  fprintf(file, "%f,%f,%f,", GAStates.ref_acc_x, GAStates.ref_acc_y, GAStates.ref_acc_z);
+  fprintf(file, "%f,%f,%f,%f,", GAStates.ref_quat_qi, GAStates.ref_quat_qx, GAStates.ref_quat_qy, GAStates.ref_quat_qz);
+  fprintf(file, "%f,%f,%f,", GAStates.ref_rate_p, GAStates.ref_rate_q, GAStates.ref_rate_r);
+  fprintf(file, "%f,%f,%f,", GAStates.ref_acc_p, GAStates.ref_acc_q, GAStates.ref_acc_r);
+  //Filters: (quat no att, no pos, no vel) + acc angular
+  fprintf(file, "%f,%f,%f,", GAStates.filt_acc_x, GAStates.filt_acc_y, GAStates.filt_acc_z);
+  fprintf(file, "%f,%f,%f,%f,", GAStates.filt_quat_qi, GAStates.filt_quat_qx, GAStates.filt_quat_qy, GAStates.filt_quat_qz);
+  fprintf(file, "%f,%f,%f,", GAStates.filt_rate_p, GAStates.filt_rate_q, GAStates.filt_rate_r);
+  fprintf(file, "%f,%f,%f,", GAStates.filt_acc_p, GAStates.filt_acc_q, GAStates.filt_acc_r);
+
 #ifdef COMMAND_THRUST
   fprintf(file, "%d,%d,%d,%d\n",
       stabilization_cmd[COMMAND_THRUST], stabilization_cmd[COMMAND_ROLL],

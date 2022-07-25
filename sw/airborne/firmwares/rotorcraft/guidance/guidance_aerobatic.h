@@ -65,8 +65,60 @@
         float a_gain_z;
     };
 
+    struct GuidanceAerobaticStruct {
+        float pos_x;
+        float pos_y;
+        float pos_z;
+        float ref_pos_x;
+        float ref_pos_y;
+        float ref_pos_z;
+        float vel_x;
+        float vel_y;
+        float vel_z;
+        float ref_vel_x;
+        float ref_vel_y;
+        float ref_vel_z;
+        float acc_x;
+        float acc_y;
+        float acc_z;
+        float filt_acc_x;
+        float filt_acc_y;
+        float filt_acc_z;
+        float ref_acc_x;
+        float ref_acc_y;
+        float ref_acc_z;
+        float quat_qi;
+        float quat_qx;
+        float quat_qy;
+        float quat_qz;
+        float filt_quat_qi;
+        float filt_quat_qx;
+        float filt_quat_qy;
+        float filt_quat_qz;
+        float ref_quat_qi;
+        float ref_quat_qx;
+        float ref_quat_qy;
+        float ref_quat_qz;
+        float rate_p;
+        float rate_q;
+        float rate_r;
+        float filt_rate_p;
+        float filt_rate_q;
+        float filt_rate_r;
+        float ref_rate_p;
+        float ref_rate_q;
+        float ref_rate_r;
+        float filt_acc_p;
+        float filt_acc_q;
+        float filt_acc_r;
+        float ref_acc_p;
+        float ref_acc_q;
+        float ref_acc_r;
+    };
+
     extern int32_t aerobatic_active;
     extern struct MySettings my_settings;
+    extern struct GuidanceAerobaticStruct GAStates;
 
     // void guidance_v_module_init(void);
     // void guidance_v_module_enter(void);
@@ -85,6 +137,7 @@
     void filter_run(void);
 
     void get_states(void);
+    void get_dyaw(void);
     void get_dv(void);
     void get_G(void);
     void get_du(void);

@@ -81,7 +81,8 @@ struct MySettings my_settings = {
   .v_gain_z  = GUIDANCE_AEROBATIC_V_GAIN_Z,
   .a_gain_z  = GUIDANCE_AEROBATIC_A_GAIN_Z
 };
-// struct MySettings my_settings;
+
+struct GuidanceAerobaticStruct GAStates;
 
 // Guidance V Module: UNUSED
 void guidance_v_module_init(void){}
@@ -121,6 +122,7 @@ void guidance_aerobatic_enter(void){
 void guidance_aerobatic_run(){
   aerobatic_active = 1;
   get_states();
+  get_dyaw();
   get_dv();
   get_G();
   get_du();
@@ -141,7 +143,7 @@ void get_states(void){
   // Filter States
   filter_run();   
 }
-void YawControl(void){
+void get_dyaw(void){
   struct FloatVect3 Yaw_bE;
   struct FloatVect3 Yaw_b;
   struct FloatVect3 Yaw_proj;
@@ -271,6 +273,36 @@ void set_states(void){
   struct Int32Quat q_i_res = {0};
   QUAT_BFP_OF_REAL(q_i_res, q_res);
   stabilization_indi_attitude_run(q_i_res,true);
+
+  GAStates.pos_x = in.pos.x;
+  GAStates.pos_y = in.pos.y;
+  GAStates.pos_z = in.pos.z;
+  GAStates.ref_pos_x = ref.pos.x;
+  GAStates.ref_pos_y = ref.pos.x;
+  GAStates.ref_pos_z = ref.pos.x;
+  GAStates.vel_x = in.vel.x;
+  GAStates.vel_y = in.vel.x;
+  GAStates.vel_z = in.vel.x;
+  GAStates.ref_vel_x = ref.vel.x;
+  GAStates.ref_vel_y = ref.vel.x;
+  GAStates.ref_vel_z = ref.vel.x;
+  GAStates.acc_x = in.acc.x;
+  GAStates.acc_y = in.acc.x;
+  GAStates.acc_z = in.acc.x;
+  GAStates.filt_acc_x = filt.acc.x;
+  GAStates.filt_acc_y = filt.acc.x;
+  GAStates.filt_acc_z = filt.acc.x;
+  GAStates.ref_acc_x = ref.acc.x;
+  GAStates.ref_acc_y = ref.acc.x;
+  GAStates.ref_acc_z = ref.acc.x;
+  GAStates.quat_qi = in.q.qi;
+  GAStates.quat_qx = in.q.qx;
+  GAStates.quat_qy = in.q.qy;
+  GAStates.quat_qz = in.q.qz;
+  GAStates.filt_quat_qi = filt.q.qi;
+  GAStates.filt_quat_qx = filt.q.qx;
+  GAStates.filt_quat_qy = filt.q.qy;
+  GAStates.filt_quat_qz = filt.q.qz;
 }
 
 // Filters

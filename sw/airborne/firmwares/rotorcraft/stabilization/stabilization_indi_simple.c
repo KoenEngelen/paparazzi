@@ -39,6 +39,7 @@
 #include "generated/airframe.h"
 #include "paparazzi.h"
 #include "subsystems/radio_control.h"
+#include "guidance/guidance_aerobatic.h"
 
 #if !defined(STABILIZATION_INDI_ACT_DYN_P) && !defined(STABILIZATION_INDI_ACT_DYN_Q) && !defined(STABILIZATION_INDI_ACT_DYN_R)
 #error You have to define the first order time constant of the actuator dynamics!
@@ -326,6 +327,17 @@ void stabilization_indi_rate_run(struct FloatRates rate_sp, bool in_flight __att
   LogFiltRate.p = rates_filt_fo.p;
   LogFiltRate.q = rates_filt_fo.q;
   LogFiltRate.r = rates_filt_fo.r;
+
+  GAStates.rate_p = body_rates->p;
+  GAStates.rate_q = body_rates->q;
+  GAStates.rate_r = body_rates->r;
+  GAStates.filt_rate_p = rates_filt_fo.p;
+  GAStates.filt_rate_q = rates_filt_fo.q;
+  GAStates.filt_rate_r = rates_filt_fo.r;
+  GAStates.ref_rate_p = rate_sp.p;
+  GAStates.ref_rate_q = rate_sp.q;
+  GAStates.ref_rate_r = rate_sp.r;
+
   // Compute reference angular acceleration:
   indi.angular_accel_ref.p = (rate_sp.p - rates_filt_fo.p) * indi.gains.rate.p;
   indi.angular_accel_ref.q = (rate_sp.q - rates_filt_fo.q) * indi.gains.rate.q;
@@ -338,6 +350,13 @@ void stabilization_indi_rate_run(struct FloatRates rate_sp, bool in_flight __att
   indi.du.p = 1.0 / indi.g1.p * (indi.angular_accel_ref.p - indi.rate_d[0]);
   indi.du.q = 1.0 / indi.g1.q * (indi.angular_accel_ref.q - indi.rate_d[1]);
   indi.du.r = 1.0 / (indi.g1.r + indi.g2) * (indi.angular_accel_ref.r - indi.rate_d[2] + indi.g2 * indi.du.r);
+
+  GAStates.filt_acc_p = indi.rate_d[0];
+  GAStates.filt_acc_q = indi.rate_d[1];
+  GAStates.filt_acc_r = indi.rate_d[2];
+  GAStates.ref_acc_p = indi.angular_accel_ref.p;
+  GAStates.ref_acc_q = indi.angular_accel_ref.q;
+  GAStates.ref_acc_r = indi.angular_accel_ref.r;
 
   //add the increment to the total control input
   indi.u_in.p = indi.u[0].o[0] + indi.du.p;
@@ -407,6 +426,14 @@ void stabilization_indi_attitude_run(struct Int32Quat quat_sp, bool in_flight __
   rate_sp.p = indi.gains.att.p * QUAT1_FLOAT_OF_BFP(att_err.qx) / indi.gains.rate.p;
   rate_sp.q = indi.gains.att.q * QUAT1_FLOAT_OF_BFP(att_err.qy) / indi.gains.rate.q;
   rate_sp.r = indi.gains.att.r * QUAT1_FLOAT_OF_BFP(att_err.qz) / indi.gains.rate.r;
+
+  struct FloatQuat q_ref;
+  QUAT_FLOAT_OF_BFP(q_ref,quat_sp);
+
+  GAStates.ref_quat_qi = q_ref.qi;
+  GAStates.ref_quat_qx = q_ref.qx;
+  GAStates.ref_quat_qy = q_ref.qy;
+  GAStates.ref_quat_qz = q_ref.qz;
 
   /* compute the INDI command */
   stabilization_indi_rate_run(rate_sp, in_flight);
