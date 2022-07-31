@@ -1,6 +1,24 @@
 <!-- this is a quadshot vehicle equiped with Lisa/m2.0 and an aspirin 2.1
      More information on the Quadshot can be found at transition-robotics.com -->
 
+<!--
+     The motor and rotor configuration is the following:
+
+     Front
+             ^
+             |
+
+  Motor2(B1)     Motor3(B2)
+    CCW              CW
+      \             /     
+  ,_____________________,
+  |_____________________|
+          /     \
+         CW     CCW
+     Motor0(A1)  Motor1(A2)
+
+-->
+
 <airframe name="Quadshot Lisa MX v2.1">
   <description>
     Transition robotics Quadshot (https://www.openuas.org/airframes/)
@@ -63,8 +81,8 @@
     <!-- <let var="forward_right" value="aileron_gain*$aileron_feedback_right+elevator_gain*$elevator_feedback_right"/> -->
 
     <!--     if using PID with gain scheduling -->
-    <let var="forward_left"  value="3*$aileron_feedback_left + 4*$elevator_feedback_left"/>
-    <let var="forward_right" value="3*$aileron_feedback_right + 4*$elevator_feedback_right"/>
+    <let var="forward_left"  value="0*3*$aileron_feedback_left + 0*4*$elevator_feedback_left"/>
+    <let var="forward_right" value="0*3*$aileron_feedback_right + 0*4*$elevator_feedback_right"/>
 
     <!-- This statement tells the autopilot to use the hover feedback if in mode attitude direct and to use the forward feedback in all other cases-->
     <set servo="ELEVON_LEFT"    value="AP_MODE == AP_MODE_ATTITUDE_DIRECT ? $hover_left  : $forward_left" />
@@ -77,6 +95,7 @@
     <define name="SENSORS_PARAMS" value="nps_sensors_params_default.h" type="string"/>
   </section>
 
+
   <section name="MIXING" prefix="MOTOR_MIXING_">
     <define name="TRIM_ROLL" value="0"/>
     <define name="TRIM_PITCH" value="0"/>
@@ -84,9 +103,9 @@
     <define name="NB_MOTOR" value="4"/>
     <define name="SCALE" value="256"/>
     <!--                                  A1    A2    B1    B2  -->
-    <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
     <define name="ROLL_COEF"   value="{  256, -256,  256, -256 }"/>
-    <define name="YAW_COEF"    value="{ -256,  256,  128, -128 }"/>
+    <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
+    <define name="YAW_COEF"    value="{ -256,  256,  256, -256 }"/>
     <define name="THRUST_COEF" value="{  256,  256,  256,  256 }"/>
   </section>
   <!-- If you got a caliberation XML document from your IMU supplier, import this in the IMU section -->
@@ -211,6 +230,9 @@
       <define name="P_GAIN_Z" value="1.0"/>
       <define name="V_GAIN_Z" value="8.0"/>    
       <define name="A_GAIN_Z" value="1.0"/> 
+
+      <define name="CTRL_MODE" value="0"/>    
+      <define name="CTRL_AXIS" value="3"/> 
   </section>
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
@@ -222,15 +244,18 @@
     <define name="DEADBAND_A" value="250"/>
     <define name="SP_PSI_DELTA_LIMIT" value="90" unit="deg"/>
     <!-- control effectiveness -->
-    <define name="G1_P" value="0.0179"/>
+    <!-- <define name="G1_P" value="0.0179"/> -->
+    <define name="G1_P" value="0.0708"/>
     <define name="G1_Q" value="0.0708"/>
     <define name="G1_R" value="0.0095"/>
     <define name="G2_R" value="0.0"/>
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="60.0"/>
+    <!-- <define name="REF_ERR_P" value="60.0"/> -->
+    <define name="REF_ERR_P" value="150.0"/>
     <define name="REF_ERR_Q" value="150.0"/> <!--try 100-->
     <define name="REF_ERR_R" value="60.0"/>
-    <define name="REF_RATE_P" value="8.0"/>
+    <!-- <define name="REF_RATE_P" value="8.0"/> -->
+    <define name="REF_RATE_P" value="20.5"/>
     <define name="REF_RATE_Q" value="20.5"/> <!-- 15.0 -->
     <define name="REF_RATE_R" value="12.0"/>
     <!-- second order filter parameters -->

@@ -338,9 +338,56 @@ void stabilization_indi_rate_run(struct FloatRates rate_sp, bool in_flight __att
   GAStates.ref_rate_q = rate_sp.q;
   GAStates.ref_rate_r = rate_sp.r;
 
+
+  switch (my_settings.ctrl_mode)
+  {
+  case 0: //pos
+    break;
+  
+  case 1: //vel 
+    break;
+
+  case 2: //acc
+    break;
+
+  case 3: //att
+    break;
+
+  case 4:  
+    printf("Mode rate");
+    switch (my_settings.ctrl_axis)
+    {
+    case 0:
+      rate_sp.p = 1.0;
+      rate_sp.q = 0.0;
+      rate_sp.r = 0.0;
+      break;
+    
+    case 1:
+      rate_sp.p = 0.0;
+      rate_sp.q = 1.0;
+      rate_sp.r = 0.0;
+      break;
+
+    case 2:
+      rate_sp.p = 0.0;
+      rate_sp.q = 0.0;
+      rate_sp.r = 1.0;
+      break;
+    default:
+      break;
+    }
+    break;
+
+  default:
+    break;
+  }
+
+
+
   // Compute reference angular acceleration:
   indi.angular_accel_ref.p = (rate_sp.p - rates_filt_fo.p) * indi.gains.rate.p;
-  indi.angular_accel_ref.q = (rate_sp.q - rates_filt_fo.q) * indi.gains.rate.q;
+  indi.angular_accel_ref.q = (0.0 - rates_filt_fo.q) * indi.gains.rate.q;
   indi.angular_accel_ref.r = (rate_sp.r - rates_filt_fo.r) * indi.gains.rate.r;
 
   //Increment in angular acceleration requires increment in control input
@@ -420,6 +467,84 @@ void stabilization_indi_attitude_run(struct Int32Quat quat_sp, bool in_flight __
   /* wrap it in the shortest direction       */
   int32_quat_wrap_shortest(&att_err);
   int32_quat_normalize(&att_err);
+
+
+  struct Int32Quat Q_ref;
+  Q_ref.qi = 1.0;
+  switch (my_settings.ctrl_axis)
+  {
+  case 0:    
+    Q_ref.qi = cosf(0.5);
+    Q_ref.qx = sinf(0.5); 
+    break;
+  
+  case 1:
+    Q_ref.qi = cosf(0.5);
+    Q_ref.qy = sinf(0.5); 
+    break;
+
+  case 2:
+    Q_ref.qi = cosf(0.5);
+    Q_ref.qz = sinf(0.5); 
+    break;
+
+  default:
+    break;
+  }
+
+
+  switch (my_settings.ctrl_mode)
+  {
+  case 0: //pos
+    break;
+  
+  case 1: //vel 
+    break;
+
+  case 2: //acc
+    break;
+
+  case 3:   
+    int32_quat_inv_comp(&att_err, att_quat, &Q_ref);
+    /* wrap it in the shortest direction       */
+    int32_quat_wrap_shortest(&att_err);
+    int32_quat_normalize(&att_err);
+
+    switch (my_settings.ctrl_axis)
+    {
+    case 0:
+      att_err.qy = 0.0;
+      att_err.qz = 0.0;
+      break;
+    
+    case 1:
+      att_err.qx = 0.0;
+      att_err.qz = 0.0;
+      break;
+
+    case 2:
+      att_err.qx = 0.0;
+      att_err.qy = 0.0;
+      break;
+    default:
+      break;
+    }
+
+    break;
+
+  case 4:
+    att_err.qx = 0.0;
+    att_err.qy = 0.0;
+    att_err.qz = 0.0;
+    break;
+
+  default:
+    att_err.qx = 0.0;
+    att_err.qy = 0.0;
+    att_err.qz = 0.0;
+    break;
+  }
+
 
   struct FloatRates rate_sp;
   // Divide by rate gain to make it equivalent to a parallel structure

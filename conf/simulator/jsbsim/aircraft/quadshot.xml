@@ -41,7 +41,7 @@
     <iyy unit="SLUG*FT2"> 0.0080769864 </iyy> 
     <izz unit="SLUG*FT2"> 0.0861472590 </izz> 
     -->
-    <ixx unit="SLUG*FT2"> 0.04622 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
+    <ixx unit="SLUG*FT2"> 0.003685 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
     <iyy unit="SLUG*FT2"> 0.003685 </iyy> <!--Iyy = 0.0000923 [kgm2] obtained from Prawien-->
     <izz unit="SLUG*FT2"> 0.04202 </izz> <!--Izz = 0.0001168 [kgm2] obtained from Prawien-->
     <ixy unit="SLUG*FT2"> 0. </ixy>
@@ -183,7 +183,7 @@
       </function>
       <location unit="IN">
         <x> 3.09</x>
-        <y>-5.45</y>
+        <y>-3.09</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -202,7 +202,7 @@
       </function>
       <location unit="IN">
         <x> 3.09</x>
-        <y> 5.45</y>
+        <y> 3.09</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -221,7 +221,7 @@
       </function>
       <location unit="IN">
         <x>-3.09</x>
-        <y>-12.93</y>
+        <y>-3.09</y>
         <z>  0   </z>
       </location>
       <direction>
@@ -240,7 +240,7 @@
       </function>
       <location unit="IN">
         <x>-3.09</x>
-        <y> 12.93</y>
+        <y> 3.09</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -327,7 +327,7 @@
   <flight_control name="FGFCS"/> <!--What is this linked to?-->
 
   
-  <aerodynamics file="Systems/aerodynamics_quadshot.xml"/>
+  <aerodynamics file="Systems/aerodynamics_quadshot_no_L_D.xml"/>
   
 
 </fdm_config>

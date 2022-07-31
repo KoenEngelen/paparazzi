@@ -18,6 +18,8 @@
       <define name="P_GAIN_Z" value="1.0" description="Positional gain of the aerobatic controller"/>
       <define name="V_GAIN_Z" value="1.0" description="Velocity gain of the aerobatic controller"/>
       <define name="A_GAIN_Z" value="1.0" description="Acceleration gain of the aerobatic controller"/>
+      <define name="CTRL_MODE" value="0" description="Guidance mode"/>
+      <define name="CTRL_AXIS" value="0" description="Guidance axis"/>
     </section>
   </doc>
   
@@ -36,6 +38,10 @@
         <dl_setting var="my_settings.p_gain_z"  min="0"    step="0.25" max="8.0" shortname="Kpz"     param="GUIDANCE_AEROBATIC_P_GAIN_Z"  persistent="true"/>
         <dl_setting var="my_settings.v_gain_z"  min="0"    step="0.25" max="8.0" shortname="Kvz"     param="GUIDANCE_AEROBATIC_V_GAIN_Z"  persistent="true"/>
         <dl_setting var="my_settings.a_gain_z"  min="0"    step="0.01" max="2.0" shortname="Kaz"     param="GUIDANCE_AEROBATIC_A_GAIN_Z"  persistent="true"/>
+        <dl_setting var="my_settings.ctrl_mode"    min="0" step="1" max="5" values="position|velocity|acceleration|attitude|rate|angular" shortname="mode" param="GUIDANCE_AEROBATIC_CTRL_MODE" type="int32" persistent="true"/>
+        <dl_setting var="my_settings.ctrl_axis"    min="0" step="1" max="3" values="X|Y|Z|None" shortname="axis" param="GUIDANCE_AEROBATIC_CTRL_AXIS" type="int32" persistent="true"/>
+         <!-- values="position|velocity|acceleration|attitude|rate|angular"  -->
+         <!-- values="X|Y|Z"  -->
       </dl_settings>
     </dl_settings>
   </settings>

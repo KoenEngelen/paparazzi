@@ -63,6 +63,8 @@
         float p_gain_z;
         float v_gain_z;
         float a_gain_z;
+        int32_t ctrl_mode; 
+        int32_t ctrl_axis; 
     };
 
     struct GuidanceAerobaticStruct {

@@ -79,7 +79,9 @@ struct MySettings my_settings = {
   .a_gain_y  = GUIDANCE_AEROBATIC_A_GAIN_Y,
   .p_gain_z  = GUIDANCE_AEROBATIC_P_GAIN_Z,
   .v_gain_z  = GUIDANCE_AEROBATIC_V_GAIN_Z,
-  .a_gain_z  = GUIDANCE_AEROBATIC_A_GAIN_Z
+  .a_gain_z  = GUIDANCE_AEROBATIC_A_GAIN_Z,
+  .ctrl_mode  = GUIDANCE_AEROBATIC_CTRL_MODE,
+  .ctrl_axis  = GUIDANCE_AEROBATIC_CTRL_AXIS,
 };
 
 struct GuidanceAerobaticStruct GAStates;
@@ -188,6 +190,73 @@ void get_dv(void){
   float Kpy = my_settings.p_gain_y * Kvy;
   float Kpz = my_settings.p_gain_z * Kvz;
 
+  switch (my_settings.ctrl_axis)
+  {
+  case 0:
+    Kay = 0.0;
+    Kvy = 0.0;
+    Kpy = 0.0;
+    Kaz = 0.0;
+    Kvz = 0.0;
+    Kpz = 0.0;
+    break;
+  
+  case 1:
+    Kax = 0.0;
+    Kvx = 0.0;
+    Kpx = 0.0;
+    Kaz = 0.0;
+    Kvz = 0.0;
+    Kpz = 0.0;
+    break;
+
+  case 2:
+    Kax = 0.0;
+    Kvx = 0.0;
+    Kpx = 0.0;
+    Kay = 0.0;
+    Kvy = 0.0;
+    Kpy = 0.0;
+    break;
+  
+  default:
+    break;
+  }
+
+  switch (my_settings.ctrl_mode)
+  {
+  case 0:
+    break;
+  
+  case 1:
+    Kpx = 0.0;
+    Kpy = 0.0;
+    Kpz = 0.0;
+    break;
+
+  case 2:
+    Kvx = 0.0;
+    Kvy = 0.0;
+    Kvz = 0.0;
+    Kpx = 0.0;
+    Kpy = 0.0;
+    Kpz = 0.0;
+    break;
+
+  default:
+    Kax = 0.0;
+    Kay = 0.0;
+    Kaz = 0.0;
+    Kvx = 0.0;
+    Kvy = 0.0;
+    Kvz = 0.0;
+    Kpx = 0.0;
+    Kpy = 0.0;
+    Kpz = 0.0;
+    break;
+  }
+
+
   // Incremental Acceleration in NED (da) and Body (da_b) Reference Frame 
   struct FloatVect3 da_p;
   struct FloatVect3 da_v;
@@ -209,9 +278,9 @@ void get_dv(void){
   float_quat_vmult(&da_b_a, &filt.q, &da_a);
 
   // Output Incremental Acceleration
-  ctrl.ddx = Kpx * da_b_p.x + Kvx * da_b_v.x + Kax * da_b_a.x;
-  ctrl.ddy = Kpy * da_b_p.y + Kvy * da_b_v.y + Kay * da_b_a.y;
-  ctrl.ddz = Kpz * da_b_p.z + Kvz * da_b_v.z + Kaz * da_b_a.z;
+  ctrl.ddx = Kpx * da_p.x + Kvx * da_v.x + Kax * da_a.x;
+  ctrl.ddy = Kpy * da_p.y + Kvy * da_v.y + Kay * da_a.y;
+  ctrl.ddz = Kpz * da_p.z + Kvz * da_v.z + Kaz * da_a.z;
 }
 
 void get_G(void){
