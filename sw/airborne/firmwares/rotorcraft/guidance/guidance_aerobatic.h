@@ -116,6 +116,12 @@
         float ref_acc_p;
         float ref_acc_q;
         float ref_acc_r;
+        float motor_mixing_A1;
+        float motor_mixing_A2;
+        float motor_mixing_B1;
+        float motor_mixing_B2;
+        float mode;
+        float axes;
     };
 
     extern int32_t aerobatic_active;

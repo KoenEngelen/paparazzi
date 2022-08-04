@@ -389,8 +389,8 @@
     <module name="guidance"      type="aerobatic"/>
     <define name="USE_AHRS_GPS_ACCELERATIONS" value="FALSE"/> <!-- Changed, added-->
     <module name="ahrs"          type="int_cmpl_quat">
-      <configure name="USE_MAGNETOMETER" value="FALSE"/>
-      <define name="AHRS_USE_GPS_HEADING" value="TRUE"/>
+      <configure name="USE_MAGNETOMETER" value="TRUE"/>
+      <define name="AHRS_USE_GPS_HEADING" value="FALSE"/>
     </module>
     
     <!-- Modules section (depricated modules main_frequency) -->
@@ -399,9 +399,7 @@
           <define name="SAFETY_WARNING_LED" value="BODY"/>
     </load>
 
-    <!-- <module name="ins"/> -->
-        <!-- <module name="ins"  type="ekf2"/> -->
-    <!-- <module name="ins"  type="hff"/> -->
+
     <module name="ins" type="gps_passthrough"/>
     <!-- <module name="ins"  type="float_invariant">
       <configure name="USE_MAGNETOMETER" value="FALSE"/>   

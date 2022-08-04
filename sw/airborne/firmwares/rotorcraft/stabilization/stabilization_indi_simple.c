@@ -40,6 +40,7 @@
 #include "paparazzi.h"
 #include "subsystems/radio_control.h"
 #include "guidance/guidance_aerobatic.h"
+#include "subsystems/actuators/motor_mixing.h"
 
 #if !defined(STABILIZATION_INDI_ACT_DYN_P) && !defined(STABILIZATION_INDI_ACT_DYN_Q) && !defined(STABILIZATION_INDI_ACT_DYN_R)
 #error You have to define the first order time constant of the actuator dynamics!
@@ -83,6 +84,8 @@ static void indi_init_filters(void);
 
 //The G values are scaled to avoid numerical problems during the estimation
 #define INDI_EST_SCALE 0.001
+
+#define TILT_TWIST_CTRL 1
 
 struct IndiVariables indi = {
   .max_rate = STABILIZATION_INDI_MAX_RATE,
@@ -339,55 +342,123 @@ void stabilization_indi_rate_run(struct FloatRates rate_sp, bool in_flight __att
   GAStates.ref_rate_r = rate_sp.r;
 
 
-  switch (my_settings.ctrl_mode)
-  {
-  case 0: //pos
-    break;
+  struct NedCoor_f pos;
+  struct NedCoor_f vel;
+  struct NedCoor_f acc;
+  struct FloatQuat q;
+  q   = *stateGetNedToBodyQuat_f();
+  pos = *stateGetPositionNed_f();
+  vel = *stateGetSpeedNed_f();
+  acc = *stateGetAccelNed_f();
+
+  GAStates.pos_x = pos.x;
+  GAStates.pos_y = pos.y;
+  GAStates.pos_z = pos.z;
+  GAStates.vel_x = vel.x;
+  GAStates.vel_y = vel.y;
+  GAStates.vel_z = vel.z;
+  GAStates.acc_x = acc.x;
+  GAStates.acc_y = acc.y;
+  GAStates.acc_z = acc.z;
+  GAStates.quat_qi = q.qi;
+  GAStates.quat_qx = q.qx;
+  GAStates.quat_qy = q.qy;
+  GAStates.quat_qz = q.qz;
+
+  GAStates.motor_mixing_A1 = (float) motor_mixing.commands[0];
+  GAStates.motor_mixing_A2 = (float) motor_mixing.commands[1];
+  GAStates.motor_mixing_B1 = (float) motor_mixing.commands[2];
+  GAStates.motor_mixing_B2 = (float) motor_mixing.commands[3];
+
+  GAStates.mode = (float) my_settings.ctrl_mode;
+  GAStates.axes = (float) my_settings.ctrl_axis;
+
+
+  // switch (my_settings.ctrl_mode)
+  // {
+  // case 0: //pos
+  //   break;
   
-  case 1: //vel 
-    break;
+  // case 1: //vel 
+  //   break;
 
-  case 2: //acc
-    break;
+  // case 2: //acc
+  //   break;
 
-  case 3: //att
-    break;
+  // case 3: //att
+  //   switch (my_settings.ctrl_axis)
+  //     {
+  //     case 0:
+  //       rate_sp.q = 0.0;
+  //       rate_sp.r = 0.0;
+  //       break;
+      
+  //     case 1:
+  //       rate_sp.p = 0.0;
+  //       rate_sp.r = 0.0;
+  //       break;
 
-  case 4:  
-    printf("Mode rate");
-    switch (my_settings.ctrl_axis)
-    {
-    case 0:
-      rate_sp.p = 1.0;
-      rate_sp.q = 0.0;
-      rate_sp.r = 0.0;
-      break;
-    
-    case 1:
-      rate_sp.p = 0.0;
-      rate_sp.q = 1.0;
-      rate_sp.r = 0.0;
-      break;
+  //     case 2:
+  //       rate_sp.p = 0.0;
+  //       rate_sp.q = 0.0;
+  //       break;
 
-    case 2:
-      rate_sp.p = 0.0;
-      rate_sp.q = 0.0;
-      rate_sp.r = 1.0;
-      break;
-    default:
-      break;
-    }
-    break;
+  //     case 3:
+  //       rate_sp.q = 0.0;
+  //       break;
+      
+  //     case 4:
+  //       rate_sp.p = 0.0;
+  //       break;
 
-  default:
-    break;
-  }
+  //     default:
+  //       break;
+  //   }
+  //   break;
 
+  // case 4:  
+  //   printf("Mode rate");
+  //   switch (my_settings.ctrl_axis)
+  //   {
+  //     case 0:
+  //       rate_sp.p = 1.0;
+  //       rate_sp.q = 0.0;
+  //       rate_sp.r = 0.0;
+  //       break;
+      
+  //     case 1:
+  //       rate_sp.p = 0.0;
+  //       rate_sp.q = 1.0;
+  //       rate_sp.r = 0.0;
+  //       break;
+
+  //     case 2:
+  //       rate_sp.p = 0.0;
+  //       rate_sp.q = 0.0;
+  //       rate_sp.r = 1.0;
+  //       break;
+
+  //     case 3:
+  //       rate_sp.q = 0.0;
+  //       break;
+      
+  //     case 4:
+  //       rate_sp.p = 0.0;
+  //       break;
+
+  //     default:
+  //       break;
+  //   }
+  //   break;
+
+  // default:
+  //   break;
+  // }
 
 
   // Compute reference angular acceleration:
   indi.angular_accel_ref.p = (rate_sp.p - rates_filt_fo.p) * indi.gains.rate.p;
-  indi.angular_accel_ref.q = (0.0 - rates_filt_fo.q) * indi.gains.rate.q;
+  indi.angular_accel_ref.q = (rate_sp.q - rates_filt_fo.q) * indi.gains.rate.q;
   indi.angular_accel_ref.r = (rate_sp.r - rates_filt_fo.r) * indi.gains.rate.r;
 
   //Increment in angular acceleration requires increment in control input
@@ -445,6 +516,7 @@ void stabilization_indi_rate_run(struct FloatRates rate_sp, bool in_flight __att
   stabilization_cmd[COMMAND_ROLL] = indi.u_in.p;
   stabilization_cmd[COMMAND_PITCH] = indi.u_in.q;
   stabilization_cmd[COMMAND_YAW] = indi.u_in.r;
+  
 
   /* bound the result */
   BoundAbs(stabilization_cmd[COMMAND_ROLL], MAX_PPRZ);
@@ -461,104 +533,163 @@ void stabilization_indi_rate_run(struct FloatRates rate_sp, bool in_flight __att
 void stabilization_indi_attitude_run(struct Int32Quat quat_sp, bool in_flight __attribute__((unused)))
 {
   /* attitude error                          */
-  struct Int32Quat att_err;
-  struct Int32Quat *att_quat = stateGetNedToBodyQuat_i();
-  int32_quat_inv_comp(&att_err, att_quat, &quat_sp);
-  /* wrap it in the shortest direction       */
-  int32_quat_wrap_shortest(&att_err);
-  int32_quat_normalize(&att_err);
-
-
-  struct Int32Quat Q_ref;
-  Q_ref.qi = 1.0;
-  switch (my_settings.ctrl_axis)
-  {
-  case 0:    
-    Q_ref.qi = cosf(0.5);
-    Q_ref.qx = sinf(0.5); 
-    break;
-  
-  case 1:
-    Q_ref.qi = cosf(0.5);
-    Q_ref.qy = sinf(0.5); 
-    break;
-
-  case 2:
-    Q_ref.qi = cosf(0.5);
-    Q_ref.qz = sinf(0.5); 
-    break;
-
-  default:
-    break;
-  }
-
+  struct FloatQuat att_err;
+  struct FloatQuat *att_quat = stateGetNedToBodyQuat_f();
+  struct FloatQuat quat_sp_f;
+  QUAT_FLOAT_OF_BFP(quat_sp_f, quat_sp);
 
   switch (my_settings.ctrl_mode)
   {
-  case 0: //pos
-    break;
-  
-  case 1: //vel 
-    break;
-
-  case 2: //acc
-    break;
-
   case 3:   
-    int32_quat_inv_comp(&att_err, att_quat, &Q_ref);
-    /* wrap it in the shortest direction       */
-    int32_quat_wrap_shortest(&att_err);
-    int32_quat_normalize(&att_err);
+    quat_sp_f.qi = 1.0;
+    quat_sp_f.qx = 0.0;
+    quat_sp_f.qy = 0.0;
+    quat_sp_f.qz = 0.0;
+
+    stabilization_cmd[COMMAND_THRUST] = 5280;
 
     switch (my_settings.ctrl_axis)
     {
     case 0:
-      att_err.qy = 0.0;
-      att_err.qz = 0.0;
+      quat_sp_f.qi = cosf(0.5);
+      quat_sp_f.qx = sinf(0.5);
       break;
     
     case 1:
-      att_err.qx = 0.0;
-      att_err.qz = 0.0;
+      quat_sp_f.qi = cosf(0.5);
+      quat_sp_f.qy = sinf(0.5);
       break;
 
     case 2:
-      att_err.qx = 0.0;
-      att_err.qy = 0.0;
+      quat_sp_f.qi = cosf(0.5);
+      quat_sp_f.qz = sinf(0.5);
       break;
+
     default:
       break;
     }
-
-    break;
-
-  case 4:
-    att_err.qx = 0.0;
-    att_err.qy = 0.0;
-    att_err.qz = 0.0;
     break;
 
   default:
-    att_err.qx = 0.0;
-    att_err.qy = 0.0;
-    att_err.qz = 0.0;
     break;
   }
 
 
+  float_quat_inv_comp_norm_shortest(&att_err, att_quat, &quat_sp_f);
+
+  struct FloatVect3 att_fb;
+
+  #if TILT_TWIST_CTRL
+    struct FloatQuat tilt;
+    struct FloatQuat twist;
+    float_quat_tilt_twist(&tilt, &twist, &att_err);
+    att_fb.x = tilt.qx;
+    att_fb.y = tilt.qy;
+    att_fb.z = twist.qz;
+  #else
+    att_fb.x = att_err.qx;
+    att_fb.y = att_err.qy;
+    att_fb.z = att_err.qz;
+  #endif
+
+  // struct FloatQuat Q_ref;
+  // Q_ref.qi = 1.0;
+  // switch (my_settings.ctrl_axis)
+  // {
+  // case 0:    
+  //   Q_ref.qi = cosf(0.5);
+  //   Q_ref.qx = sinf(0.5); 
+  //   break;
+  
+  // case 1:
+  //   Q_ref.qi = cosf(0.5);
+  //   Q_ref.qy = sinf(0.5); 
+  //   break;
+
+  // case 2:
+  //   Q_ref.qi = cosf(0.5);
+  //   Q_ref.qz = sinf(0.5); 
+  //   break;
+
+  // default:
+  //   break;
+  // }
+
+
+  // switch (my_settings.ctrl_mode)
+  // {
+  // case 0: //pos
+  //   break;
+  
+  // case 1: //vel 
+  //   break;
+
+  // case 2: //acc
+  //   break;
+
+  // case 3:   
+  //   float_quat_inv_comp_norm_shortest(&att_err, att_quat, &Q_ref);
+  //   quat_sp_f.qi = Q_ref.qi;
+  //   quat_sp_f.qx = Q_ref.qx;
+  //   quat_sp_f.qy = Q_ref.qy;
+  //   quat_sp_f.qz = Q_ref.qz;
+  //   switch (my_settings.ctrl_axis)
+  //   {
+  //   case 0:
+  //     att_err.qy = 0.0;
+  //     att_err.qz = 0.0;
+  //     break;
+    
+  //   case 1:
+  //     att_err.qx = 0.0;
+  //     att_err.qz = 0.0;
+  //     break;
+
+  //   case 2:
+  //     att_err.qx = 0.0;
+  //     att_err.qy = 0.0;
+  //     break;
+  //   default:
+  //     break;
+  //   }
+  //   #if TILT_TWIST_CTRL
+  //     struct FloatQuat tilt;
+  //     struct FloatQuat twist;
+  //     float_quat_tilt_twist(&tilt, &twist, &att_err);
+  //     att_fb.x = tilt.qx;
+  //     att_fb.y = tilt.qy;
+  //     att_fb.z = twist.qz;
+  //   #else
+  //     att_fb.x = att_err.qx;
+  //     att_fb.y = att_err.qy;
+  //     att_fb.z = att_err.qz;
+  //   #endif
+
+  //   break;
+
+  // case 4:
+  //   att_fb.x = 0.0;
+  //   att_fb.y = 0.0;
+  //   att_fb.z = 0.0;
+  //   break;
+
+  // default:
+  //   break;
+  // }
+
+
   struct FloatRates rate_sp;
   // Divide by rate gain to make it equivalent to a parallel structure
-  rate_sp.p = indi.gains.att.p * QUAT1_FLOAT_OF_BFP(att_err.qx) / indi.gains.rate.p;
-  rate_sp.q = indi.gains.att.q * QUAT1_FLOAT_OF_BFP(att_err.qy) / indi.gains.rate.q;
-  rate_sp.r = indi.gains.att.r * QUAT1_FLOAT_OF_BFP(att_err.qz) / indi.gains.rate.r;
+  rate_sp.p = indi.gains.att.p * att_fb.x / indi.gains.rate.p;
+  rate_sp.q = indi.gains.att.q * att_fb.y / indi.gains.rate.q;
+  rate_sp.r = indi.gains.att.r * att_fb.z / indi.gains.rate.r;
 
-  struct FloatQuat q_ref;
-  QUAT_FLOAT_OF_BFP(q_ref,quat_sp);
 
-  GAStates.ref_quat_qi = q_ref.qi;
-  GAStates.ref_quat_qx = q_ref.qx;
-  GAStates.ref_quat_qy = q_ref.qy;
-  GAStates.ref_quat_qz = q_ref.qz;
+  GAStates.ref_quat_qi = quat_sp_f.qi;
+  GAStates.ref_quat_qx = quat_sp_f.qx;
+  GAStates.ref_quat_qy = quat_sp_f.qy;
+  GAStates.ref_quat_qz = quat_sp_f.qz;
+  
 
   /* compute the INDI command */
   stabilization_indi_rate_run(rate_sp, in_flight);

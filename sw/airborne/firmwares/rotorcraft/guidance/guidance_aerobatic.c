@@ -22,7 +22,7 @@
 #ifndef PERIODIC_FREQUENCY
 #define PERIODIC_FREQUENCY 512
 #endif
-#define GUIDANCE_INDI_FILTER_CUTOFF 3.0
+#define GUIDANCE_INDI_FILTER_CUTOFF 5.0
 #define THRUST_DYNAMICS 0.01
 #define CMD_TO_THRUST 0.00240416666//(23.08/((float)(MAX_PPRZ)))
 #define MIN_THRUST 4.616 //(23.08 * 0.2)
@@ -218,6 +218,18 @@ void get_dv(void){
     Kvy = 0.0;
     Kpy = 0.0;
     break;
+
+  case 3:
+    Kay = 0.0;
+    Kvy = 0.0;
+    Kpy = 0.0;
+    break;
+
+  case 4:
+    Kax = 0.0;
+    Kvx = 0.0;
+    Kpx = 0.0;
+    break;
   
   default:
     break;
@@ -347,23 +359,23 @@ void set_states(void){
   GAStates.pos_y = in.pos.y;
   GAStates.pos_z = in.pos.z;
   GAStates.ref_pos_x = ref.pos.x;
-  GAStates.ref_pos_y = ref.pos.x;
-  GAStates.ref_pos_z = ref.pos.x;
+  GAStates.ref_pos_y = ref.pos.y;
+  GAStates.ref_pos_z = ref.pos.z;
   GAStates.vel_x = in.vel.x;
-  GAStates.vel_y = in.vel.x;
-  GAStates.vel_z = in.vel.x;
+  GAStates.vel_y = in.vel.y;
+  GAStates.vel_z = in.vel.z;
   GAStates.ref_vel_x = ref.vel.x;
-  GAStates.ref_vel_y = ref.vel.x;
-  GAStates.ref_vel_z = ref.vel.x;
+  GAStates.ref_vel_y = ref.vel.y;
+  GAStates.ref_vel_z = ref.vel.z;
   GAStates.acc_x = in.acc.x;
-  GAStates.acc_y = in.acc.x;
-  GAStates.acc_z = in.acc.x;
+  GAStates.acc_y = in.acc.y;
+  GAStates.acc_z = in.acc.z;
   GAStates.filt_acc_x = filt.acc.x;
-  GAStates.filt_acc_y = filt.acc.x;
-  GAStates.filt_acc_z = filt.acc.x;
+  GAStates.filt_acc_y = filt.acc.y;
+  GAStates.filt_acc_z = filt.acc.z;
   GAStates.ref_acc_x = ref.acc.x;
-  GAStates.ref_acc_y = ref.acc.x;
-  GAStates.ref_acc_z = ref.acc.x;
+  GAStates.ref_acc_y = ref.acc.y;
+  GAStates.ref_acc_z = ref.acc.z;
   GAStates.quat_qi = in.q.qi;
   GAStates.quat_qx = in.q.qx;
   GAStates.quat_qy = in.q.qy;
@@ -391,8 +403,8 @@ void filter_init(void){
   // Initialize Filters: Thrust, Acceleration, Quaternion
   init_butterworth_2_low_pass(&filt.thrust_filter, tau, sample_time, in.thrust);
   init_butterworth_2_low_pass(&filt.acc_filter[0], tau, sample_time, 0.0);
-  init_butterworth_2_low_pass(&filt.acc_filter[0], tau, sample_time, 0.0);
-  init_butterworth_2_low_pass(&filt.acc_filter[0], tau, sample_time, 0.0);
+  init_butterworth_2_low_pass(&filt.acc_filter[1], tau, sample_time, 0.0);
+  init_butterworth_2_low_pass(&filt.acc_filter[2], tau, sample_time, 0.0);
   init_butterworth_2_low_pass(&filt.q_filter[0], tau, sample_time, in.q.qi);
   init_butterworth_2_low_pass(&filt.q_filter[1], tau, sample_time, in.q.qx);
   init_butterworth_2_low_pass(&filt.q_filter[2], tau, sample_time, in.q.qy);

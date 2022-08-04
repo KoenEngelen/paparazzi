@@ -80,6 +80,8 @@ static void file_logger_write_header(FILE *file) {
   fprintf(file, "filt_qi,filt_qx,filt_qy,filt_qz,");
   fprintf(file, "filt_rate_p,filt_rate_q,filt_rate_r,");
   fprintf(file, "filt_acc_p,filt_acc_q,filt_acc_r,");
+  fprintf(file, "motor_mix_A1,motor_mix_A2,motor_mix_B1,motor_mix_B2,");
+  fprintf(file, "ctrl_mode,ctrl_axes,");
 #ifdef COMMAND_THRUST
   fprintf(file, "cmd_thrust,cmd_roll,cmd_pitch,cmd_yaw\n");
 #else
@@ -121,6 +123,8 @@ static void file_logger_write_row(FILE *file) {
   fprintf(file, "%f,%f,%f,%f,", GAStates.filt_quat_qi, GAStates.filt_quat_qx, GAStates.filt_quat_qy, GAStates.filt_quat_qz);
   fprintf(file, "%f,%f,%f,", GAStates.filt_rate_p, GAStates.filt_rate_q, GAStates.filt_rate_r);
   fprintf(file, "%f,%f,%f,", GAStates.filt_acc_p, GAStates.filt_acc_q, GAStates.filt_acc_r);
+  fprintf(file, "%f,%f,%f,%f,", GAStates.motor_mixing_A1,GAStates.motor_mixing_A2,GAStates.motor_mixing_B1,GAStates.motor_mixing_B2);
+  fprintf(file, "%f,%f,", GAStates.mode, GAStates.axes);
 
 #ifdef COMMAND_THRUST
   fprintf(file, "%d,%d,%d,%d\n",
