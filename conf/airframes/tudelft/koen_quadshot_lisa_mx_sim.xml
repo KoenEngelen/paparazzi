@@ -245,8 +245,8 @@
     <define name="SP_PSI_DELTA_LIMIT" value="90" unit="deg"/>
     <!-- control effectiveness -->
     <!-- <define name="G1_P" value="0.0179"/> -->
-    <define name="G1_P" value="0.0708"/>
-    <define name="G1_Q" value="0.0708"/>
+    <define name="G1_P" value="0.0028"/>
+    <define name="G1_Q" value="0.0107"/>
     <define name="G1_R" value="0.0095"/>
     <define name="G2_R" value="0.0"/>
     <!-- reference acceleration for attitude control -->

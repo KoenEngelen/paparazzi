@@ -27,7 +27,7 @@
 // #define CMD_TO_THRUST 0.00240416666//(23.08/((float)(MAX_PPRZ)))
 // #define MIN_THRUST 4.616 //(23.08 * 0.2)
 // #define MAX_THRUST 20.772 //(23.08 * 0.9)
-#define CMD_TO_THRUST 0.0019//0.00046336
+#define CMD_TO_THRUST 0.002718 //0.0019
 #define MIN_THRUST 4.0 
 #define MAX_THRUST 14.5 
 

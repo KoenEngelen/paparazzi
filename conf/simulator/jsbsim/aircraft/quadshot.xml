@@ -41,7 +41,7 @@
     <iyy unit="SLUG*FT2"> 0.0080769864 </iyy> 
     <izz unit="SLUG*FT2"> 0.0861472590 </izz> 
     -->
-    <ixx unit="SLUG*FT2"> 0.003685 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
+    <ixx unit="SLUG*FT2"> 0.04202 </ixx> <!--Ixx = 0.0001249 [kgm2] obtained from Prawien--> 
     <iyy unit="SLUG*FT2"> 0.003685 </iyy> <!--Iyy = 0.0000923 [kgm2] obtained from Prawien-->
     <izz unit="SLUG*FT2"> 0.04202 </izz> <!--Izz = 0.0001168 [kgm2] obtained from Prawien-->
     <ixy unit="SLUG*FT2"> 0. </ixy>
@@ -178,12 +178,12 @@
       <function>
         <product>
           <property>fcs/mot_A1_lag</property>
-          <value> 1 </value>
+          <value> 1.4667 </value>
         </product>
       </function>
       <location unit="IN">
         <x> 3.09</x>
-        <y>-3.09</y>
+        <y>-5.45</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -197,12 +197,12 @@
       <function>
         <product>
           <property>fcs/mot_A2_lag</property>
-          <value> 1 </value>
+          <value> 1.4667 </value>
         </product>
       </function>
       <location unit="IN">
         <x> 3.09</x>
-        <y> 3.09</y>
+        <y> 5.45</y>
         <z> 0   </z>
       </location>
       <direction>
@@ -216,12 +216,12 @@
       <function>
         <product>
           <property>fcs/mot_B1_lag</property>
-          <value> 1 </value>
+          <value> 1.4667 </value>
         </product>
       </function>
       <location unit="IN">
         <x>-3.09</x>
-        <y>-3.09</y>
+        <y>-12.93</y>
         <z>  0   </z>
       </location>
       <direction>
@@ -235,12 +235,12 @@
       <function>
         <product>
           <property>fcs/mot_B2_lag</property>
-          <value> 1 </value>
+          <value> 1.4667 </value>
         </product>
       </function>
       <location unit="IN">
         <x>-3.09</x>
-        <y> 3.09</y>
+        <y> 12.93</y>
         <z> 0   </z>
       </location>
       <direction>
