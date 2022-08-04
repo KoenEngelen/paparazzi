@@ -23,10 +23,13 @@
 #define PERIODIC_FREQUENCY 512
 #endif
 #define GUIDANCE_INDI_FILTER_CUTOFF 5.0
-#define THRUST_DYNAMICS 0.01
-#define CMD_TO_THRUST 0.00240416666//(23.08/((float)(MAX_PPRZ)))
-#define MIN_THRUST 4.616 //(23.08 * 0.2)
-#define MAX_THRUST 20.772 //(23.08 * 0.9)
+#define THRUST_DYNAMICS 0.03
+// #define CMD_TO_THRUST 0.00240416666//(23.08/((float)(MAX_PPRZ)))
+// #define MIN_THRUST 4.616 //(23.08 * 0.2)
+// #define MAX_THRUST 20.772 //(23.08 * 0.9)
+#define CMD_TO_THRUST 0.0019//0.00046336
+#define MIN_THRUST 4.0 
+#define MAX_THRUST 14.5 
 
 struct filter_struct{
   Butterworth2LowPass acc_filter[3];
@@ -289,10 +292,23 @@ void get_dv(void){
   float_quat_vmult(&da_b_v, &filt.q, &da_v);
   float_quat_vmult(&da_b_a, &filt.q, &da_a);
 
+  struct FloatVect3 da_tot;
+  struct FloatVect3 da_b_tot;
+  da_tot.x = Kpx * da_p.x + Kvx * da_v.x + Kax * da_a.x;
+  da_tot.y = Kpy * da_p.y + Kvy * da_v.y + Kay * da_a.y;
+  da_tot.z = Kpz * da_p.z + Kvz * da_v.z + Kaz * da_a.z;
+  float_quat_vmult(&da_b_tot, &filt.q, &da_tot);
+
   // Output Incremental Acceleration
-  ctrl.ddx = Kpx * da_p.x + Kvx * da_v.x + Kax * da_a.x;
-  ctrl.ddy = Kpy * da_p.y + Kvy * da_v.y + Kay * da_a.y;
-  ctrl.ddz = Kpz * da_p.z + Kvz * da_v.z + Kaz * da_a.z;
+  ctrl.ddx = da_b_tot.x;
+  ctrl.ddy = da_b_tot.y;
+  ctrl.ddz = da_b_tot.z;
+
+
+  // ctrl.ddx = Kpx * da_b_p.x + Kvx * da_b_v.x + Kax * da_b_a.x;
+  // ctrl.ddy = Kpy * da_b_p.y + Kvy * da_b_v.y + Kay * da_b_a.y;
+  // ctrl.ddz = Kpz * da_b_p.z + Kvz * da_b_v.z + Kaz * da_b_a.z;
+
 }
 
 void get_G(void){

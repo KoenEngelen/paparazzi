@@ -219,20 +219,20 @@
       <define name="Y_OFF" value="0.0"/> 
       <define name="Z_OFF" value="0.0"/> 
       
-      <define name="P_GAIN_X" value="1.0"/>
-      <define name="V_GAIN_X" value="1.0"/>    
+      <define name="P_GAIN_X" value="0.7"/>
+      <define name="V_GAIN_X" value="1.5"/>    
       <define name="A_GAIN_X" value="1.0"/> 
       
-      <define name="P_GAIN_Y" value="1.0"/>
-      <define name="V_GAIN_Y" value="1.0"/>    
+      <define name="P_GAIN_Y" value="0.7"/>
+      <define name="V_GAIN_Y" value="1.5"/>    
       <define name="A_GAIN_Y" value="1.0"/>
 
-      <define name="P_GAIN_Z" value="1.0"/>
-      <define name="V_GAIN_Z" value="8.0"/>    
+      <define name="P_GAIN_Z" value="0.7"/>
+      <define name="V_GAIN_Z" value="1.5"/>    
       <define name="A_GAIN_Z" value="1.0"/> 
 
       <define name="CTRL_MODE" value="0"/>    
-      <define name="CTRL_AXIS" value="3"/> 
+      <define name="CTRL_AXIS" value="5"/> 
   </section>
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
