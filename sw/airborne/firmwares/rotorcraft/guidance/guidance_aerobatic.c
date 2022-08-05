@@ -71,6 +71,9 @@ struct ctrl_struct {
 } ctrl;
 
 int32_t aerobatic_active;
+float t = 0.0f;
+struct NedCoor_f origin;
+
 struct MySettings my_settings = {
   .offset_x  = GUIDANCE_AEROBATIC_X_OFF,
   .offset_y  = GUIDANCE_AEROBATIC_Y_OFF,
@@ -114,9 +117,12 @@ void guidance_aerobatic_init(void){
 
 void guidance_aerobatic_enter(void){
   // struct NedCoor_f ref = *stateGetPositionNed_f();
-  ref.pos.x = stateGetPositionNed_f()->x;
-  ref.pos.y = stateGetPositionNed_f()->y;
-  ref.pos.z = stateGetPositionNed_f()->z;  
+  origin.x = stateGetPositionNed_f()->x;
+  origin.y = stateGetPositionNed_f()->y;
+  origin.z = stateGetPositionNed_f()->z;
+  ref.pos.x = origin.x;
+  ref.pos.y = origin.y;
+  ref.pos.z = origin.z;  
   ref.vel.x = 0.0;
   ref.vel.y = 0.0;
   ref.vel.z = 0.0;
@@ -124,6 +130,7 @@ void guidance_aerobatic_enter(void){
   ref.acc.y = 0.0;
   ref.acc.z = 0.0;
   filter_init();
+  t = 0.0f;
 }
 
 void guidance_aerobatic_run(){
@@ -134,6 +141,7 @@ void guidance_aerobatic_run(){
   get_G();
   get_du();
   set_states();
+  t += 1.0f/(float) PERIODIC_FREQUENCY;
 }
 
 // Controller functions
@@ -156,8 +164,8 @@ void get_dyaw(void){
   struct FloatVect3 Yaw_proj;
   struct FloatVect3 Yaw_ref;
 
-  Yaw_b.x = 0.0f;
-  Yaw_b.y = 1.0f;
+  Yaw_b.x = 1.0f;
+  Yaw_b.y = 0.0f;
   Yaw_b.z = 0.0f;
   
   struct FloatQuat q_inv;
@@ -169,8 +177,8 @@ void get_dyaw(void){
   Yaw_proj.y = Yaw_bE.y/mag;
   Yaw_proj.z = 0.0f;
 
-  Yaw_ref.x = 0.0f;
-  Yaw_ref.y = 1.0f;
+  Yaw_ref.x = 1.0f;
+  Yaw_ref.y = 0.0f;
   Yaw_ref.z = 0.0f;
 
   ctrl.dyaw = atan2f(Yaw_ref.y*Yaw_proj.x - Yaw_proj.y*Yaw_ref.x, Yaw_proj.x*Yaw_ref.x + Yaw_proj.y*Yaw_ref.y);
@@ -181,6 +189,14 @@ void get_dyaw(void){
   } else if (ctrl.dyaw < -max_yaw){
       ctrl.dyaw = -max_yaw;
   }
+
+  switch (my_settings.ctrl_mode)
+  {
+  case 1:
+    ctrl.dyaw = 0.0;
+    break;
+  }
+
 }
 void get_dv(void){  
   
@@ -246,10 +262,19 @@ void get_dv(void){
     break;
   
   case 1:
-    Kpx = 0.0;
-    Kpy = 0.0;
-    Kpz = 0.0;
+    ref.pos.x = origin.x;
+    ref.pos.y = origin.y + 20.0 + 20.0*sinf(0.314159*(t-5.0));
+    ref.pos.z = origin.z - 15.0 - 15.0*sinf( 2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI );  
+
+    ref.vel.x = 0.0;
+    ref.vel.y = 6.28319*cosf(0.314159*(t-5.0));
+    ref.vel.z = -2.0*M_PI*15.0*(1.2*cosf(2.0*M_PI*(t-10.0)/20.0)+1.0)*cosf( 2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI )/20.0;  
+
+    ref.acc.x = 0.0;
+    ref.acc.y = -1.973920*sinf(0.314159*(t-5.0));
+    ref.acc.z = -(-2.0*M_PI*M_PI/(400.0)*15.0*(powf(1.2*cosf(2.0*M_PI*(t-10.0)/20.0)+1,2)*sinf(2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI ))+1.2*sinf(2.0*M_PI*(t-10.0)/20.0)*cosf(1.2*sinf(2.0*M_PI*(t-10.0)/20.0)+2.0*M_PI*(t-10.0)/20.0 + 0.5*M_PI ));
     break;
+
 
   case 2:
     Kvx = 0.0;
@@ -376,9 +401,9 @@ void set_states(void){
   GAStates.pos_x = in.pos.x;
   GAStates.pos_y = in.pos.y;
   GAStates.pos_z = in.pos.z;
-  GAStates.ref_pos_x = ref.pos.x;
-  GAStates.ref_pos_y = ref.pos.y;
-  GAStates.ref_pos_z = ref.pos.z;
+  GAStates.ref_pos_x = ref.pos.x + my_settings.offset_x;
+  GAStates.ref_pos_y = ref.pos.y + my_settings.offset_y;
+  GAStates.ref_pos_z = ref.pos.z + my_settings.offset_z;
   GAStates.vel_x = in.vel.x;
   GAStates.vel_y = in.vel.y;
   GAStates.vel_z = in.vel.z;

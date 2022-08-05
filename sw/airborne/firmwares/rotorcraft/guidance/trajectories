@@ -1,0 +1,30 @@
+p\left(x\right)\ =\ 30\sin\left(\left(0.5x+270\frac{\pi}{180}+0.5\cdot\sin\left(0.5\cdot x\cdot\frac{2\pi}{10}\right)\right)\cdot\frac{2\pi}{10}\right)
+
+
+p\left(x\right)\ =\ A\sin\left(\frac{2\pi}{T}\ x+B\sin\left(x\cdot\frac{2\pi}{T}\right)+P\pi\right)
+
+T = 20.0
+B = 1.2 // or 1.1
+P = 0.5
+A = 25.0
+
+
+
+%FINAL DROP
+p\left(x\right)\ =\ A\sin\left(\frac{2\pi}{T}\ \left(x-O\right)+B\sin\left(\left(x-O\right)\cdot\frac{2\pi}{T}\right)+P\pi\right)
+
+O = 10.0
+T = 20.0
+B = 1.2 // or 1.1
+P = 0.5
+A = 25.0
+
+
+mid = 2*M_PI*(t-O)/T;
+p_y = 5*t
+pos_z = A*sinf(mid+B*sinf(mid)+P*M_PI);
+
+20\sin\left(\frac{2\pi\left(x+\frac{T}{4}-O\right)}{T}\right)
+
+p_y = 20*sinf(2*M_PI*(x+T/4-O)/T);
+p_y = 20*sinf(2*M_PI*(x-5.0)/20.0);

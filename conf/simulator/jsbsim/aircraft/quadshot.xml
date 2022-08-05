@@ -327,7 +327,8 @@
   <flight_control name="FGFCS"/> <!--What is this linked to?-->
 
   
-  <aerodynamics file="Systems/aerodynamics_quadshot_no_L_D.xml"/>
+  <aerodynamics file="Systems/aerodynamics_quadshot.xml"/>
+  <!-- <aerodynamics file="Systems/aerodynamics_quadshot_no_L_D.xml"/> -->
   
 
 </fdm_config>
