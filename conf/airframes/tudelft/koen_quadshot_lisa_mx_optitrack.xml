@@ -250,12 +250,12 @@
     <define name="G1_R" value="0.0095"/>
     <define name="G2_R" value="0.0"/>
     <!-- reference acceleration for attitude control -->
-    <!-- <define name="REF_ERR_P" value="60.0"/> -->
-    <define name="REF_ERR_P" value="150.0"/>
+    <define name="REF_ERR_P" value="60.0"/>
+    <!-- <define name="REF_ERR_P" value="150.0"/> -->
     <define name="REF_ERR_Q" value="150.0"/> <!--try 100-->
     <define name="REF_ERR_R" value="60.0"/>
-    <!-- <define name="REF_RATE_P" value="8.0"/> -->
-    <define name="REF_RATE_P" value="20.5"/>
+    <define name="REF_RATE_P" value="8.0"/>
+    <!-- <define name="REF_RATE_P" value="20.5"/> -->
     <define name="REF_RATE_Q" value="20.5"/> <!-- 15.0 -->
     <define name="REF_RATE_R" value="12.0"/>
     <!-- second order filter parameters -->
