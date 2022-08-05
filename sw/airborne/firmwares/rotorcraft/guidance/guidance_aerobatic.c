@@ -264,15 +264,15 @@ void get_dv(void){
   case 1:
     ref.pos.x = origin.x;
     ref.pos.y = origin.y + 20.0 + 20.0*sinf(0.314159*(t-5.0));
-    ref.pos.z = origin.z - 15.0 - 15.0*sinf( 2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI );  
+    ref.pos.z = origin.z - 25.0 - 25.0*sinf( 2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI );  
 
     ref.vel.x = 0.0;
     ref.vel.y = 6.28319*cosf(0.314159*(t-5.0));
-    ref.vel.z = -2.0*M_PI*15.0*(1.2*cosf(2.0*M_PI*(t-10.0)/20.0)+1.0)*cosf( 2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI )/20.0;  
+    ref.vel.z = -2.0*M_PI*25.0*(1.2*cosf(2.0*M_PI*(t-10.0)/20.0)+1.0)*cosf( 2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI )/20.0;  
 
     ref.acc.x = 0.0;
     ref.acc.y = -1.973920*sinf(0.314159*(t-5.0));
-    ref.acc.z = -(-2.0*M_PI*M_PI/(400.0)*15.0*(powf(1.2*cosf(2.0*M_PI*(t-10.0)/20.0)+1,2)*sinf(2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI ))+1.2*sinf(2.0*M_PI*(t-10.0)/20.0)*cosf(1.2*sinf(2.0*M_PI*(t-10.0)/20.0)+2.0*M_PI*(t-10.0)/20.0 + 0.5*M_PI ));
+    ref.acc.z = -(-2.0*M_PI*M_PI/(400.0)*25.0*(powf(1.2*cosf(2.0*M_PI*(t-10.0)/20.0)+1,2)*sinf(2.0*M_PI*(t-10.0)/20.0 + 1.2*sinf(2.0*M_PI*(t-10.0)/20.0) + 0.5*M_PI ))+1.2*sinf(2.0*M_PI*(t-10.0)/20.0)*cosf(1.2*sinf(2.0*M_PI*(t-10.0)/20.0)+2.0*M_PI*(t-10.0)/20.0 + 0.5*M_PI ));
     break;
 
 
