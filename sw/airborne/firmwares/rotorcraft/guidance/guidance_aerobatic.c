@@ -15,6 +15,7 @@
 #include "subsystems/abi.h"
 #include "subsystems/radio_control.h"
 #include "stabilization.h"
+#include "state.h"
 #include "firmwares/rotorcraft/stabilization.h"
 #include "firmwares/rotorcraft/stabilization/stabilization_indi_simple.h"
 
@@ -112,6 +113,7 @@ void guidance_aerobatic_init(void){
 }
 
 void guidance_aerobatic_enter(void){
+  // struct NedCoor_f ref = *stateGetPositionNed_f();
   ref.pos.x = stateGetPositionNed_f()->x;
   ref.pos.y = stateGetPositionNed_f()->y;
   ref.pos.z = stateGetPositionNed_f()->z;  

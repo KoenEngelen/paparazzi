@@ -1,6 +1,24 @@
 <!-- this is a quadshot vehicle equiped with Lisa/m2.0 and an aspirin 2.1
      More information on the Quadshot can be found at transition-robotics.com -->
 
+<!--
+     The motor and rotor configuration is the following:
+
+     Front
+             ^
+             |
+
+  Motor2(B1)     Motor3(B2)
+    CCW              CW
+      \             /     
+  ,_____________________,
+  |_____________________|
+          /     \
+         CW     CCW
+     Motor0(A1)  Motor1(A2)
+
+-->
+
 <airframe name="Quadshot Lisa MX v2.1">
   <description>
     Transition robotics Quadshot (https://www.openuas.org/airframes/)
@@ -84,8 +102,8 @@
     <define name="NB_MOTOR" value="4"/>
     <define name="SCALE" value="256"/>
     <!--                                  A1    A2    B1    B2  -->
-    <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
     <define name="ROLL_COEF"   value="{  256, -256,  256, -256 }"/>
+    <define name="PITCH_COEF"  value="{ -256, -256,  256,  256 }"/>
     <define name="YAW_COEF"    value="{ -256,  256,  128, -128 }"/>
     <define name="THRUST_COEF" value="{  256,  256,  256,  256 }"/>
   </section>
@@ -200,23 +218,20 @@
       <define name="Y_OFF" value="0.0"/> 
       <define name="Z_OFF" value="0.0"/> 
       
-      <define name="P_GAIN_X" value="1.0"/>
-      <define name="V_GAIN_X" value="4.0"/>    
+      <define name="P_GAIN_X" value="0.7"/>
+      <define name="V_GAIN_X" value="1.5"/>    
       <define name="A_GAIN_X" value="1.0"/> 
       
-      <define name="P_GAIN_Y" value="0.0"/>
-      <define name="V_GAIN_Y" value="0.0"/>    
-      <define name="A_GAIN_Y" value="0.0"/>
+      <define name="P_GAIN_Y" value="0.7"/>
+      <define name="V_GAIN_Y" value="1.5"/>    
+      <define name="A_GAIN_Y" value="1.0"/>
 
-      <define name="P_GAIN_Z" value="1.0"/>
-      <define name="V_GAIN_Z" value="4.0"/>    
+      <define name="P_GAIN_Z" value="0.7"/>
+      <define name="V_GAIN_Z" value="1.5"/>    
       <define name="A_GAIN_Z" value="1.0"/> 
       
-      <define name="MODE" value="0" type="int32"/>
-      <define name="USE_FEEDFORWARD" value="FALSE"/>
-      <define name="USE_ALT_GAINS" value="TRUE"/>
-      <define name="USE_FILTERED_OUTPUT" value="FALSE"/>
-      <define name="CE_MODE" value="2"/>
+      <define name="CTRL_MODE" value="0"/>    
+      <define name="CTRL_AXIS" value="5"/> 
   </section>
 
   <section name="STABILIZATION_ATTITUDE_INDI" prefix="STABILIZATION_INDI_">
@@ -230,13 +245,17 @@
     <!-- control effectiveness -->
     <define name="G1_P" value="0.0179"/>
     <define name="G1_Q" value="0.0708"/>
+    <!-- <define name="G1_P" value="0.0028"/> -->
+    <!-- <define name="G1_Q" value="0.0107"/> -->
     <define name="G1_R" value="0.0095"/>
     <define name="G2_R" value="0.0"/>
     <!-- reference acceleration for attitude control -->
-    <define name="REF_ERR_P" value="60.0"/>
+    <!-- <define name="REF_ERR_P" value="60.0"/> -->
+    <define name="REF_ERR_P" value="150.0"/>
     <define name="REF_ERR_Q" value="150.0"/> <!--try 100-->
     <define name="REF_ERR_R" value="60.0"/>
-    <define name="REF_RATE_P" value="8.0"/>
+    <!-- <define name="REF_RATE_P" value="8.0"/> -->
+    <define name="REF_RATE_P" value="20.5"/>
     <define name="REF_RATE_Q" value="20.5"/> <!-- 15.0 -->
     <define name="REF_RATE_R" value="12.0"/>
     <!-- second order filter parameters -->
@@ -380,9 +399,6 @@
           <define name="SAFETY_WARNING_LED" value="BODY"/>
     </load>
 
-    <!-- <module name="ins"/> -->
-        <!-- <module name="ins"  type="ekf2"/> -->
-    <!-- <module name="ins"  type="hff"/> -->
     <module name="ins" type="gps_passthrough"/>
     <!-- <module name="ins"  type="float_invariant">
       <configure name="USE_MAGNETOMETER" value="FALSE"/>   

@@ -92,9 +92,9 @@ void high_speed_logger_spi_link_periodic(void)
       high_speed_logger_spi_link_data.d7  = *(int32_t*)&acc_body.x;
       high_speed_logger_spi_link_data.d8  = *(int32_t*)&acc_body.y;
       high_speed_logger_spi_link_data.d9  = *(int32_t*)&acc_body.z;
-      high_speed_logger_spi_link_data.d10 = sd_log[9];
-      high_speed_logger_spi_link_data.d11 = sd_log[10];
-      high_speed_logger_spi_link_data.d12 = sd_log[11];
+      high_speed_logger_spi_link_data.d10 = GAStates.ref_pos_x;
+      high_speed_logger_spi_link_data.d12 = GAStates.ref_pos_y;
+      high_speed_logger_spi_link_data.d11 = GAStates.ref_pos_z;
       high_speed_logger_spi_link_data.d13 = aerobatic_active;
       high_speed_logger_spi_link_data.d14 = stabilization_cmd[COMMAND_ROLL];
       high_speed_logger_spi_link_data.d15 = stabilization_cmd[COMMAND_PITCH];
