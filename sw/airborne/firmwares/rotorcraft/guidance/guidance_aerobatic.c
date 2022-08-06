@@ -9,6 +9,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "firmwares/rotorcraft/guidance/guidance_aerobatic.h"
+#include "firmwares/rotorcraft/guidance/CE_indep.h"
 #include "math/pprz_algebra_float.h"
 #include "filters/low_pass_filter.h"
 #include "subsystems/imu.h"
@@ -68,6 +69,7 @@ struct ctrl_struct {
   float dpsi;
   float dT;
   float dyaw;
+  float G33[9];
 } ctrl;
 
 int32_t aerobatic_active;
@@ -344,9 +346,40 @@ void get_G(void){
   ctrl.Gx = -filt.thrust;
   ctrl.Gy =  filt.thrust;
   ctrl.Gz = -1.0f;  
+
+  float d;
+  d = dalphai_dthetai();
 }
 
 void get_du(void){
+
+  float m[9];
+  m[0+3*0] = ctrl.G33[0+0];
+  m[1+3*0] = ctrl.G33[0+1];
+  m[2+3*0] = ctrl.G33[0+2];
+  m[0+3*1] = ctrl.G33[3+0];
+  m[1+3*1] = ctrl.G33[3+1];
+  m[2+3*1] = ctrl.G33[3+2];
+  m[0+3*2] = ctrl.G33[6+0];
+  m[1+3*2] = ctrl.G33[6+1];
+  m[2+3*2] = ctrl.G33[6+2];
+  // computes the inverse of a matrix m
+  float det = m[0+3*0] * (m[1+3*1] * m[2+3*2] - m[2+3*1] * m[1+3*2]) -
+              m[0+3*1] * (m[1+3*0] * m[2+3*2] - m[1+3*2] * m[2+3*0]) +
+              m[0+3*2] * (m[1+3*0] * m[2+3*1] - m[1+3*1] * m[2+3*0]);
+
+  float invdet = 1 / det;
+
+  float minv[9]; // inverse of matrix m
+  minv[0+3*0] = (m[1+3*1] * m[2+3*2] - m[2+3*1] * m[1+3*2]) * invdet;
+  minv[0+3*1] = (m[0+3*2] * m[2+3*1] - m[0+3*1] * m[2+3*2]) * invdet;
+  minv[0+3*2] = (m[0+3*1] * m[1+3*2] - m[0+3*2] * m[1+3*1]) * invdet;
+  minv[1+3*0] = (m[1+3*2] * m[2+3*0] - m[1+3*0] * m[2+3*2]) * invdet;
+  minv[1+3*1] = (m[0+3*0] * m[2+3*2] - m[0+3*2] * m[2+3*0]) * invdet;
+  minv[1+3*2] = (m[1+3*0] * m[0+3*2] - m[0+3*0] * m[1+3*2]) * invdet;
+  minv[2+3*0] = (m[1+3*0] * m[2+3*1] - m[2+3*0] * m[1+3*1]) * invdet;
+  minv[2+3*1] = (m[2+3*0] * m[0+3*1] - m[0+3*0] * m[2+3*1]) * invdet;
+  minv[2+3*2] = (m[0+3*0] * m[1+3*1] - m[1+3*0] * m[0+3*1]) * invdet;
 
   // Output Incremental Orientation, Thrust
   ctrl.dphi   = ctrl.ddy/ctrl.Gy;
